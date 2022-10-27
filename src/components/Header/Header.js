@@ -48,7 +48,7 @@ const Header = () => {
                             navbarScroll
                         >
                             <Link className="nav-link" to="/">Home</Link>
-                            <Link className="nav-link" to="/#about">About Us</Link>
+                            <Link className="nav-link" to="#about">About Us</Link>
                             <Link className="nav-link" to="/events">Events</Link>
                             <Link className="nav-link" to="/social">Social Activities</Link>
                             <Link className="nav-link" to="/alumni">Alumni</Link>
