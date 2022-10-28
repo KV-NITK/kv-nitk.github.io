@@ -22,7 +22,7 @@ const Header = () => {
     return (
         <>
             
-            <Container fluid md={3} className="header flex px-3">
+            <Container fluid md={3} className="header flex px-3 w-100">
                 <div className="flex languageSection">
                     <img className="m-auto" width="20" height="20" src={langIcon} alt="" />
                     <div id="language" className="m-auto ps-1 notranslate btn">
@@ -31,7 +31,7 @@ const Header = () => {
                 </div>
                 <div className="support me-5 py-2 px-4 red-bg white-txt"><a href="#">Support Us</a></div>
             </Container>
-            <Navbar expand="lg" variant="dark">
+            <Navbar expand="lg" variant="dark" className="w-100">
                 <Container fluid>
                     <Link to="/"> <img
                         id="logo"
@@ -48,10 +48,9 @@ const Header = () => {
                             navbarScroll
                         >
                             <Link className="nav-link" to="/">Home</Link>
-                            <Link className="nav-link" to="#about">About Us</Link>
+                            <a className="nav-link" href="/#about">About Us</a>
                             <Link className="nav-link" to="/events">Events</Link>
                             <Link className="nav-link" to="/social">Social Activities</Link>
-                            <Link className="nav-link" to="/alumni">Alumni</Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

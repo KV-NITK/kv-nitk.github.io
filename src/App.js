@@ -9,6 +9,10 @@ import Social from './components/Social/Social';
 
 function App() {
 
+  // translator button functions here  
+  function googleTranslateElementInit() {
+  }
+
   return (
 
     <BrowserRouter>

@@ -13,7 +13,7 @@ const Footer = () => {
             <footer className="footer notranslate">
                 <Container>
                     <Row>
-                        <div className="footer-col first">
+                        <div className="footer-col col-6 first">
                             <div className="flex">
                                 <img
                                     src={logo}
@@ -26,8 +26,11 @@ const Footer = () => {
                                     KANNADA VEDIKE
                                 </h4>
                             </div>
+                            <p>
+                                Lorem ipsum dolor consectetur Ipsa tempore,blanditiis, inventore asperiores voluptatibus culpa sed debitis nesciunt voluptates fugiat fugit aliquam quis a reiciendis recusandae, nam deleniti tenetur repellendus eos totam. Exercitationem ea debitis autem.
+                            </p>
                         </div>
-                        <div className="footer-col">
+                        <div className="footer-col col-3">
                             <h4>Contact Us</h4>
                             <ul>
                                 <li>
@@ -48,7 +51,7 @@ const Footer = () => {
                                 </li>
                             </ul>
                         </div>
-                        <div className="footer-col">
+                        <div className="footer-col col-3">
                             <h4>Quick Links</h4>
                             <ul>
                                 <li>
@@ -63,41 +66,33 @@ const Footer = () => {
                                 <li>
                                     <Link to="/social">Social Activities</Link>
                                 </li>
-                                <li>
-                                    <Link to="/alumni">Alumni</Link>
-                                </li>
                             </ul>
                         </div>
-                        <div className="footer-col">
-                            <h4>follow us</h4>
-                            <div className="social-links">
-                                <a href="https://m.facebook.com/kannadavedikenitk/" target="_blank">
-                                    <img src={facebookIcon} alt="" height={40} width={40} />
-                                </a>
-                                <a
-                                    href="https://www.instagram.com/kannadavedike_nitk/"
-                                    target="_blank"
-                                >
-                                    <img src={instaIcon} alt="" height={40} width={40} />
-                                </a>
-                                <a href="https://twitter.com/kv_nitk" target="_blank">
-                                    <img src={twitterIcon} alt="" height={40} width={40} />
-                                </a>
-                            </div>
-                        </div>
+
                     </Row>
                 </Container>
             </footer>
             <div id="lstFooter" className="flex notranslate">
-                <span style={{ color: "#afafaf" }}>
-                    Copyright All Rights Reserved 2021, Kannada Vedike
-                </span>
-                <span style={{ color: "#afafaf" }}>
-                    Made with ❤️ by{" "}
-                    <a href="https://github.com/KV-NITK" target="_blank">
-                        KV Web Team
-                    </a>
-                </span>
+                <div className="container">
+                    <div className="flex justify-content-between align-items-center m-4">
+                        <span style={{ color: "#afafaf" }}>
+                            Copyright All Rights Reserved 2021, Kannada Vedike
+                        </span>
+                        <span style={{ color: "#afafaf" }}>
+                            <div class="social-links">
+                                <a href="https://m.facebook.com/kannadavedikenitk/" target="_blank">
+                                    <img src={facebookIcon} alt="" height="40" width="40" />
+                                </a>
+                                <a href="https://www.instagram.com/kannadavedike_nitk/" target="_blank">
+                                    <img src={instaIcon} alt="" height="40" width="40" />
+                                </a>
+                                <a href="https://twitter.com/kv_nitk" target="_blank">
+                                    <img src={twitterIcon} alt="" height="40" width="40" />
+                                </a>
+                            </div>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
