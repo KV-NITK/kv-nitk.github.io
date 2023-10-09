@@ -21,7 +21,7 @@
 
 #about:after {
     content: "";
-    background-color: #f7f7f4;
+    background-color: hwb(60 96% 10%);
     width: 700px;
     height: 700px;
     max-width: 100%;

@@ -45,7 +45,7 @@ const Home = () => {
 
             <div id="about" className="section">
                 <h2
-                    className="mt-4 text-center font-weight-bold black-txt title aos-init aos-animate"
+                    className="mt-4 text-center black-txt title aos-init aos-animate"
                     data-aos="fade"
                 >
                     About Us
