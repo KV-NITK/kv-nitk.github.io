@@ -10,15 +10,10 @@ const Cards = ({title,img,desc,link}) => {
     >
       <img src={img} alt="" />
       <figcaption>
-        <h2 className="text-center mb-3">{title}</h2>
+        <h4 className="text-center mb-3">{title}</h4>
         <p>
           {desc}
         </p>
-        <Link to={link}>
-          <button type="button" className="btn btn-outline-light">
-            Know more
-          </button>
-        </Link>
       </figcaption>
     </figure>
   )

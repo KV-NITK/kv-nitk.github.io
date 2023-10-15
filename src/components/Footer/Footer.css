@@ -15,12 +15,15 @@ ul {
     background-color: #181818;
     padding: 70px 0;
     padding-bottom: 20px;
-    line-height: 2;
+    line-height: 2; 
+}
+
+footer .container{
+    max-width: 1250px;
 }
 
 .footer-col {
-    /* width: 25% !important; */
-    padding: 0 15px;
+    padding: 0 40px !important;
 }
 
 .footer-col ul {
@@ -94,7 +97,7 @@ ul {
 }
 
 #lstFooter {
-    background: #363636;
+    background: #202020;
     justify-content: space-between;
     line-height: 3;
     align-items: center;

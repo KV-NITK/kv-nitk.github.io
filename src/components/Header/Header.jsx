@@ -4,21 +4,9 @@ import langIcon from '../../icons/language.svg'
 import logo from '../../images/logo.jpg'
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link';
 
 const Header = () => {
-
-    useEffect(() => {
-        window.addEventListener("scroll", (e) => {
-            var navbar = document.getElementsByTagName("nav")[0];
-            var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
-            if (scrollTop >= 50) {
-                navbar.classList.add("scroll");
-            } else {
-                navbar.classList.remove("scroll");
-            }
-        })
-    }, [])
-
     return (
         <>
             
@@ -48,7 +36,7 @@ const Header = () => {
                             navbarScroll
                         >
                             <Link className="nav-link" to="/">Home</Link>
-                            <Link className="nav-link" href="/#about">About Us</Link>
+                            <HashLink smooth className="nav-link" to="/#about">About Us</HashLink>
                             <Link className="nav-link" to="/events">Events</Link>
                             <Link className="nav-link" to="/social">Social Activities</Link>
                             <Link className="nav-link" to="/alumni">Alumni</Link>

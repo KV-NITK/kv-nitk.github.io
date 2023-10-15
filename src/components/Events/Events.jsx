@@ -10,7 +10,7 @@ const Events = () => {
   return (
     <>
       <Metadata title="Events | Kannada Vedike" />
-      <div className="page">
+      <div className="page section">
         <h2 className="text-center font-weight-bold primary-text-clr title pt-5"> Events</h2>
         <div className="pageContainer content">
           {

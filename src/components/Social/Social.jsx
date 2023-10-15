@@ -8,7 +8,7 @@ const Social = () => {
     return (
         <>
             <Metadata title="Social Activities | Kannada Vedike" />
-            <div className="page">
+            <div className="page section">
                 <h2 className="text-center font-weight-bold primary-text-clr title pt-5"> Social Activities</h2>
                 <div className="pageContainer content">
                     {

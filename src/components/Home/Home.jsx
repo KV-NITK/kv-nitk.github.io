@@ -1,11 +1,11 @@
 import React from 'react'
 import './Home.css'
 import { Container, Carousel } from 'react-bootstrap'
-import imgSlider1 from '../../images/img-slider/imgSlider1.JPG'
-import imgSlider2 from '../../images/img-slider/imgSlider2.JPG'
-import imgSlider3 from '../../images/img-slider/imgSlider3.JPG'
-import aboutImg1 from '../../images/aboutImg1.jpg' 
-import aboutImg2 from '../../images/aboutImg2.jpg' 
+import imgSlider1 from '../../images/img-slider/imgSlider1.jpg'
+import imgSlider2 from '../../images/img-slider/imgSlider2.jpg'
+import imgSlider3 from '../../images/img-slider/imgSlider3.jpg'
+import aboutImg1 from '../../images/aboutImg1.jpg'
+import aboutImg2 from '../../images/aboutImg2.jpg'
 import Metadata from '../MetaData/MetaData'
 
 const Home = () => {
@@ -45,7 +45,7 @@ const Home = () => {
 
             <div id="about" className="section">
                 <h2
-                    className="mt-4 text-center black-txt title aos-init aos-animate"
+                    className="mt-4 text-center black-txt title aos-init aos-animate font-weight-bold"
                     data-aos="fade"
                 >
                     About Us
@@ -59,11 +59,13 @@ const Home = () => {
                         <img className="px-3 my-3" src={aboutImg2} alt="" width="100%" />
                     </div>
                     <span className="about-content px-5 py-auto" style={{ lineHeight: "1.8" }}>
-                        <h2 className="font-weight-bold primary-text-clr">OUR VISION</h2>
+                        <h2 className="primary-text-clr">OUR VISION</h2>
                         <span style={{ color: "#444" }} className="text-left">
-                            Preservation and Promotion of cultural significance of homeland,
-                            emphasis on mutual respect and spreading sense of true unity in
-                            diversity among the students of NITK
+                            By spreading Kannada's and Karnataka's
+                            culture and tradition across the institute,
+                            creating a platform for non-Kannadigas
+                            along with Kannadigas to learn the state's
+                            language .culture and traditon.
                         </span>
                     </span>
                 </div>
@@ -74,10 +76,12 @@ const Home = () => {
                     data-aos="fade-left"
                 >
                     <span className="about-content px-5 py-auto" style={{ lineHeight: "1.8" }}>
-                        <h2 className="font-weight-bold primary-text-clr">OUR MISSION</h2>
+                        <h2 className="primary-text-clr">OUR MISSION</h2>
                         <span style={{ color: "#444" }} className="text-right">
-                            Organising events, competitions, social activities to uphold team spirit
-                            among students of different background.
+                            To encourage the usage of the state's
+                            language and culture in the institute.
+                            Emphasising the state's culture and
+                            tradition along with the technology.
                         </span>
                     </span>
                     <div className="about-img">

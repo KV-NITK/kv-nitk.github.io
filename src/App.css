@@ -123,3 +123,12 @@ a:active {
 .page h2{
   min-height:1rem;
 }
+
+.section{
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.font-weight-bold{
+  font-weight: 600 !important;
+}
