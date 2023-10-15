@@ -15,6 +15,7 @@ import harshita from '../images/alumni/harshita.jpg'
 import sham from '../images/alumni/shamsundar.jpg'
 import gagan from '../images/alumni/gagan.jpg'
 import chandan from '../images/alumni/chandan.jpg'
+import amrutha from '../images/alumni/amrutha.jpg'
 
 export const eventsList =
   [
@@ -120,7 +121,7 @@ export const alumniList = [
   },
   {
     name: "Amrutha M K",
-    img: "https://pps.whatsapp.net/v/t61.24694-24/368245017_1226109438067328_3529048544191412373_n.jpg?ccb=11-4&oh=01_AdQ9MHlipEpZbzu7o6Ja3wcznZ4UfldHlmlPChHqJUI7-A&oe=6530BB20&_nc_sid=000000&_nc_cat=108",
+    img: amrutha,
     batch: "2023",
     linkedIn: "https://www.linkedin.com/in/arunhasabi/",
     mail: "arunhasabi@gmail.com"
