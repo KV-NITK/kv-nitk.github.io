@@ -57,7 +57,9 @@ figure h1 {
 
 figure img {
   height: 100%;
+  width: 100%;
   transition: 0.25s;
+  object-fit: cover;
 }
 
 figure figcaption {

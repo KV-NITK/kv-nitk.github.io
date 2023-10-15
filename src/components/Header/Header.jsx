@@ -5,16 +5,17 @@ import logo from '../../images/logo.jpg'
 import { Container, Nav, Navbar } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link';
+import { brochureLink } from '../../data/data';
 
 const Header = () => {
     return (
         <>
             <Container fluid md={3} className="header flex px-3 w-100">
                 <div className="flex languageSection">
-                    <img className="m-auto" width="20" height="20" src={langIcon} alt="" />
+                    {/* <img className="m-auto" width="20" height="20" src={langIcon} alt="" />
                     <div id="language" className="m-auto ps-1 notranslate btn">
                         ಕನ್ನಡ
-                    </div>
+                    </div> */}
                 </div>
                 <div className="support me-5 py-2 px-4 red-bg white-txt"><a href="#">Support Us</a></div>
             </Container>
@@ -36,9 +37,11 @@ const Header = () => {
                         >
                             <Link className="nav-link all-nav-links" to="/">Home</Link>
                             <HashLink smooth className="nav-link all-nav-links" to="/#about">About Us</HashLink>
+                            <a className="nav-link all-nav-links" href={brochureLink}>Brochure</a>
                             <Link className="nav-link all-nav-links" to="/events">Events</Link>
                             <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
                             <Link className="nav-link all-nav-links" to="/alumni">Alumni</Link>
+                            <Link className="nav-link all-nav-links" to="/contact">Contact</Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

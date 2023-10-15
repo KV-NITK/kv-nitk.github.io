@@ -2,9 +2,12 @@ import eventImage1 from '../images/events/1.jpg'
 import eventImage2 from '../images/events/2.jpg'
 import eventImage3 from '../images/events/3.jpg'
 import eventImage4 from '../images/events/4.jpg'
+import eventImage5 from '../images/events/5.jpg'
+import eventImage6 from '../images/events/6.jpg'
 import socialImage1 from '../images/social/1.jpg'
 import socialImage2 from '../images/social/2.jpg'
 import socialImage3 from '../images/social/3.jpg'
+import socialImage4 from '../images/social/4.jpg'
 
 import yoga from '../images/alumni/yoga.jpg'
 import sudarshan from '../images/alumni/sudarshan.jpeg'
@@ -18,7 +21,7 @@ export const eventsList =
     {
       title: "Parva",
       img: eventImage1,
-      desc: "Parva is the flagship event organised by kannada Vedike on the occasion of kannada rajyotsava. It is true bliss for the eye to witness this spectacular colorful event that include ___. A grand program is hosted in SJA with a prominent figure with remarkable contribution to the society in his/her field as chief guest. Quizzes, essay competitions, drawings, rangoli competition and many more activities are held a week before the event and winners are awarded with prizes on the day of parva celebration.",
+      desc: "Parva is the flagship event organised by kannada Vedike on the occasion of kannada rajyotsava. It is true bliss for the eye to witness this spectacular colorful. A grand program is hosted in SJA with a prominent figure with remarkable contribution to the society in his/her field as chief guest. Quizzes, essay competitions, drawings, rangoli competition and many more activities are held a week before the event and winners are awarded with prizes on the day of parva celebration.",
       link: "#"
     },
     {
@@ -35,7 +38,7 @@ export const eventsList =
     },
     {
       title: "Kannada Kalarava",
-      img: eventImage2,
+      img: eventImage5,
       desc: "Kannada Kalarava is a vital initiative within the Kannada Vedike. It involves visiting schools and conducting cultural activities to instill a sense of pride and appreciation for Karnataka's heritage in the younger generation. This outreach program emphasizes the importance of cultural preservation, education, and community engagement, aligning perfectly with the Vedike's mission. It promotes unity in diversity and mutual respect among NITK students and extends our commitment to preserving and promoting Karnataka's cultural significance.",
       link: "#"
     },
@@ -47,7 +50,7 @@ export const eventsList =
     },
     {
       title: "Music Concert",
-      img: eventImage2,
+      img: eventImage6,
       desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
       link: "#"
     },
@@ -81,7 +84,7 @@ export const socialList =
     },
     {
       title: "Orphanage Visit",
-      img: socialImage2,
+      img: socialImage4,
       desc: "Orphanage visits are a meaningful initiative within the Kannada Vedike, reflecting our commitment to community engagement. These visits offer our members an opportunity to contribute positively to society, spreading kindness and fostering a sense of responsibility among our students. Through such activities, we emphasize the importance of social service, empathy, and creating a brighter future for those less fortunate. Orphanage visits also align with our broader mission of promoting unity in diversity and mutual respect among NITK students.",
       link: "#"
     },
@@ -151,3 +154,5 @@ export const alumniList = [
     mail: "arunhasabi@gmail.com"
   },
 ]
+
+export const brochureLink = "https://drive.google.com/file/d/1CJDya5abpjzwUOvz7Pu9qq4jo5mN6l9X/view?usp=sharing";

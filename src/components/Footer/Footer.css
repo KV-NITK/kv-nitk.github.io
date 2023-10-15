@@ -15,10 +15,10 @@ ul {
     background-color: #181818;
     padding: 70px 0;
     padding-bottom: 20px;
-    line-height: 2; 
+    line-height: 2;
 }
 
-footer .container{
+footer .container {
     max-width: 1250px;
 }
 
@@ -76,7 +76,6 @@ footer .container{
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0 3rem;
 }
 
 .social-links a {
@@ -98,9 +97,37 @@ footer .container{
 
 #lstFooter {
     background: #202020;
-    justify-content: space-between;
-    line-height: 3;
+    padding: 1rem 0;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+#top-btn {
+    display: inline-block;
+    background-color: #202020;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-radius: 400px;
+    position: absolute;
+    top: -35px;
+    left: center;
+    transition: background-color .3s,
+        opacity .5s, visibility .5s;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
     align-items: center;
+}
+
+#top-btn:hover {
+    cursor: pointer;
+    background-color: #333;
+}
+
+#top-btn:active {
+    background-color: #555;
 }
 
 /*responsive*/
@@ -119,12 +146,16 @@ footer .container{
 
 @media screen and (max-width: 800px) {
 
-    #lstFooter>div>div,
+    #lstFooter>div>div>div,
     #insta-announcement,
     #lastFooter {
         flex-direction: column;
         align-items: center;
         margin: 0 !important;
+    }
+
+    #lstFooter>div>div>div {
+        flex-direction: column !important;
     }
 
     #instaFeed {

@@ -7,6 +7,7 @@ import twitterIcon from '../../icons/twitter.svg'
 import { Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
+import { brochureLink } from '../../data/data'
 
 const Footer = () => {
     return (
@@ -29,25 +30,24 @@ const Footer = () => {
                                     </h4>
                                 </div>
                                 <p>
-                                    The Kannada Vedike at NITK enhances the university's mission by showcasing Karnataka's unique culture through events, competitions, and workshops. Students are immersed in Karnataka's essence through festivals, language classes, and competitive displays.
+                                    The Kannada Vedike at NITK enhances the university's mission by showcasing Karnataka's unique culture through events, competitions, and workshops. Students are immersed in Karnataka's essence through festivals, language classes, and competitive displays.
                                 </p>
+
                             </div>
                             <div className="footer-col col-4">
-                                <h4>Contact Us</h4>
+                                <h4>Social Links</h4>
                                 <ul>
-                                    <li>
-                                        <p>
-                                            NH 66, Srinivasnagar
-                                            <br /> Surathkal, Mangalore
-                                            <br /> Karnataka 575025
-                                        </p>
+                                    <li className="all-nav-links">
+                                        <a href="/">Twitter</a>
                                     </li>
-                                    <li>
-                                        <p>
-                                            <a className="white-txt" href="mailto:kannadavedike@nitk.ac.in">
-                                                kannadavedike@nitk.ac.in
-                                            </a>
-                                        </p>
+                                    <li className="all-nav-links">
+                                        <a href="/">Facebook</a>
+                                    </li>
+                                    <li className="all-nav-links">
+                                        <a href="/">Instagram</a>
+                                    </li>
+                                    <li className="all-nav-links">
+                                        <a href="/">LinkedIn</a>
                                     </li>
                                 </ul>
                             </div>
@@ -61,6 +61,9 @@ const Footer = () => {
                                         <HashLink to="/#about">About Us</HashLink>
                                     </li>
                                     <li className="all-nav-links">
+                                        <a href={brochureLink}>Brochure</a>
+                                    </li>
+                                    <li className="all-nav-links">
                                         <Link to="/events">Events</Link>
                                     </li>
                                     <li className="all-nav-links">
@@ -69,32 +72,23 @@ const Footer = () => {
                                     <li className="all-nav-links">
                                         <Link to="/alumni">Alumni</Link>
                                     </li>
+                                    <li className="all-nav-links">
+                                        <Link to="/contact">Contact</Link>
+                                    </li>
                                 </ul>
                             </div>
                         </Row>
                     </div>
                 </Container>
             </footer>
-            <div id="lstFooter" className="flex notranslate">
-                <div className="container section">
-                    <div className="flex justify-content-between align-items-center m-4">
-                        <span style={{ color: "#afafaf" }}>
-                            Copyright All Rights Reserved 2021, Kannada Vedike
-                        </span>
-                        <span style={{ color: "#afafaf" }}>
-                            <div class="social-links">
-                                <a href="https://m.facebook.com/kannadavedikenitk/" target="_blank">
-                                    <img src={facebookIcon} alt="" height="40" width="40" />
-                                </a>
-                                <a href="https://www.instagram.com/kannadavedike_nitk/" target="_blank">
-                                    <img src={instaIcon} alt="" height="40" width="40" />
-                                </a>
-                                <a href="https://twitter.com/kv_nitk" target="_blank">
-                                    <img src={twitterIcon} alt="" height="40" width="40" />
-                                </a>
-                            </div>
-                        </span>
-                    </div>
+            <div id="lstFooter" className="notranslate flex justify-center items-center">
+                <span id="top-btn" onClick={() => document.documentElement.scrollTo(0, 0)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 16.67l2.829 2.83 9.175-9.339 9.167 9.339 2.829-2.83-11.996-12.17z" /></svg>
+                </span>
+                <div className="section">
+                    <small style={{ color: "#afafaf" }} className="text-center">
+                        Copyright All Rights Reserved {new Date().getFullYear()}, Kannada Vedike
+                    </small>
                 </div>
             </div>
         </div>

@@ -9,6 +9,7 @@ import Home from './components/Home/Home'
 import Events from './components/Events/Events'
 import Social from './components/Social/Social';
 import Alumni from './components/Alumni/Alumni';
+import Contact from './components/Contact/Contact';
 
 function App() {
   useEffect(() => {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/social" element={<Social />} />
           <Route path="/alumni" element={<Alumni />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
