@@ -15,6 +15,7 @@ function App() {
     const location = useLocation();
     useLayoutEffect(() => {
       document.documentElement.scrollTo(0, 0);
+      document.getElementsByClassName("navbar-toggler-icon")[0].click();
     }, [location.pathname]);
     return children
   }
