@@ -102,57 +102,57 @@ export const alumniList = [
     name: "Yoganada B A",
     img: yoga,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "https://www.linkedin.com/in/arunhasabi/"
+    linkedIn: "https://www.linkedin.com/in/yogananda06/",
+    mail: "#"
   },
   {
     name: "Sham Sundar N R",
     img: sham,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "https://www.linkedin.com/in/shyam-sundar-n-r-145649211/",
+    mail: "#"
   },
   {
     name: "Gagandeep N A",
     img: gagan,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "https://www.linkedin.com/in/gagandeepna/",
+    mail: "#"
   },
   {
     name: "Amrutha M K",
     img: amrutha,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "https://www.linkedin.com/in/amrutha-m-k-5b74a8218/",
+    mail: "#"
   },
   {
     name: "Chandan Gowda",
     img: chandan,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "#",
+    mail: "#"
   },
   {
     name: "Y Harshita Reddy",
     img: harshita,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "#",
+    mail: "#"
   },
   {
     name: "Sudarshan N",
     img: sudarshan,
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "https://www.linkedin.com/in/sudarshan-n-a00915217/",
+    mail: "#"
   },
   {
     name: "Sushil",
     img: "https://pps.whatsapp.net/v/t61.24694-24/384857812_1066583578043523_8306823494529003719_n.jpg?ccb=11-4&oh=01_AdRMtn0GfZa2hxHgj3T3uMWagGlsx-n1yxO6LqmOAUlUsQ&oe=6530E0D6&_nc_sid=000000&_nc_cat=103",
     batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/arunhasabi/",
-    mail: "arunhasabi@gmail.com"
+    linkedIn: "#",
+    mail: "#"
   },
 ]
 
