@@ -54,19 +54,19 @@ const Footer = () => {
                             <div className="footer-col col-4">
                                 <h4>Quick Links</h4>
                                 <ul>
-                                    <li>
+                                    <li className="all-nav-links">
                                         <Link to="/">Home</Link>
                                     </li>
-                                    <li>
+                                    <li className="all-nav-links">
                                         <HashLink to="/#about">About Us</HashLink>
                                     </li>
-                                    <li>
+                                    <li className="all-nav-links">
                                         <Link to="/events">Events</Link>
                                     </li>
-                                    <li>
+                                    <li className="all-nav-links">
                                         <Link to="/social">Social Activities</Link>
                                     </li>
-                                    <li>
+                                    <li className="all-nav-links">
                                         <Link to="/alumni">Alumni</Link>
                                     </li>
                                 </ul>

@@ -1,5 +1,5 @@
-import { Routes, Route, BrowserRouter as Router, useLocation, Navigate } from 'react-router-dom';
-import { useEffect, useLayoutEffect } from 'react';
+import { Routes, Route, BrowserRouter as Router, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import './App.css';
 import React from 'react';
@@ -11,23 +11,18 @@ import Social from './components/Social/Social';
 import Alumni from './components/Alumni/Alumni';
 
 function App() {
-  const Wrapper = ({ children }) => {
-    const location = useLocation();
-    useLayoutEffect(() => {
-      document.documentElement.scrollTo(0, 0);
-      document.getElementsByClassName("navbar-toggler-icon")[0].click();
-    }, [location.pathname]);
-    return children
-  }
-
   useEffect(() => {
-    
+    const navlinks = Object.values(document.getElementsByClassName('all-nav-links'));
+    navlinks.forEach((navlink)=>{
+      navlink.addEventListener("click", ()=>{
+        document.documentElement.scrollTo(0, 0);
+        document.getElementsByClassName("navbar-toggler-icon")[0].click();
+      })
+    })
   }, [])
   
   return (
-
     <Router>
-      <Wrapper>
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -37,7 +32,6 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
-      </Wrapper>
     </Router>
   );
 }
