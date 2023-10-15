@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import '../Header/Header.css'
 import langIcon from '../../icons/language.svg'
 import logo from '../../images/logo.jpg'
@@ -9,7 +9,6 @@ import { HashLink } from 'react-router-hash-link';
 const Header = () => {
     return (
         <>
-            
             <Container fluid md={3} className="header flex px-3 w-100">
                 <div className="flex languageSection">
                     <img className="m-auto" width="20" height="20" src={langIcon} alt="" />
@@ -45,7 +44,6 @@ const Header = () => {
                 </Container>
             </Navbar>
         </>
-
     )
 }
 
