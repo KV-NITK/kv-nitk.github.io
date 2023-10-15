@@ -22,7 +22,37 @@ export const eventsList =
       link: "#"
     },
     {
+      title: "Hudugata Hudukata",
+      img: eventImage4,
+      desc: "The first major event conducted by kannada Vedike exclusively for 1st year students of b.tech as well as m.tech. As name suggests hudugata hudukata involves freshers forming their groups and searching for clues hidden at various places inside nitk campus. This event enables freshers to group together with new people and discover places by solve challenging and fun riddles",
+      link: "#"
+    },
+    {
       title: "Ethnic Day",
+      img: eventImage2,
+      desc: "To showcase the different cultures of students hailimg from various part of the nation. This event events provides a platform to uphold the principle of unity in diversity",
+      link: "#"
+    },
+    {
+      title: "Kannada Kalarava",
+      img: eventImage2,
+      desc: "Kannada Kalarava is a vital initiative within the Kannada Vedike. It involves visiting schools and conducting cultural activities to instill a sense of pride and appreciation for Karnataka's heritage in the younger generation. This outreach program emphasizes the importance of cultural preservation, education, and community engagement, aligning perfectly with the Vedike's mission. It promotes unity in diversity and mutual respect among NITK students and extends our commitment to preserving and promoting Karnataka's cultural significance.",
+      link: "#"
+    },
+    {
+      title: "Literary Events",
+      img: eventImage2,
+      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
+      link: "#"
+    },
+    {
+      title: "Music Concert",
+      img: eventImage2,
+      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
+      link: "#"
+    },
+    {
+      title: "Desi Krede",
       img: eventImage2,
       desc: "To showcase the different cultures of students hailimg from various part of the nation. This event events provides a platform to uphold the principle of unity in diversity",
       link: "#"
@@ -33,12 +63,6 @@ export const eventsList =
       desc: "Bharat Darshan is an iconic competition conducted by DDFC NITK. Students participate in this cultural Marvel representing their homeland art, fests, dressings and culture proudly infront of the whole student community. This event brings appreciation for diverse culture of India.",
       link: "#"
     },
-    {
-      title: "Hudugata Hudukata",
-      img: eventImage4,
-      desc: "The first major event conducted by kannada Vedike exclusively for 1st year students of b.tech as well as m.tech. As name suggests hudugata hudukata involves freshers forming their groups and searching for clues hidden at various places inside nitk campus. This event enables freshers to group together with new people and discover places by solve challenging and fun riddles",
-      link: "#"
-    }
   ];
 
 export const socialList =
@@ -46,19 +70,25 @@ export const socialList =
     {
       title: "Plant Sapling",
       img: socialImage1,
-      "desc": "Initiative social event where students are encouraged to plant a sapling in their neighborhood and take care of it. Under the banner 'Vrukshotsava' this event is organised to emphasize on the vital role of plants and trees in our ecosystem.",
+      desc: "Initiative social event where students are encouraged to plant a sapling in their neighborhood and take care of it. Under the banner 'Vrukshotsava' this event is organised to emphasize on the vital role of plants and trees in our ecosystem.",
       link: "#"
     },
     {
       title: "Blood donation",
       img: socialImage2,
-      "desc": "Blood donation is an yearly social event fully organised by Kannada Vedike NITK. Through this event efforts are made on awareness about blood donation among young and healthy population and it's significance.",
+      desc: "Blood donation is an yearly social event fully organised by Kannada Vedike NITK. Through this event efforts are made on awareness about blood donation among young and healthy population and it's significance.",
+      link: "#"
+    },
+    {
+      title: "Orphanage Visit",
+      img: socialImage2,
+      desc: "Orphanage visits are a meaningful initiative within the Kannada Vedike, reflecting our commitment to community engagement. These visits offer our members an opportunity to contribute positively to society, spreading kindness and fostering a sense of responsibility among our students. Through such activities, we emphasize the importance of social service, empathy, and creating a brighter future for those less fortunate. Orphanage visits also align with our broader mission of promoting unity in diversity and mutual respect among NITK students.",
       link: "#"
     },
     {
       title: "Help to Flood Victims",
       img: socialImage3,
-      "desc": "Karnataka saw a disastrous flood in the year 2019 affecting nearly 7 lakh people from 22 districts. In response to this, Kannada Vedike extended its helping hands to the flood Victims by raising funds from students.",
+      desc: "Karnataka saw a disastrous flood in the year 2019 affecting nearly 7 lakh people from 22 districts. In response to this, Kannada Vedike extended its helping hands to the flood Victims by raising funds from students.",
       link: "#"
     }
   ];
