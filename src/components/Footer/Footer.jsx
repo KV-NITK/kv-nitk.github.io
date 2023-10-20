@@ -1,9 +1,6 @@
 import React from 'react'
 import logo from '../../images/logo.jpg'
 import '../Footer/Footer.css'
-import facebookIcon from '../../icons/facebook.svg'
-import instaIcon from '../../icons/insta.svg'
-import twitterIcon from '../../icons/twitter.svg'
 import { Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'

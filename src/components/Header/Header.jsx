@@ -40,7 +40,6 @@ const Header = () => {
                             <a className="nav-link all-nav-links" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a>
                             <Link className="nav-link all-nav-links" to="/events">Events</Link>
                             <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
-                            <Link className="nav-link all-nav-links" to="/alumni">Alumni</Link>
                             <Link className="nav-link all-nav-links" to="/contact">Contact</Link>
                         </Nav>
                     </Navbar.Collapse>

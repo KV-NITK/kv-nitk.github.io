@@ -4,18 +4,12 @@ import eventImage3 from '../images/events/3.jpg'
 import eventImage4 from '../images/events/4.jpg'
 import eventImage5 from '../images/events/5.jpg'
 import eventImage6 from '../images/events/6.jpg'
+import eventImage7 from '../images/events/7.jpg'
+import eventImage8 from '../images/events/8.jpg'
 import socialImage1 from '../images/social/1.jpg'
 import socialImage2 from '../images/social/2.jpg'
 import socialImage3 from '../images/social/3.jpg'
 import socialImage4 from '../images/social/4.jpg'
-
-import yoga from '../images/alumni/yoga.jpg'
-import sudarshan from '../images/alumni/sudarshan.jpeg'
-import harshita from '../images/alumni/harshita.jpg'
-import sham from '../images/alumni/shamsundar.jpg'
-import gagan from '../images/alumni/gagan.jpg'
-import chandan from '../images/alumni/chandan.jpg'
-import amrutha from '../images/alumni/amrutha.jpg'
 
 export const eventsList =
   [
@@ -33,7 +27,7 @@ export const eventsList =
     },
     {
       title: "Ethnic Day",
-      img: eventImage2,
+      img: eventImage7,
       desc: "To showcase the different cultures of students hailimg from various part of the nation. This event events provides a platform to uphold the principle of unity in diversity",
       link: "#"
     },
@@ -45,14 +39,14 @@ export const eventsList =
     },
     {
       title: "Literary Events",
-      img: eventImage2,
-      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
+      img: eventImage8,
+      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
       link: "#"
     },
     {
       title: "Music Concert",
       img: eventImage6,
-      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
+      desc: "Literary events play a pivotal role in the Kannada Vedike, enriching our cultural tapestry by celebrating Karnataka's literary heritage. These events promote language, literature, and creative expression, nurturing a deeper understanding of our cultural significance. They encourage unity and respect among our diverse student body, reflecting the Vedike's mission to preserve and promote Karnataka's rich literary traditions.",
       link: "#"
     },
     {
@@ -96,64 +90,5 @@ export const socialList =
       link: "#"
     }
   ];
-
-export const alumniList = [
-  {
-    name: "Yoganada B A",
-    img: yoga,
-    batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/yogananda06/",
-    mail: "#"
-  },
-  {
-    name: "Sham Sundar N R",
-    img: sham,
-    batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/shyam-sundar-n-r-145649211/",
-    mail: "#"
-  },
-  {
-    name: "Gagandeep N A",
-    img: gagan,
-    batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/gagandeepna/",
-    mail: "#"
-  },
-  {
-    name: "Amrutha M K",
-    img: amrutha,
-    batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/amrutha-m-k-5b74a8218/",
-    mail: "#"
-  },
-  {
-    name: "Chandan Gowda",
-    img: chandan,
-    batch: "2023",
-    linkedIn: "#",
-    mail: "#"
-  },
-  {
-    name: "Y Harshita Reddy",
-    img: harshita,
-    batch: "2023",
-    linkedIn: "#",
-    mail: "#"
-  },
-  {
-    name: "Sudarshan N",
-    img: sudarshan,
-    batch: "2023",
-    linkedIn: "https://www.linkedin.com/in/sudarshan-n-a00915217/",
-    mail: "#"
-  },
-  {
-    name: "Sushil",
-    img: "https://pps.whatsapp.net/v/t61.24694-24/384857812_1066583578043523_8306823494529003719_n.jpg?ccb=11-4&oh=01_AdRMtn0GfZa2hxHgj3T3uMWagGlsx-n1yxO6LqmOAUlUsQ&oe=6530E0D6&_nc_sid=000000&_nc_cat=103",
-    batch: "2023",
-    linkedIn: "#",
-    mail: "#"
-  },
-]
-
+  
 export const brochureLink = "https://drive.google.com/file/d/1CJDya5abpjzwUOvz7Pu9qq4jo5mN6l9X/view?usp=sharing";
