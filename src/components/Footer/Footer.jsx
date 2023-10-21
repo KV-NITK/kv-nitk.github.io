@@ -35,16 +35,24 @@ const Footer = () => {
                                 <h4>Social Links</h4>
                                 <ul>
                                     <li className="all-nav-links">
-                                        <a href="/">Twitter</a>
+                                        <a href="https://twitter.com/kv_nitk" rel="noopener">
+                                            Twitter
+                                        </a>
                                     </li>
                                     <li className="all-nav-links">
-                                        <a href="/">Facebook</a>
+                                        <a href="https://m.facebook.com/kannadavedikenitk/" rel="noopener">
+                                            Facebook
+                                        </a>
                                     </li>
                                     <li className="all-nav-links">
-                                        <a href="/">Instagram</a>
+                                        <a href="https://www.instagram.com/kannadavedike_nitk/" rel="noopener">
+                                            Instagram
+                                        </a>
                                     </li>
                                     <li className="all-nav-links">
-                                        <a href="/">LinkedIn</a>
+                                        <a href="https://www.linkedin.com/in/kannada-vedike-nitk-997574251/" rel="noopener">
+                                            LinkedIn
+                                        </a>
                                     </li>
                                 </ul>
                             </div>
