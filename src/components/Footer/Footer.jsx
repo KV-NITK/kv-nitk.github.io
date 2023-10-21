@@ -34,23 +34,23 @@ const Footer = () => {
                             <div className="footer-col col-4">
                                 <h4>Social Links</h4>
                                 <ul>
-                                    <li className="all-nav-links">
-                                        <a href="https://twitter.com/kv_nitk" rel="noopener">
+                                    <li>
+                                        <a href="https://twitter.com/kv_nitk" target="_blank" rel="noopener noreferrer">
                                             Twitter
                                         </a>
                                     </li>
-                                    <li className="all-nav-links">
-                                        <a href="https://m.facebook.com/kannadavedikenitk/" rel="noopener">
+                                    <li>
+                                        <a href="https://m.facebook.com/kannadavedikenitk/" target="_blank" rel="noopener noreferrer">
                                             Facebook
                                         </a>
                                     </li>
-                                    <li className="all-nav-links">
-                                        <a href="https://www.instagram.com/kannadavedike_nitk/" rel="noopener">
+                                    <li>
+                                        <a href="https://www.instagram.com/kannadavedike_nitk/" target="_blank" rel="noopener noreferrer">
                                             Instagram
                                         </a>
                                     </li>
-                                    <li className="all-nav-links">
-                                        <a href="https://www.linkedin.com/in/kannada-vedike-nitk-997574251/" rel="noopener">
+                                    <li>
+                                        <a href="https://www.linkedin.com/in/kannada-vedike-nitk-997574251/" target="_blank" rel="noopener noreferrer">
                                             LinkedIn
                                         </a>
                                     </li>
