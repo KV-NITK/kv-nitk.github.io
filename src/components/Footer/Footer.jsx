@@ -75,9 +75,6 @@ const Footer = () => {
                                         <Link to="/social">Social Activities</Link>
                                     </li>
                                     <li className="all-nav-links">
-                                        <Link to="/alumni">Alumni</Link>
-                                    </li>
-                                    <li className="all-nav-links">
                                         <Link to="/contact">Contact</Link>
                                     </li>
                                 </ul>
