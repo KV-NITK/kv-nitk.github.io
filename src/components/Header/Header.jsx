@@ -38,7 +38,7 @@ const Header = () => {
                             <Link className="nav-link all-nav-links" to="/">Home</Link>
                             <HashLink smooth className="nav-link all-nav-links" to="/#about">About Us</HashLink>
                             {/* <a className="nav-link all-nav-links" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
-                            <Link className="nav-link all-nav-links" to="/brouchure">Brochure</Link>
+                            <Link className="nav-link all-nav-links" to="/brochure">Brochure</Link>
                             <Link className="nav-link all-nav-links" to="/events">Events</Link>
                             <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
                             <Link className="nav-link all-nav-links" to="/contact">Contact</Link>

@@ -30,7 +30,7 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/social" element={<Social />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/broucher" element={<Brochure />} />
+        <Route path="/brochure" element={<Brochure />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Footer />

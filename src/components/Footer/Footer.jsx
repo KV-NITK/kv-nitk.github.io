@@ -66,7 +66,7 @@ const Footer = () => {
                                         <HashLink to="/#about">About Us</HashLink>
                                     </li>
                                     <li className="all-nav-links">
-                                        <Link to="/brouch">Brochure</Link>
+                                        <Link to="/brochure">Brochure</Link>
                                         {/* <a href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
                                     </li>
                                     <li className="all-nav-links">
