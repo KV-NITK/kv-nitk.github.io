@@ -10,6 +10,20 @@ import socialImage1 from '../images/social/1.jpg'
 import socialImage2 from '../images/social/2.jpg'
 import socialImage3 from '../images/social/3.jpg'
 import socialImage4 from '../images/social/4.jpg'
+import brochureImage1 from '../images/brochure/1.jpg'
+import brochureImage2 from '../images/brochure/2.jpg'
+import brochureImage3 from '../images/brochure/3.jpg'
+import brochureImage4 from '../images/brochure/4.jpg'
+import brochureImage5 from '../images/brochure/5.jpg'
+import brochureImage6 from '../images/brochure/6.jpg'
+import brochureImage7 from '../images/brochure/7.jpg'
+import brochureImage8 from '../images/brochure/8.jpg'
+import brochureImage9 from '../images/brochure/9.jpg'
+import brochureImage10 from '../images/brochure/10.jpg'
+import brochureImage11 from '../images/brochure/11.jpg'
+import brochureImage12 from '../images/brochure/12.jpg'
+import brochureImage13 from '../images/brochure/13.jpg'
+import brochureImage14 from '../images/brochure/14.jpg'
 
 export const eventsList =
   [
@@ -90,5 +104,22 @@ export const socialList =
       link: "#"
     }
   ];
-  
+
 export const brochureLink = "https://drive.google.com/file/d/1CJDya5abpjzwUOvz7Pu9qq4jo5mN6l9X/view?usp=sharing";
+
+export const brochureImage = [
+  brochureImage1,
+  brochureImage2,
+  brochureImage3,
+  brochureImage4,
+  brochureImage5,
+  brochureImage6,
+  brochureImage7,
+  brochureImage8,
+  brochureImage9,
+  brochureImage10,
+  brochureImage11,
+  brochureImage12,
+  brochureImage13,
+  brochureImage14,
+]

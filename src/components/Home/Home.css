@@ -48,7 +48,7 @@
     padding: 0.5rem 0;
 }
 
-.hero {
+#hero .hero {
     max-height: 100px;
     padding: 0 1rem;
     font-weight: 600;

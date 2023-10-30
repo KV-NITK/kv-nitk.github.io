@@ -1,0 +1,63 @@
+.brochure-container {
+    padding: 4rem 0;
+    display: grid;
+    place-items: center;
+}
+
+.brochure-container .gallery {
+    position: relative;
+    height: auto;
+    width: min(100vw, 1000px);
+    padding: 0 2rem;
+
+    & img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.brochure-container .fadeIn {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0.6;
+    }
+
+    90% {
+        opacity: 1;
+    }
+}
+
+.btn-container {
+    position: relative;
+    overflow: auto;
+    width: 100%;
+}
+
+.brochure-container .btns {
+    list-style-type: none;
+    display: flex;
+    gap: max(0.5vmax, 3px);
+    padding: 5px 0;
+    margin: 0;
+    width: 100%;
+    position: relative;
+
+    & li {
+        cursor: pointer;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+
+    & img {
+        width: min(12vw, 120px);
+        height: auto;
+        object-fit: contain;
+    }
+}

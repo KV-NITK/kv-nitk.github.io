@@ -9,29 +9,31 @@ import Home from './components/Home/Home'
 import Events from './components/Events/Events'
 import Social from './components/Social/Social';
 import Contact from './components/Contact/Contact';
+import Brochure from './components/Brochure/Brochure';
 
 function App() {
   useEffect(() => {
     const navlinks = Object.values(document.getElementsByClassName('all-nav-links'));
-    navlinks.forEach((navlink)=>{
-      navlink.addEventListener("click", ()=>{
+    navlinks.forEach((navlink) => {
+      navlink.addEventListener("click", () => {
         document.documentElement.scrollTo(0, 0);
         document.getElementsByClassName("navbar-toggler-icon")[0].click();
       })
     })
   }, [])
-  
+
   return (
     <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-        <Footer />
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/social" element={<Social />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/broucher" element={<Brochure />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      <Footer />
     </Router>
   );
 }
