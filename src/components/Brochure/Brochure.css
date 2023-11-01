@@ -3,6 +3,11 @@
     display: grid;
     place-items: center;
 }
+.brochure-container .active-image{
+    transform: scale(1) !important;
+    opacity: 1 !important;
+    border-color: rgba(255, 0, 0, 0.5) !important;
+}
 
 .brochure-container .gallery {
     position: relative;
@@ -51,7 +56,7 @@
         transition: opacity 0.2s;
 
         &:hover {
-            opacity: 0.8;
+            opacity: 1;
         }
     }
 
@@ -59,5 +64,7 @@
         width: min(12vw, 120px);
         height: auto;
         object-fit: contain;
+        transform: scale(0.9);
+        border: 2px solid transparent;
     }
 }

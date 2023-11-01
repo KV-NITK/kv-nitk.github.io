@@ -14,7 +14,7 @@ const Brochure = () => {
         <>
         <Metadata title="Parva Brochure | Kannada Vedike" />
         <div className="section brochure-container">
-            <h2 className="text-center font-weight-bold primary-text-clr title pb-2"> Parva brochure</h2>
+            <h2 className="text-center font-weight-bold primary-text-clr title pb-2"> Parva Brochure</h2>
             <div className="gallery">
                 <div className="hero">
                     <img src={imageSrc} alt="brochure img" />
@@ -27,6 +27,7 @@ const Brochure = () => {
                                     src={image}
                                     alt="brochure img"
                                     onClick={() => handleImageClick(image)}
+                                    className={image === imageSrc ? 'active-image' : ''}
                                 />
                             </li>
                         )}
