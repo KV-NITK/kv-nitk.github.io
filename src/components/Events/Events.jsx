@@ -2,7 +2,7 @@ import React from 'react'
 import './Events.css'
 import Cards from '../Cards/Cards'
 import Metadata from '../MetaData/MetaData'
-import { eventsList } from '../../data/data'
+import { eventsList, upcomingEvents } from '../../data/data'
 
 
 
@@ -15,6 +15,13 @@ const Events = () => {
         <div className="pageContainer content">
           {
             eventsList.map((event, idx) => 
+            <Cards title={event.title} desc={event.desc} img={event.img} link={event.link} key={'e' + idx} />
+          )}
+        </div>
+        <h2 className="text-center font-weight-bold title pt-5"> Upcoming Events</h2>
+        <div className="pageContainer content">
+          {
+            upcomingEvents.map((event, idx) => 
             <Cards title={event.title} desc={event.desc} img={event.img} link={event.link} key={'e' + idx} />
           )}
         </div>

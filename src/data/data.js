@@ -1,6 +1,7 @@
 import eventImage1 from '../images/events/1.jpg'
 import eventImage2 from '../images/events/2.jpg'
-import eventImage3 from '../images/events/3.jpg'
+// import eventImage3 from '../images/events/3.jpg'
+import upComingEvents1 from '../images/events/01.jpg';
 import eventImage4 from '../images/events/4.jpg'
 import eventImage5 from '../images/events/5.jpg'
 import eventImage6 from '../images/events/6.jpg'
@@ -69,13 +70,15 @@ export const eventsList =
       desc: "To showcase the different cultures of students hailimg from various part of the nation. This event events provides a platform to uphold the principle of unity in diversity",
       link: "#"
     },
-    {
-      title: "Bharat Darshan",
-      img: eventImage3,
-      desc: "Bharat Darshan is an iconic competition conducted by DDFC NITK. Students participate in this cultural Marvel representing their homeland art, fests, dressings and culture proudly infront of the whole student community. This event brings appreciation for diverse culture of India.",
-      link: "#"
-    },
   ];
+
+export const upcomingEvents = [
+  {
+    title: "Thematic Trecking",
+    img: upComingEvents1,
+    desc: "Our upcoming college trekking event is an exciting journey into the heart of Karnataka's rich natural heritage. This event is designed to provide a deep dive into the state's diverse cultural and environmental treasures. It's an ideal experience for college students of all interests. Participants will explore picturesque valleys, visit ancient temples, interact with local communities, and gain insights into Karnataka's culture and history. This unique event celebrates the beauty and biodiversity of Karnataka, offering a chance to immerse yourself in the wonders of the state's natural heritage."
+  }
+]
 
 export const socialList =
   [
@@ -98,7 +101,7 @@ export const socialList =
       link: "#"
     },
     {
-      title: "Help to Flood Victims",
+      title: "Helping to Flood Victims",
       img: socialImage3,
       desc: "Karnataka saw a disastrous flood in the year 2019 affecting nearly 7 lakh people from 22 districts. In response to this, Kannada Vedike extended its helping hands to the flood Victims by raising funds from students.",
       link: "#"
