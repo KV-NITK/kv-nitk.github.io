@@ -21,7 +21,7 @@ const Timeline = () => {
                             <div class="schedule-item-desc">
                                 <div className="d-flex flex-column">
                                     <h3 class="schedule-item-desc-title mb-2">{item.title}</h3>
-                                    <div className="d-flex gap-2">
+                                    <div className="d-flex gap-2 flex-wrap">
                                         {
                                             item.time.length !== 0 && (
                                                 <span>

@@ -10,6 +10,7 @@
     gap: 0.75rem;
     border-radius: 10px;
     width: max-content;
+    flex-direction: column;
 }
 
 .schedule .schedule-item .schedule-item-time {
@@ -17,7 +18,7 @@
     line-height: 1.75rem;
     text-align: left;
     white-space: nowrap;
-    width: 10rem;
+    width: min(30vmin, 10rem);
     color: var(--dim-white);
 }
 
@@ -42,6 +43,7 @@
 
     .schedule .schedule-item {
         gap: 2rem;
+        flex-direction: row;
     }
 
     .schedule .schedule-item .schedule-item-time,
