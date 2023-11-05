@@ -1,0 +1,101 @@
+.gold-txt {
+    color: var(--gold-clr);
+}
+
+.parva {
+    background: var(--black-clr);
+    padding-top: 3rem;
+}
+
+.parva .parva-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vmin;
+    position: relative;
+    flex-direction: column;
+    gap: 5vmin;
+}
+
+.parva .parva-main::before,
+.parva .parva-main::after {
+    position: absolute;
+    content: "";
+    left: 0;
+    top: 0;
+    width: 100%;
+}
+
+.parva .parva-main::after {
+    top: -3rem;
+    height: 3rem;
+    background: var(--yellow-first-shade);
+    z-index: 0;
+}
+
+.parva .parva-main::before {
+    height: 80vmin;
+    background-image: linear-gradient(to bottom left, var(--yellow-first-shade) 50%, transparent 50%);
+}
+
+.parva .logo {
+    height: 50vmin;
+    z-index: 1;
+}
+
+.parva .logo img {
+    height: 100%;
+    border-radius: 100%;
+    box-shadow: var(--black-clr) 0px 21px 62px 0px;
+}
+
+.parva .parva-main .parva-content {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    z-index: 1;
+}
+
+.parva .parva-main .parva-content h1 {
+    color: var(--gold-clr);
+    font-size: max(28px, 4rem);
+    text-shadow: 2px 2px 3px var(--black-clr);
+}
+
+.parva .parva-main .parva-content p {
+    color: #fff;
+    font-size: max(12px, 1.5rem);
+    font-weight: normal;
+}
+
+.parva .parva-section {
+    padding: 3rem;
+}
+
+@media only screen and (min-width: 521px) and (max-width: 1000px) {
+    #parva-about h2 {
+        font-size: 2rem;
+    }
+
+    #parva-about p {
+        font-size: 1rem;
+    }
+
+    #parva-about-section-logo {
+        width: 40%;
+    }
+}
+
+@media only screen and (max-width: 520px) {
+    #parva-about {
+        padding: 30px 30px 30px 30px;
+    }
+
+    #parva-about h2 {
+        font-size: 1.5rem;
+    }
+
+    #parva-about p {
+        font-size: 0.75rem;
+    }
+}

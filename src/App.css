@@ -14,6 +14,8 @@
   --white-clr: #ffffff;
   --yellow-first-shade: #f2c438;
   --yellow-second-shade: #f2b33d;
+  --gold-clr: #D8A633;
+  --dim-white: rgba(255, 255, 255, 0.7);
 }
 
 html {
@@ -120,15 +122,15 @@ a:active {
   grid-template-rows: max-content auto;
 }
 
-.page h2{
-  min-height:1rem;
+.page h2 {
+  min-height: 1rem;
 }
 
-.section{
+.section {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.font-weight-bold{
+.font-weight-bold {
   font-weight: 600 !important;
 }

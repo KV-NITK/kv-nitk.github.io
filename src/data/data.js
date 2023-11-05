@@ -25,6 +25,13 @@ import brochureImage11 from '../images/brochure/11.jpg'
 import brochureImage12 from '../images/brochure/12.jpg'
 import brochureImage13 from '../images/brochure/13.jpg'
 import brochureImage14 from '../images/brochure/14.jpg'
+import parvaLogo from "../images/parva/logo.png"
+import sponsor1 from "../images/parva/sponsors/1.jpeg";
+import sponsor2 from "../images/parva/sponsors/2.png";
+import sponsor3 from "../images/parva/sponsors/3.jpg";
+import sponsor4 from "../images/parva/sponsors/4.png";
+import sponsor5 from "../images/parva/sponsors/5.png";
+import parvaAboutImg from "../images/parva/about.PNG"
 
 export const eventsList =
   [
@@ -126,3 +133,98 @@ export const brochureImage = [
   brochureImage13,
   brochureImage14,
 ]
+
+export const parva = {
+  logo: parvaLogo,
+  aboutImg:parvaAboutImg,
+  sponsors: [
+    {
+      name: "Alumni Association NITK",
+      image: sponsor1,
+      title: "Associate Sponsors",
+      link: "https://www.nitkalumni.in/"
+    },
+    {
+      name: "Find my test",
+      image: sponsor2,
+      title: "Media Sponsors",
+      link: "https://findmytest.com/"
+    },
+    {
+      name: "BMS Atlas Jewellery",
+      image: sponsor3,
+      title: "Power Sponsors",
+      link: "https://www.instagram.com/atlas.surathkal/"
+    },
+    {
+      name: "7th Heaven",
+      image: sponsor4,
+      title: "Silver Sponsors",
+      link: "https://www.instagram.com/7thheaven.surathkal/"
+    },
+    {
+      name: "Dairy Day",
+      image: sponsor5,
+      title: "Gold Sponsors",
+      link: "https://www.dairyday.com/"
+    },
+  ],
+  timeline: [
+    {
+      date: "1st November",
+      title: "Inaguration and Flashmob",
+      time: "5:30PM",
+      location: "Main Building",
+      register: ""
+    },
+    {
+      date: "6th November",
+      title: "Orphanage Visit",
+      time: "",
+      location: "",
+      register: ""
+    },
+    {
+      date: "7th November",
+      title: "Sobagu (Ethnic Day)",
+      time: "8:00 PM",
+      location: "Pavillon",
+      register: ""
+    },
+    {
+      date: "",
+      title: "Literary Events",
+      time: "6:00 PM",
+      location: "Main Seminar Hall",
+      register: "https://www.instagram.com/p/CzQrtuRyrLc/?utm_source=ig_web_copy_link&igshid=MzRlODBiNWFlZA=="
+    },
+    {
+      date: "8th November",
+      title: "Kannada Kalarava",
+      time: "3:00 PM",
+      location: "NITK School",
+      register: ""
+    },
+    {
+      date: "",
+      title: "Music Concert",
+      time: "5:30 PM",
+      location: "SJA",
+      register: ""
+    },
+    {
+      date: "9th November",
+      title: "Procession",
+      time: "3:00 PM",
+      location: "Main Gate to SJA",
+      register: ""
+    },
+    {
+      date: "",
+      title: "Main Cultural Event",
+      time: "6:00 PM",
+      location: "SJA",
+      register: ""
+    },
+  ]
+}

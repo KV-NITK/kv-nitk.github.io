@@ -1,0 +1,32 @@
+.sponsor .sponsor-card .sponsor-content {
+    text-align: center;
+}
+
+.sponsor .sponsor-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+}
+
+.sponsor .sponsor-card:hover {
+    transform: scale(1.05);
+    transition: all 2 ease-in;
+}
+
+.sponsor .sponsor-card img {
+    width: auto;
+    max-height: 150px;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.sponsor .sponsor-container {
+    padding: 2rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8vmax;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
+}
