@@ -226,5 +226,12 @@ export const parva = {
       location: "SJA",
       register: ""
     },
+    {
+      date: "",
+      title: "Bhoori Bhojana",
+      time: "8:00 PM",
+      location: "",
+      register: "https://forms.gle/cujFHMUNs8FCF4MHA"
+    },
   ]
 }
