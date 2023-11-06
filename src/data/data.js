@@ -26,11 +26,11 @@ import brochureImage12 from '../images/brochure/12.jpg'
 import brochureImage13 from '../images/brochure/13.jpg'
 import brochureImage14 from '../images/brochure/14.jpg'
 import parvaLogo from "../images/parva/logo.png"
-import sponsor1 from "../images/parva/sponsors/1.jpeg";
-import sponsor2 from "../images/parva/sponsors/2.png";
-import sponsor3 from "../images/parva/sponsors/3.jpg";
-import sponsor4 from "../images/parva/sponsors/4.png";
-import sponsor5 from "../images/parva/sponsors/5.png";
+import sponsor1 from "../images/parva/sponsors/01.jpeg";
+import sponsor2 from "../images/parva/sponsors/02.png";
+import sponsor3 from "../images/parva/sponsors/03.jpg";
+import sponsor4 from "../images/parva/sponsors/04.png";
+import sponsor5 from "../images/parva/sponsors/05.jpg";
 import parvaAboutImg from "../images/parva/about.PNG"
 
 export const eventsList =
