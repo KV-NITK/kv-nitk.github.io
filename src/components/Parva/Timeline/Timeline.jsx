@@ -14,7 +14,7 @@ const Timeline = () => {
             <div className="schedule-container mx-auto">
                 {
                     parva.timeline.map((item) => (
-                        <div class="schedule-item">
+                        <div key={item.name} class="schedule-item">
                             <span class="schedule-item-time">
                                 {item.date}
                             </span>

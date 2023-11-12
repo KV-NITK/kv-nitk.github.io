@@ -31,6 +31,7 @@ import sponsor2 from "../images/parva/sponsors/02.png";
 import sponsor3 from "../images/parva/sponsors/03.jpg";
 import sponsor4 from "../images/parva/sponsors/04.png";
 import sponsor5 from "../images/parva/sponsors/05.jpg";
+import sponsor6 from "../images/parva/sponsors/06.png";
 import parvaAboutImg from "../images/parva/about.PNG"
 
 export const eventsList =
@@ -145,16 +146,16 @@ export const parva = {
       link: "https://www.nitkalumni.in/"
     },
     {
-      name: "Find my test",
-      image: sponsor2,
-      title: "Media Sponsors",
-      link: "https://findmytest.com/"
-    },
-    {
       name: "BMS Atlas Jewellery",
       image: sponsor3,
       title: "Power Sponsors",
       link: "https://www.instagram.com/atlas.surathkal/"
+    },
+    {
+      name: "Dairy Day",
+      image: sponsor5,
+      title: "Gold Sponsors",
+      link: "https://www.dairyday.com/"
     },
     {
       name: "7th Heaven",
@@ -163,9 +164,15 @@ export const parva = {
       link: "https://www.instagram.com/7thheaven.surathkal/"
     },
     {
-      name: "Dairy Day",
-      image: sponsor5,
-      title: "Gold Sponsors",
+      name: "Find my test",
+      image: sponsor2,
+      title: "Media Sponsors",
+      link: "https://findmytest.com/"
+    },
+    {
+      name: "SBI Bank",
+      image: sponsor6,
+      title: "Media Sponsors",
       link: "https://www.dairyday.com/"
     },
   ],
