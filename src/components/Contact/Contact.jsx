@@ -26,7 +26,7 @@ const Contact = () => {
                                 <div>sksumukha.211ee153@nitk.edu.in</div>
                             </div>
                             <div className="footer-col col-4 contact-card">
-                                <h3>Gururaj Mahadev Madannavar</h3>
+                                <h3>Gururaj Mahadev Madanavar</h3>
                                 <div>Marketing Head</div>
                                 <div>+91 8310326367</div>
                                 <div>gururajmahadevmadannavar.211ec115@nitk.edu.in</div>
