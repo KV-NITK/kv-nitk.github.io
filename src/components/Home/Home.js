@@ -4,6 +4,7 @@ import { Container, Carousel } from 'react-bootstrap'
 import imgSlider1 from '../../images/img-slider/imgSlider1.JPG'
 import imgSlider2 from '../../images/img-slider/imgSlider2.JPG'
 import imgSlider3 from '../../images/img-slider/imgSlider3.JPG'
+import imgSlider4 from '../../images/img-slider/imgSlider4.JPG'
 import aboutImg1 from '../../images/aboutImg1.jpg'
 import aboutImg2 from '../../images/aboutImg2.jpg'
 import Metadata from '../MetaData/MetaData'
@@ -22,6 +23,9 @@ const Home = () => {
                     </Carousel.Item>
                     <Carousel.Item>
                         <img src={imgSlider3} className="carousel-img" alt="carousel-img" />
+                    </Carousel.Item>
+                    <Carousel.Item>
+                        <img src={imgSlider4} className="carousel-img" alt="carousel-img" />
                     </Carousel.Item>
                 </Carousel>
 
