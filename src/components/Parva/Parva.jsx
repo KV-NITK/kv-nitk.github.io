@@ -8,16 +8,16 @@ import Timeline from "./Timeline/Timeline";
 const Parva = () => {
     return (
         <>
-            <Metadata title={"Parva-23 | Kannada Vedike NITK"} />
+            <Metadata title={"Parva-24 | Kannada Vedike NITK"} />
             <main className="parva">
                 <div className="parva-main">
                     <div className="logo">
                         <img src={parva.logo} alt="" />
                     </div>
                     <div className="parva-content">
-                        <h1>Parva-23</h1>
+                        <h1>Parva-24</h1>
                         <p>
-                            From 7-9 November
+                            From 5-10 November
                         </p>
                     </div>
                 </div>
@@ -42,11 +42,11 @@ const Parva = () => {
                                 data-aos="fade-up"
                             >
                                 <h2 className="white-txt">
-                                    <span className="gold-txt">Discover Parva 2023:</span> Celebrating Karnataka's Rich Cultural Heritage
+                                    <span className="gold-txt">Discover Parva 2024:</span> Celebrating Karnataka's Rich Cultural Heritage
                                 </h2>
                                 <br />
                                 <p className="lead" style={{ color: "rgba(255,255,255,0.5)" }}>
-                                    Join us for Parva 2023: A grand celebration by NITK Kannada Vedike, paying homage to the 67th Kannada Rajyotsava and the 50th anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture. Since 1960, Parva has grown into a magnificent cultural extravaganza, and this year, we're making it even bigger and better. Come celebrate Karnataka's diverse traditions, art, and linguistic splendor with us. Experience an enriching tapestry of music, dance, and festivities, showcasing the essence of Karnataka.
+                                Join us for Parva 2024: A grand celebration by NITK Kannada Vedike, paying homage to the 68th Kannada Rajyotsava and the 51st anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture. Since 1960, Parva has grown into a magnificent cultural extravaganza, and this year, we're making it even bigger and better. Come celebrate Karnataka's diverse traditions, art, and linguistic splendor with us. Experience an enriching tapestry of music, dance, and festivities, showcasing the essence of Karnataka.
                                 </p>
                             </div>
                         </div>

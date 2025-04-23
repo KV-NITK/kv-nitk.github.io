@@ -25,6 +25,8 @@ import brochureImage11 from '../images/brochure/11.jpg'
 import brochureImage12 from '../images/brochure/12.jpg'
 import brochureImage13 from '../images/brochure/13.jpg'
 import brochureImage14 from '../images/brochure/14.jpg'
+import brochureImage15 from '../images/brochure/15.jpg'
+import brochureImage16 from '../images/brochure/16.jpg'
 import parvaLogo from "../images/parva/logo.png"
 import sponsor1 from "../images/parva/sponsors/01.jpeg";
 import sponsor2 from "../images/parva/sponsors/02.png";
@@ -32,6 +34,7 @@ import sponsor3 from "../images/parva/sponsors/03.jpg";
 import sponsor4 from "../images/parva/sponsors/04.png";
 import sponsor5 from "../images/parva/sponsors/05.jpg";
 import sponsor6 from "../images/parva/sponsors/06.png";
+import sponsor7 from "../images/parva/sponsors/7.png";
 import parvaAboutImg from "../images/parva/about.PNG"
 
 export const eventsList =
@@ -133,6 +136,8 @@ export const brochureImage = [
   brochureImage12,
   brochureImage13,
   brochureImage14,
+  brochureImage15,
+  brochureImage16,
 ]
 
 export const parva = {
@@ -144,6 +149,12 @@ export const parva = {
       image: sponsor1,
       title: "Associate Sponsors",
       link: "https://www.nitkalumni.in/"
+    },
+    {
+      name: "Andhra Vaibhavam",
+      image: sponsor7,
+      title: "Media Sponsors",
+      link: ""
     },
     {
       name: "BMS Atlas Jewellery",
@@ -160,13 +171,14 @@ export const parva = {
     {
       name: "7th Heaven",
       image: sponsor4,
-      title: "Silver Sponsors",
+      title: "Gold Sponsors",
       link: "https://www.instagram.com/7thheaven.surathkal/"
     },
+
     {
       name: "Find my test",
       image: sponsor2,
-      title: "Media Sponsors",
+      title: "Technical Sponsors",
       link: "https://findmytest.com/"
     },
     {
@@ -177,11 +189,12 @@ export const parva = {
     },
   ],
   timeline: [
+
     {
-      date: "1st November",
-      title: "Inaguration and Flashmob",
-      time: "5:30PM",
-      location: "Main Building",
+      date: "5th November",
+      title: "Movie Screening",
+      time: "7:00 PM",
+      location: "SJA",
       register: ""
     },
     {
@@ -192,18 +205,18 @@ export const parva = {
       register: ""
     },
     {
-      date: "7th November",
-      title: "Sobagu (Ethnic Day)",
-      time: "8:00 PM",
-      location: "Pavillon",
-      register: ""
-    },
-    {
-      date: "",
+      date: "6th November",
       title: "Literary Events",
       time: "6:00 PM",
       location: "Main Seminar Hall",
-      register: "https://www.instagram.com/p/CzQrtuRyrLc/?utm_source=ig_web_copy_link&igshid=MzRlODBiNWFlZA=="
+      register: "https://www.instagram.com/p/DB61JYtT6kz/?img_index=1"
+    },
+    {
+      date: "8th November",
+      title: "Inaguration and Flashmob",
+      time: "4:30PM",
+      location: "Main Building",
+      register: ""
     },
     {
       date: "8th November",
@@ -212,33 +225,41 @@ export const parva = {
       location: "NITK School",
       register: ""
     },
+
     {
-      date: "",
-      title: "Music Concert",
-      time: "5:30 PM",
-      location: "SJA",
-      register: ""
-    },
-    {
-      date: "9th November",
+      date: "8th November",
       title: "Procession",
-      time: "3:00 PM",
+      time: "5:00 PM",
       location: "Main Gate to SJA",
       register: ""
     },
     {
-      date: "",
+      date: "9th November",
+      title: "Music Concert",
+      time: "5:30 PM",
+      location: "SAC",
+      register: ""
+    },
+    {
+      date: "10th November",
+      title: "Sobagu (Ethnic Day)",
+      time: "12:00 PM",
+      location: "Pavillon",
+      register: ""
+    },
+    {
+      date: "10th November",
+      title: "Bhoori Bhojana",
+      time: "12:00 PM",
+      location: "",
+      register: "https://forms.gle/cujFHMUNs8FCF4MHA"
+    },
+    {
+      date: "10th November",
       title: "Main Cultural Event",
       time: "6:00 PM",
       location: "SJA",
       register: ""
-    },
-    {
-      date: "",
-      title: "Bhoori Bhojana",
-      time: "8:00 PM",
-      location: "",
-      register: "https://forms.gle/cujFHMUNs8FCF4MHA"
     },
   ]
 }
