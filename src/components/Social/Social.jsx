@@ -1,7 +1,7 @@
 import React from 'react'
 import './Social.css'
 import Cards from '../Cards/Cards'
-import Metadata from '../MetaData/MetaData'
+import Metadata from '../MetaData/MetaData.jsx'
 import { socialList } from '../../data/data'
 
 const Social = () => {

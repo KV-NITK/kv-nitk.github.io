@@ -1,6 +1,6 @@
 import React from 'react'
 import "./Contact.css"
-import Metadata from '../MetaData/MetaData'
+import Metadata from '../MetaData/MetaData.jsx'
 
 const Contact = () => {
     return (
