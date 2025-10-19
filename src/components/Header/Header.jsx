@@ -46,6 +46,7 @@ const Header = () => {
                             <Link className="nav-link all-nav-links" to="/events">Events</Link>
                             <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
                             <Link className="nav-link all-nav-links" to="/contact">Contact</Link>
+                            <Link className="nav-link all-nav-links" to="/merch">Merch</Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

@@ -1,0 +1,154 @@
+/* ----- Container & Heading ----- */
+.merch-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2rem 1rem 3rem 1rem;
+  margin-top: 2rem;
+  text-align: center;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom, #fff8e1, #fff3e0); /* soft warm yellow background */
+  background-image: url('/images/kannada-pattern.png'); /* optional faint traditional pattern */
+  background-repeat: repeat;
+}
+
+/* ----- Heading ----- */
+.merch-heading {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #4a2e19; /* royal brown inspired by Mysore Palace */
+  margin-bottom: 1.5rem;
+   /* subtle golden shadow */
+}
+
+/* ----- Description & Details ----- */
+.merch-items {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.merch-description {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* Offers & Info Cards */
+.merch-offers, .merch-delivery, .merch-info {
+  background-color: #fff8e1;
+  border-left: 6px solid #fdd835; /* golden accent */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 1rem 1.5rem;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #4a2e19;
+}
+
+.merch-offers p, .merch-delivery p, .merch-info p {
+  margin: 0.3rem 0;
+}
+
+.merch-info a {
+  color: #d62828; /* traditional red */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.merch-info a:hover {
+  text-decoration: underline;
+}
+
+/* ----- Merch Image ----- */
+.merch-image {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 3px solid #fdd835; /* golden border accent */
+}
+
+.merch-image:hover {
+  transform: scale(1.03);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* ----- Shop Now Button ----- */
+.star-border-container {
+  display: inline-block;
+  position: relative;
+  border-radius: 25px;
+  overflow: hidden;
+  cursor: pointer;
+  margin-top: 1.5rem;
+}
+
+.inner-content {
+  position: relative;
+  border: 1px solid #b71c1c;
+  background: #d62828; /* Karnataka traditional red */
+  color: white;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 14px 30px;
+  border-radius: 25px;
+  z-index: 1;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.inner-content:hover {
+  transform: scale(1.05);
+  background: #b71c1c; /* deeper red on hover */
+}
+
+/* Gradient animation for button glow */
+.border-gradient-bottom, .border-gradient-top {
+  position: absolute;
+  width: 300%;
+  height: 50%;
+  opacity: 0.7;
+  border-radius: 50%;
+  animation: star-movement 6s linear infinite alternate;
+  z-index: 0;
+}
+
+.border-gradient-bottom { bottom: -12px; right: -250%; }
+.border-gradient-top { top: -12px; left: -250%; }
+
+/* ----- Animations ----- */
+@keyframes star-movement {
+  0% { transform: translate(0%,0%); opacity: 1; }
+  100% { transform: translate(-100%,0%); opacity: 0; }
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 1024px) {
+  .merch-container { padding: 1.5rem 1rem 2rem 1rem; }
+  .merch-heading { font-size: 2.4rem; }
+  .merch-items { padding: 0.5rem; }
+  .inner-content { padding: 12px 24px; font-size: 1rem; }
+}
+
+@media (max-width: 600px) {
+  .merch-heading { font-size: 1.8rem; }
+  .merch-items { padding: 0.5rem; }
+  .inner-content { padding: 10px 20px; font-size: 0.95rem; }
+  .merch-offers, .merch-delivery, .merch-info { padding: 0.8rem 1rem; }
+}
