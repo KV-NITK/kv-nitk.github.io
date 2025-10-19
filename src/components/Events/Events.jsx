@@ -1,7 +1,7 @@
 import React from 'react'
 import './Events.css'
 import Cards from '../Cards/Cards'
-import Metadata from '../MetaData/MetaData'
+import Metadata from '../MetaData/MetaData.jsx'
 import { eventsList, upcomingEvents } from '../../data/data'
 
 

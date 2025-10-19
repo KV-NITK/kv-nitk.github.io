@@ -1,5 +1,5 @@
 import { parva } from "../../data/data";
-import Metadata from "../MetaData/MetaData";
+import Metadata from "../MetaData/MetaData.jsx";
 import Brochure from "./Brochure/Brochure";
 import "./Parva.css";
 import Sponsors from "./Sponsors/Sponsors";
