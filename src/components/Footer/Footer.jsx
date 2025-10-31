@@ -1,7 +1,7 @@
 import React from 'react'
 import logo from '../../images/logo.jpg'
 import '../Footer/Footer.css'
-import { Container, Row } from 'react-bootstrap';
+// Removed react-bootstrap
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
 import { brochureLink } from '../../data/data'
@@ -10,9 +10,9 @@ const Footer = () => {
     return (
         <div id="footer">
             <footer className="footer notranslate">
-                <Container>
+                <div className="container">
                     <div className="section">
-                        <Row>
+                        <div className="row">
                             <div className="footer-col col-4 first">
                                 <div className="flex">
                                     <img
@@ -80,9 +80,9 @@ const Footer = () => {
                                     </li>
                                 </ul>
                             </div>
-                        </Row>
+                        </div>
                     </div>
-                </Container>
+                </div>
             </footer>
             <div id="lstFooter" className="notranslate flex justify-center items-center">
                 <span id="top-btn" onClick={() => document.documentElement.scrollTo(0, 0)}>

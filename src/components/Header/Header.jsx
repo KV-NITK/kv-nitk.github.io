@@ -2,7 +2,7 @@ import React from 'react';
 import '../Header/Header.css'
 import langIcon from '../../icons/language.svg'
 import logo from '../../images/logo.jpg'
-import { Container, Nav, Navbar } from 'react-bootstrap'
+// Removed react-bootstrap
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link';
 import { brochureLink } from '../../data/data';
@@ -10,7 +10,7 @@ import { brochureLink } from '../../data/data';
 const Header = () => {
     return (
         <>
-            <Container fluid md={3} className="header flex px-3 w-100">
+            <div className="header flex px-3 w-100">
                 <div className="flex languageSection">
                     {/* <img className="m-auto" width="20" height="20" src={langIcon} alt="" />
                     <div id="language" className="m-auto ps-1 notranslate btn">
@@ -22,9 +22,9 @@ const Header = () => {
                         Support Us
                     </a>
                 </div>
-            </Container>
-            <Navbar expand="lg" variant="dark" className="w-100">
-                <Container fluid>
+            </div>
+            <div className="w-100 navbar">
+                <div className="px-3 flex items-center justify-between w-100">
                     <Link to="/"> <img
                         id="logo"
                         src={logo}
@@ -32,25 +32,18 @@ const Header = () => {
                         width="100"
                         height="100"
                     /></Link>
-                    <Navbar.Toggle aria-controls="navbarScroll" />
-                    <Navbar.Collapse id="navbarScroll">
-                        <Nav
-                            className="ms-auto my-2 my-lg-0"
-                            style={{ maxHeight: '100px' }}
-                            navbarScroll
-                        >
-                            <Link className="nav-link all-nav-links" to="/">Home</Link>
-                            <HashLink smooth className="nav-link all-nav-links" to="/#about">About Us</HashLink>
-                            {/* <a className="nav-link all-nav-links" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
-                            <Link className="nav-link all-nav-links" to="/parva">Parva</Link>
-                            <Link className="nav-link all-nav-links" to="/events">Events</Link>
-                            <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
-                            <Link className="nav-link all-nav-links" to="/contact">Contact</Link>
-                            <Link className="nav-link all-nav-links" to="/merch">Merch</Link>
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
+                    <nav className="ms-auto my-2 my-lg-0 flex gap-4">
+                        <Link className="nav-link all-nav-links" to="/">Home</Link>
+                        <HashLink smooth className="nav-link all-nav-links" to="/#about">About Us</HashLink>
+                        {/* <a className="nav-link all-nav-links" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
+                        <Link className="nav-link all-nav-links" to="/parva">Parva</Link>
+                        <Link className="nav-link all-nav-links" to="/events">Events</Link>
+                        <Link className="nav-link all-nav-links" to="/social">Social Activities</Link>
+                        <Link className="nav-link all-nav-links" to="/contact">Contact</Link>
+                        <Link className="nav-link all-nav-links" to="/merch">Merch</Link>
+                    </nav>
+                </div>
+            </div>
         </>
     )
 }

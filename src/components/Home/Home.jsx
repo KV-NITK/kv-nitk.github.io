@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
-import { Container, Carousel } from 'react-bootstrap';
+// Removed react-bootstrap
 import imgSlider1 from '../../images/img-slider/imgSlider1.JPG';
 import imgSlider2 from '../../images/img-slider/imgSlider2.JPG';
 import imgSlider3 from '../../images/img-slider/imgSlider3.JPG';
@@ -26,18 +26,14 @@ const Home = () => {
       <Metadata title="Home | Kannada Vedike" />
 
       {/* --- Hero Carousel --- */}
-      <Container fluid className="px-0 page">
-        <Carousel>
-          <Carousel.Item>
+      <div className="px-0 page">
+        <div className="w-full overflow-hidden">
+          <div className="flex w-full">
             <img src={imgSlider1} className="carousel-img" alt="carousel-img" />
-          </Carousel.Item>
-          <Carousel.Item>
             <img src={imgSlider2} className="carousel-img" alt="carousel-img" />
-          </Carousel.Item>
-          <Carousel.Item>
             <img src={imgSlider3} className="carousel-img" alt="carousel-img" />
-          </Carousel.Item>
-        </Carousel>
+          </div>
+        </div>
 
         <div
           id="hero"
@@ -55,7 +51,7 @@ const Home = () => {
             <p id="kv-sub">ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ</p>
           </div>
         </div>
-      </Container>
+      </div>
 
       {/* --- About Section --- */}
       <div id="about" className="section">

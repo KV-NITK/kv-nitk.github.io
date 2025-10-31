@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Kannada:wght@100..900&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
 
 * {
@@ -16,6 +16,20 @@
   --yellow-second-shade: #f2b33d;
   --gold-clr: #D8A633;
   --dim-white: rgba(255, 255, 255, 0.7);
+}
+
+.noto-serif-kannada-400 {
+  font-family: "Noto Serif Kannada", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.noto-serif-kannada-600 {
+  font-family: "Noto Serif Kannada", serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
 }
 
 html {
