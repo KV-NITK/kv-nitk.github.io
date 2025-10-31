@@ -13,7 +13,7 @@ const Footer = () => {
                 <div className="container">
                     <div className="section">
                         <div className="row">
-                            <div className="footer-col col-4 first">
+                            <div className="footer-col col-3 first">
                                 <div className="flex">
                                     <img
                                         src={logo}
@@ -31,7 +31,7 @@ const Footer = () => {
                                 </p>
 
                             </div>
-                            <div className="footer-col col-4">
+                            <div className="footer-col col-3">
                                 <h4>Social Links</h4>
                                 <ul>
                                     <li>
@@ -56,7 +56,7 @@ const Footer = () => {
                                     </li>
                                 </ul>
                             </div>
-                            <div className="footer-col col-4">
+                            <div className="footer-col col-3">
                                 <h4>Quick Links</h4>
                                 <ul>
                                     <li className="all-nav-links">
@@ -75,10 +75,30 @@ const Footer = () => {
                                     <li className="all-nav-links">
                                         <Link to="/social">Social Activities</Link>
                                     </li>
-                                    <li className="all-nav-links">
-                                        <Link to="/contact">Contact</Link>
-                                    </li>
                                 </ul>
+                            </div>
+                            <div className="footer-col col-3">
+                                <h4>Contact Us</h4>
+                                <div className="space-y-3">
+                                    <div>
+                                        <h5 className="font-semibold mb-1">Dr. Kiran M</h5>
+                                        <p className="text-sm opacity-90">Faculty Advisor</p>
+                                        <p className="text-sm opacity-90">+91 8242473561</p>
+                                        <p className="text-sm opacity-90">kiranmanjappa@nitk.edu.in</p>
+                                    </div>
+                                    <div>
+                                        <h5 className="font-semibold mb-1">Sumukh S K</h5>
+                                        <p className="text-sm opacity-90">Convenor</p>
+                                        <p className="text-sm opacity-90">+91 94812 46683</p>
+                                        <p className="text-sm opacity-90">sksumukha.211ee153@nitk.edu.in</p>
+                                    </div>
+                                    <div>
+                                        <h5 className="font-semibold mb-1">Gururaj Mahadev Madanavar</h5>
+                                        <p className="text-sm opacity-90">Marketing Head</p>
+                                        <p className="text-sm opacity-90">+91 8310326367</p>
+                                        <p className="text-sm opacity-90">gururajmahadevmadannavar.211ec115@nitk.edu.in</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

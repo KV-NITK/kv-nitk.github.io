@@ -18,7 +18,7 @@ const Merch = ({
     };
 
     return (
-        <div className="merch-container">
+        <div className="merch-container bg-linear-to-r from-amber-300 to-yellow-300">
             {/* Heading */}
             <SplitText
                 text="Parva Merch"

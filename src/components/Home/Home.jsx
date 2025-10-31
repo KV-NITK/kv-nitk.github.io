@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Home.css';
-// Removed react-bootstrap
 import imgSlider1 from '../../images/img-slider/imgSlider1.JPG';
 import imgSlider2 from '../../images/img-slider/imgSlider2.JPG';
 import imgSlider3 from '../../images/img-slider/imgSlider3.JPG';
@@ -10,15 +8,28 @@ import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
 import merchShirt from '../../images/merch/dummy.png';
 
-const Home = () => {
-  const [showPopup, setShowPopup] = useState(false);
-  const navigate = useNavigate(); 
-
-  
+function AutoAdvance({ current, setCurrent, count, paused }) {
   useEffect(() => {
-    const timer = setTimeout(() => setShowPopup(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (paused || count <= 1) return;
+    const id = setInterval(() => {
+      setCurrent((c) => (c + 1) % count);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [paused, count, setCurrent]);
+  return null;
+}
+
+const Home = () => {
+  // const [showPopup, setShowPopup] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const slides = useMemo(() => [imgSlider1, imgSlider2, imgSlider3], []);
+  const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => setShowPopup(true), 2000);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   return (
     <>
@@ -26,91 +37,138 @@ const Home = () => {
       <Metadata title="Home | Kannada Vedike" />
 
       {/* --- Hero Carousel --- */}
-      <div className="px-0 page">
-        <div className="w-full overflow-hidden">
-          <div className="flex w-full">
-            <img src={imgSlider1} className="carousel-img" alt="carousel-img" />
-            <img src={imgSlider2} className="carousel-img" alt="carousel-img" />
-            <img src={imgSlider3} className="carousel-img" alt="carousel-img" />
-          </div>
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: 'calc(100vh - 110px)' }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div
+          className="flex h-full transition-transform duration-700 ease-out"
+          style={{ transform: `translateX(-${current * 100}%)`, width: `${slides.length * 100}%` }}
+        >
+          {slides.map((src, idx) => (
+            <div key={idx} className="w-full h-full shrink-0 flex items-center justify-center bg-black">
+              <img
+                src={src}
+                className="w-full h-full object-contain"
+                alt={`carousel-img-${idx + 1}`}
+              />
+            </div>
+          ))}
         </div>
 
-        <div
-          id="hero"
-          className="container-fluid text-center px-0 notranslate aos-init aos-animate page"
-          data-aos="fade-up"
-          data-aos-offset={-20}
-        >
-          <p className="hero left-hero">
+        {/* Dots */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2.5 w-2.5 rounded-full transition ${current === i ? 'bg-white' : 'bg-white/50 hover:bg-white/80'}`}
+            />
+          ))}
+        </div>
+
+        {/* Autoplay */}
+        <AutoAdvance current={current} setCurrent={setCurrent} count={slides.length} paused={paused} />
+
+        {/* Hero Overlay */}
+        <div className="absolute md:relative bottom-0 left-0 right-0 grid md:grid-cols-2 grid-cols-1 min-h-[100px] bg-black/70 md:bg-black/85 px-4 py-2">
+          <p className="hidden md:block text-right pr-4 text-xl leading-[1.8] font-semibold text-[#f2b33d] py-2">
             ಎಲ್ಲಾದರೂ ಇರು ಎಂತಾದರು ಇರು <br /> ಎಂದೆಂದಿಗು ನೀ ಕನ್ನಡವಾಗಿರು
           </p>
-          <div className="hero right-hero">
-            <h2>
-              <strong id="kv"> ಕನ್ನಡ ವೇದಿಕೆ </strong>
+          <div className="text-center md:text-left pl-4 md:pl-4 text-[#f21d2f] py-2">
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold">
+              <strong> ಕನ್ನಡ ವೇದಿಕೆ </strong>
             </h2>
-            <p id="kv-sub">ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ</p>
+            <p className="text-[#f2b33d] text-base md:text-lg font-semibold">ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ</p>
           </div>
         </div>
       </div>
 
       {/* --- About Section --- */}
-      <div id="about" className="section">
-        <h2 className="mt-4 text-center black-txt title aos-init aos-animate font-weight-bold" data-aos="fade">
+      <div id="about" className="relative py-12 px-4 max-w-6xl mx-auto">
+        {/* Background circle */}
+        <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] max-w-full bg-[#f5f0e8] rounded-full -z-10" />
+
+        <h2 className="mt-4 text-center text-foreground text-3xl md:text-4xl font-bold mb-8">
           About Us
         </h2>
 
-        <div className="about-card mx-auto my-4 aos-init aos-animate" style={{ maxWidth: 1200 }} data-aos="fade-right">
-          <div className="about-img">
-            <img className="px-3 my-3" src={aboutImg2} alt="" width="100%" />
+        {/* Vision Card */}
+        <div className="grid md:grid-cols-2 gap-6 items-center max-w-5xl mx-auto my-8 bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="order-2 md:order-1">
+            <img className="w-full h-auto p-3" src={aboutImg2} alt="Vision" />
           </div>
-          <span className="about-content px-5 py-auto" style={{ lineHeight: "1.8" }}>
-            <h2 className="primary-text-clr">OUR VISION</h2>
-            <span style={{ color: "#444" }} className="text-left">
+          <div className="order-1 md:order-2 px-5 py-6 md:py-auto">
+            <h2 className="text-[#f21d2f] text-2xl font-bold mb-4">OUR VISION</h2>
+            <p className="text-[#444] text-left leading-[1.8]">
               By spreading Kannada's and Karnataka's culture and tradition across the institute,
               creating a platform for non-Kannadigas along with Kannadigas to learn the state's
               language, culture and tradition.
-            </span>
-          </span>
+            </p>
+          </div>
         </div>
 
-        <div className="about-card mx-auto my-4 aos-init aos-animate" style={{ maxWidth: 1200 }} data-aos="fade-left">
-          <span className="about-content px-5 py-auto" style={{ lineHeight: "1.8" }}>
-            <h2 className="primary-text-clr">OUR MISSION</h2>
-            <span style={{ color: "#444" }} className="text-right">
+        {/* Mission Card */}
+        <div className="grid md:grid-cols-2 gap-6 items-center max-w-5xl mx-auto my-8 bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="order-1 px-5 py-6 md:py-auto">
+            <h2 className="text-[#f21d2f] text-2xl font-bold mb-4">OUR MISSION</h2>
+            <p className="text-[#444] text-left md:text-right leading-[1.8]">
               To encourage the usage of the state's language and culture in the institute.
               Emphasising the state's culture and tradition along with the technology.
-            </span>
-          </span>
-          <div className="about-img">
-            <img className="px-3 my-3" src={aboutImg1} alt="" width="100%" />
+            </p>
+          </div>
+          <div className="order-2">
+            <img className="w-full h-auto p-3" src={aboutImg1} alt="Mission" />
           </div>
         </div>
       </div>
 
-      {/* --- Popup --- */}
+      {/* --- Popup ---
       {showPopup && (
-        <div className="popup-container">
-          <div className="popup-card">
-            <button className="popup-close" onClick={() => setShowPopup(false)}>
+        <div className="fixed bottom-[10px] right-[10px] md:bottom-5 md:right-5 z-[9999] animate-[slideUp_0.5s_ease-in-out] shadow-xl rounded-xl bg-gray-100 w-[calc(100%-20px)] md:w-auto">
+          <div className="bg-[#f2c438] rounded-xl shadow-lg w-full md:w-[250px] p-4 text-center relative transition-transform hover:scale-[1.03]">
+            <button
+              className="absolute top-2 right-2.5 bg-transparent border-none text-xl cursor-pointer text-[#444] hover:text-black"
+              onClick={() => setShowPopup(false)}
+              aria-label="Close"
+            >
               ×
             </button>
 
             <img
               src={merchShirt}
               alt="Kannada Vedike Shirt"
-              className="popup-img"
+              className="w-full rounded-lg cursor-pointer"
               onClick={() => navigate('/merch')}
-              style={{ cursor: 'pointer' }}
             />
 
-            <h3 className="popup-title">Parva Merch</h3>
+            <h3 className="text-lg font-bold my-2 text-[#111]">Parva Merch</h3>
 
-            <button className="popup-buy-btn" onClick={() => navigate('/merch')}>
+            <button
+              className="bg-[#d62828] text-white border-none rounded-md py-2 px-4 cursor-pointer font-semibold hover:bg-[#b71c1c] transition-colors"
+              onClick={() => navigate('/merch')}
+            >
               Buy Now
             </button>
           </div>
         </div>
-      )}
+      )} */}
+
+      <style>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>
   );
 };

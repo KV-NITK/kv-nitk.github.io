@@ -8,7 +8,6 @@ import Footer from './components/Footer/Footer'
 import Home from './components/Home/Home'
 import Events from './components/Events/Events'
 import Social from './components/Social/Social';
-import Contact from './components/Contact/Contact';
 import Parva25 from './components/Parva25/Parva25';
 import Parva from './components/Parva/Parva';
 import Merch from './components/merch/merch';
@@ -31,7 +30,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<Events />} />
         <Route path="/social" element={<Social />} />
-        <Route path="/contact" element={<Contact />} />
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
         <Route path="*" element={<Navigate to="/" />} />
