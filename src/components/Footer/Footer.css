@@ -1,3 +1,4 @@
+/* --- Global Resets/Setup --- */
 .container {
     max-width: 1170px;
     margin: auto;
@@ -7,10 +8,7 @@ ul {
     list-style: none;
 }
 
-.first h4::before {
-    display: none;
-}
-
+/* --- Footer Specific Styles --- */
 .footer {
     background-color: #181818;
     padding: 70px 0;
@@ -22,7 +20,16 @@ footer .container {
     max-width: 1250px;
 }
 
+/* --- Horizontal Layout Fix (Forcing the row to be horizontal) --- */
+.row {
+    display: flex; /* CRITICAL: Ensures columns sit next to each other */
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+    /* Add any necessary margin/padding to handle gutters */
+}
+
 .footer-col {
+    /* For large screens, there are 4 columns (col-3 means 3/12 or 25%) */
+    width: 25%; /* Explicitly set width for large screens */
     padding: 0 40px !important;
 }
 
@@ -39,15 +46,20 @@ footer .container {
     position: relative;
 }
 
+/* Heading Underline (except for the first column's main title) */
 .footer-col h4::before {
     content: "";
     position: absolute;
     left: 0;
     bottom: -10px;
-    background-color: var(--primary-clr);
+    background-color: var(--primary-clr); /* Assumes --primary-clr is defined elsewhere */
     height: 2px;
     box-sizing: border-box;
     width: 100%;
+}
+
+.first h4::before {
+    display: none; /* Removes underline for the first column's main title */
 }
 
 .footer-col ul li:not(:last-child) {
@@ -72,6 +84,7 @@ footer .container {
     color: #ffffff !important;
 }
 
+/* Social Links styles (currently unused in JSX, but kept for completeness) */
 .social-links {
     display: flex;
     justify-content: space-between;
@@ -95,6 +108,7 @@ footer .container {
     background-color: #ffffff;
 }
 
+/* --- Bottom Footer Section (Copyright & Scroll Button) --- */
 #lstFooter {
     background: #202020;
     padding: 1rem 0;
@@ -112,7 +126,9 @@ footer .container {
     border-radius: 400px;
     position: absolute;
     top: -35px;
-    left: center;
+    /* Using 'left: 50%; transform: translateX(-50%);' for reliable centering */
+    left: 50%; 
+    transform: translateX(-50%);
     transition: background-color .3s,
         opacity .5s, visibility .5s;
     z-index: 1000;
@@ -130,25 +146,29 @@ footer .container {
     background-color: #555;
 }
 
-/*responsive*/
+/* --- Responsive Layout (Mobile/Tablet Stacking) --- */
+
+/* Tablet/Medium Screens (2 columns per row) */
 @media (max-width: 1020px) {
     .footer-col {
-        width: 50% !important;
+        width: 50% !important; /* Overrides 25%, making 2 columns per row */
         margin-bottom: 30px;
     }
 }
 
+/* Mobile/Small Screens (1 column per row) */
 @media (max-width: 574px) {
     .footer-col {
-        width: 100% !important;
+        width: 100% !important; /* Overrides 50%, making 1 column per row (fully vertical) */
     }
 }
 
+/* Additional media query from original code for miscellaneous cleanup */
 @media screen and (max-width: 800px) {
 
     #lstFooter>div>div>div,
-    #insta-announcement,
-    #lastFooter {
+    #insta-announcement, /* Assumed external element */
+    #lastFooter { /* Assumed external element */
         flex-direction: column;
         align-items: center;
         margin: 0 !important;
@@ -158,10 +178,8 @@ footer .container {
         flex-direction: column !important;
     }
 
-    #instaFeed {
+    #instaFeed { /* Assumed external element */
         margin: 0 0.5rem;
         padding: 0 0.5rem;
     }
-
-
 }

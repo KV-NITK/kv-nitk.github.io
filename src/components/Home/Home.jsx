@@ -1,35 +1,65 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import imgSlider1 from '../../images/img-slider/imgSlider1.JPG';
 import imgSlider2 from '../../images/img-slider/imgSlider2.JPG';
 import imgSlider3 from '../../images/img-slider/imgSlider3.JPG';
+import imgSlider4 from '../../images/img-slider/aboutImg1.jpg';
 import aboutImg1 from '../../images/aboutImg1.jpg';
 import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
 import merchShirt from '../../images/merch/dummy.png';
 
-function AutoAdvance({ current, setCurrent, count, paused }) {
+function AutoAdvance({ setCurrent, count, paused }) {
   useEffect(() => {
     if (paused || count <= 1) return;
     const id = setInterval(() => {
       setCurrent((c) => (c + 1) % count);
-    }, 3500);
+    }, 5000); // Set to 5 seconds
     return () => clearInterval(id);
   }, [paused, count, setCurrent]);
   return null;
 }
 
 const Home = () => {
-  // const [showPopup, setShowPopup] = useState(false);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
-  const slides = useMemo(() => [imgSlider1, imgSlider2, imgSlider3], []);
+  const slides = useMemo(() => [imgSlider1, imgSlider2, imgSlider3, imgSlider4], []);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setShowPopup(true), 2000);
-  //   return () => clearTimeout(timer);
-  // }, []);
+  // Function to move to the next slide
+  const nextSlide = () => {
+    setCurrent((c) => (c + 1) % slides.length);
+    setPaused(false); // Un-pause when manually clicking
+  };
+
+  // Function to move to the previous slide
+  const prevSlide = () => {
+    setCurrent((c) => (c - 1 + slides.length) % slides.length);
+    setPaused(false); // Un-pause when manually clicking
+  };
+
+  // --- Swipe gesture handling ---
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) nextSlide(); // Swipe left to go next
+      else prevSlide(); // Swipe right to go previous
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   return (
     <>
@@ -42,36 +72,79 @@ const Home = () => {
         style={{ height: 'calc(100vh - 110px)' }}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div
           className="flex h-full transition-transform duration-700 ease-out"
-          style={{ transform: `translateX(-${current * 100}%)`, width: `${slides.length * 100}%` }}
+          style={{
+            transform: `translateX(-${current * 100}%)`,
+            width: `${slides.length * 100}%`,
+          }}
         >
           {slides.map((src, idx) => (
-            <div key={idx} className="w-full h-full shrink-0 flex items-center justify-center bg-black">
+          
               <img
                 src={src}
-                className="w-full h-full object-contain"
+                // This comment is fine
+                className="relative w-full h-auto object-cover"
                 alt={`carousel-img-${idx + 1}`}
               />
-            </div>
+            
           ))}
         </div>
+
+        {/* ⬅️ LEFT ARROW BUTTON */}
+        <button
+          onClick={prevSlide}
+          aria-label="Previous Slide"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 z-20 
+                     p-3 md:p-4 bg-black/40 hover:bg-black/60 rounded-full 
+                     text-white transition-all focus:outline-none"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+
+        {/* ➡️ RIGHT ARROW BUTTON */}
+        <button
+          onClick={nextSlide}
+          aria-label="Next Slide"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 
+                     p-3 md:p-4 bg-black/40 hover:bg-black/60 rounded-full 
+                     text-white transition-all focus:outline-none"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
 
         {/* Dots */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {slides.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              onClick={() => {
+                setCurrent(i);
+                setPaused(false); // Un-pause on dot click
+              }}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-2.5 w-2.5 rounded-full transition ${current === i ? 'bg-white' : 'bg-white/50 hover:bg-white/80'}`}
+              className={`h-2.5 w-2.5 rounded-full transition ${current === i
+                  ? 'bg-white'
+                  : 'bg-white/50 hover:bg-white/80'
+                }`}
             />
           ))}
         </div>
 
         {/* Autoplay */}
-        <AutoAdvance current={current} setCurrent={setCurrent} count={slides.length} paused={paused} />
+        <AutoAdvance
+          setCurrent={setCurrent}
+          count={slides.length}
+          paused={paused}
+        />
 
         {/* Hero Overlay */}
         <div className="absolute md:relative bottom-0 left-0 right-0 grid md:grid-cols-2 grid-cols-1 min-h-[100px] bg-black/70 md:bg-black/85 px-4 py-2">
@@ -82,7 +155,9 @@ const Home = () => {
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold">
               <strong> ಕನ್ನಡ ವೇದಿಕೆ </strong>
             </h2>
-            <p className="text-[#f2b33d] text-base md:text-lg font-semibold">ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ</p>
+            <p className="text-[#f2b33d] text-base md:text-lg font-semibold">
+              ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ
+            </p>
           </div>
         </div>
       </div>
@@ -125,37 +200,6 @@ const Home = () => {
           </div>
         </div>
       </div>
-
-      {/* --- Popup ---
-      {showPopup && (
-        <div className="fixed bottom-[10px] right-[10px] md:bottom-5 md:right-5 z-[9999] animate-[slideUp_0.5s_ease-in-out] shadow-xl rounded-xl bg-gray-100 w-[calc(100%-20px)] md:w-auto">
-          <div className="bg-[#f2c438] rounded-xl shadow-lg w-full md:w-[250px] p-4 text-center relative transition-transform hover:scale-[1.03]">
-            <button
-              className="absolute top-2 right-2.5 bg-transparent border-none text-xl cursor-pointer text-[#444] hover:text-black"
-              onClick={() => setShowPopup(false)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-
-            <img
-              src={merchShirt}
-              alt="Kannada Vedike Shirt"
-              className="w-full rounded-lg cursor-pointer"
-              onClick={() => navigate('/merch')}
-            />
-
-            <h3 className="text-lg font-bold my-2 text-[#111]">Parva Merch</h3>
-
-            <button
-              className="bg-[#d62828] text-white border-none rounded-md py-2 px-4 cursor-pointer font-semibold hover:bg-[#b71c1c] transition-colors"
-              onClick={() => navigate('/merch')}
-            >
-              Buy Now
-            </button>
-          </div>
-        </div>
-      )} */}
 
       <style>{`
         @keyframes slideUp {
