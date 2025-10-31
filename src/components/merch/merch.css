@@ -6,12 +6,10 @@
   justify-content: flex-start;
   align-items: center;
   padding: 2rem 1rem 3rem 1rem;
-  margin-top: 2rem;
   text-align: center;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to bottom, #fff8e1, #fff3e0); /* soft warm yellow background */
-  background-image: url('/images/kannada-pattern.png'); /* optional faint traditional pattern */
+  /* background-image: url('/images/kannada-pattern.png'); optional faint traditional pattern */
   background-repeat: repeat;
 }
 

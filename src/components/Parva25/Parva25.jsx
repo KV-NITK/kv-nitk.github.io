@@ -14,7 +14,7 @@ const Parva25 = () => {
         { src: "/sponsors/sponsor3.png", alt: "Sponsor 3", href: "https://sponsor3.com" },
     ];
     return (
-        <div className="w-full h-full bg-linear-to-b from-[#807611]/80 to-yellow-500">
+        <div className="w-full h-full bg-linear-to-b from-[#FFDA1D] to-yellow-500">
             <div className="w-full h-[600px] relative overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <Silk />
@@ -36,18 +36,12 @@ const Parva25 = () => {
             <section className="w-full py-12">
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-                        <div className="grid md:grid-cols-2">
-                            <div className="h-full w-full">
-                                <img src={parvaLogo} alt="Parva 2025" className="h-full w-full object-cover" />
-                            </div>
-                            <div className="p-6 md:p-8 flex flex-col justify-center">
-                                <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                                    <span className="text-[#FFDA1D]">Discover Parva 2025</span>: Celebrating Karnataka's Rich Cultural Heritage
-                                </h2>
-                                <p className="mt-4 text-muted-foreground leading-7">
-                                    Join us for Parva 2025: A grand celebration by NITK Kannada Vedike, paying homage to the 69th Kannada Rajyotsava and the 52nd anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture. Since 1960, Parva has grown into a magnificent cultural extravaganza, and this year, we're making it even bigger and better. Come celebrate Karnataka's diverse traditions, art, and linguistic splendor with us. Experience an enriching tapestry of music, dance, and festivities, showcasing the essence of Karnataka.
-                                </p>
-                            </div>
+                        <div className="p-6 md:p-8 flex flex-col justify-center items-center">
+                            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#FFDA1D]">Discover Parva 2025</h2>:
+                            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-black">Celebrating Karnataka's Rich Cultural Heritage</h2>
+                            <p className="mt-4 text-muted-foreground leading-7 text-center">
+                                Join us for Parva 2025: A grand celebration by NITK Kannada Vedike, paying homage to the 69th Kannada Rajyotsava and the 52nd anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture. Since 1960, Parva has grown into a magnificent cultural extravaganza, and this year, we're making it even bigger and better. Come celebrate Karnataka's diverse traditions, art, and linguistic splendor with us. Experience an enriching tapestry of music, dance, and festivities, showcasing the essence of Karnataka.
+                            </p>
                         </div>
                     </div>
                 </div>
