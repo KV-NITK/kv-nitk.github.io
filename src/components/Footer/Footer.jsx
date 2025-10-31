@@ -4,7 +4,7 @@ import '../Footer/Footer.css'
 // Removed react-bootstrap
 import { Link } from 'react-router-dom'
 import { HashLink } from 'react-router-hash-link'
-import { brochureLink } from '../../data/data'
+import { brochureLink } from '../../data/data' // Assuming this file exists
 
 const Footer = () => {
     return (
@@ -12,6 +12,7 @@ const Footer = () => {
             <footer className="footer notranslate">
                 <div className="container">
                     <div className="section">
+                        {/* The .row class is where the horizontal flex/grid logic is applied */}
                         <div className="row">
                             <div className="footer-col col-3 first">
                                 <div className="flex">
@@ -81,19 +82,19 @@ const Footer = () => {
                                 <h4>Contact Us</h4>
                                 <div className="space-y-3">
                                     <div>
-                                        <h5 className="font-semibold mb-1">Dr. Kiran M</h5>
+                                        <h5 className="font-bold mb-1 text-white/90">Dr. Kiran M</h5>
                                         <p className="text-sm opacity-90">Faculty Advisor</p>
                                         <p className="text-sm opacity-90">+91 8242473561</p>
                                         <p className="text-sm opacity-90">kiranmanjappa@nitk.edu.in</p>
                                     </div>
                                     <div>
-                                        <h5 className="font-semibold mb-1">Sumukh S K</h5>
+                                        <h5 className="font-semibold mb-1 text-white/90">Sumukh S K</h5>
                                         <p className="text-sm opacity-90">Convenor</p>
                                         <p className="text-sm opacity-90">+91 94812 46683</p>
                                         <p className="text-sm opacity-90">sksumukha.211ee153@nitk.edu.in</p>
                                     </div>
                                     <div>
-                                        <h5 className="font-semibold mb-1">Gururaj Mahadev Madanavar</h5>
+                                        <h5 className="font-semibold mb-1 text-white/90">Gururaj Mahadev Madanavar</h5>
                                         <p className="text-sm opacity-90">Marketing Head</p>
                                         <p className="text-sm opacity-90">+91 8310326367</p>
                                         <p className="text-sm opacity-90">gururajmahadevmadannavar.211ec115@nitk.edu.in</p>
