@@ -1,0 +1,74 @@
+[
+    {
+        "email": "prasannart09@gmail.com",
+        "name": "Prasanna R T",
+        "studentId": "221CH038",
+        "phone": "7892469278",
+        "role": "Literary Head",
+        "docUrl": "prasanna.jpg"
+    },
+    {
+        "email": "waseemwassu1148@gmail.com",
+        "name": "Waseem Akram C",
+        "studentId": "221ME359",
+        "phone": "7259171484",
+        "role": "Publicity Head",
+        "docUrl": "waseem.jpeg"
+    },
+    {
+        "email": "mrudulauv.242pe009@nitk.edu.in",
+        "name": "Mrudula U V",
+        "studentId": "242PE009",
+        "phone": "7892289367",
+        "role": "PG Coordinator",
+        "docUrl": "mrudula.jpg"
+    },
+    {
+        "email": "ramadevisu.242th012@nitk.edu.in",
+        "name": "Ramadevi S Uppaladinni",
+        "studentId": "242TH012",
+        "phone": "7019381305",
+        "role": "PG Coordinator",
+        "docUrl": "ramadevi.jpg"
+    },
+    {
+        "email": "suprithakc2004@gmail.com",
+        "name": "Supritha K C",
+        "studentId": "221CS253",
+        "phone": "7019982975",
+        "role": "Creative & Cultural Head",
+        "docUrl": "suprita.jpg"
+    },
+    {
+        "email": "deekshaamin62@gmail.com",
+        "name": "Deeksha H",
+        "studentId": "245SM016",
+        "phone": "7892409680",
+        "role": "PG Coordinator",
+        "docUrl": "deeksha.jpeg"
+    },
+    {
+        "email": "ssmukund45@gmail.com",
+        "name": "Srujan Mukund",
+        "studentId": "221EE253",
+        "phone": "9108876997",
+        "role": "Convenor",
+        "docUrl": "srujan.jpg"
+    },
+    {
+        "email": "buyuvaraaj.03@gmail.com",
+        "name": "B U Yuvaraaj",
+        "studentId": "221CV113",
+        "phone": "8618215848",
+        "role": "Operations & Event Management",
+        "docUrl": "yuvraj.png"
+    },
+    {
+        "email": "anoopmegeri06@gmail.com",
+        "name": "ANOOP MEGERI",
+        "studentId": "221ME206",
+        "phone": "8151802206",
+        "role": "Creative & Cultural Head",
+        "docUrl": "anoop.jpeg"
+    }
+]
