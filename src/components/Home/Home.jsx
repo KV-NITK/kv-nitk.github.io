@@ -1,159 +1,36 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import imgSlider1 from '../../images/img-slider/imgSlider1.JPG';
-import imgSlider2 from '../../images/img-slider/imgSlider2.JPG';
-import imgSlider3 from '../../images/img-slider/imgSlider3.JPG';
-import imgSlider4 from '../../images/img-slider/aboutImg1.jpg';
 import aboutImg1 from '../../images/aboutImg1.jpg';
 import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
-import merchShirt from '../../images/merch/dummy.png';
-
-function AutoAdvance({ setCurrent, count, paused }) {
-  useEffect(() => {
-    if (paused || count <= 1) return;
-    const id = setInterval(() => {
-      setCurrent((c) => (c + 1) % count);
-    }, 5000); // Set to 5 seconds
-    return () => clearInterval(id);
-  }, [paused, count, setCurrent]);
-  return null;
-}
 
 const Home = () => {
-  const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const slides = useMemo(() => [imgSlider1, imgSlider2, imgSlider3, imgSlider4], []);
-  const navigate = useNavigate();
-
-  // Function to move to the next slide
-  const nextSlide = () => {
-    setCurrent((c) => (c + 1) % slides.length);
-    setPaused(false); // Un-pause when manually clicking
-  };
-
-  // Function to move to the previous slide
-  const prevSlide = () => {
-    setCurrent((c) => (c - 1 + slides.length) % slides.length);
-    setPaused(false); // Un-pause when manually clicking
-  };
-
-  // --- Swipe gesture handling ---
-  const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextSlide(); // Swipe left to go next
-      else prevSlide(); // Swipe right to go previous
-    }
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
 
   return (
     <>
       {/* --- Metadata --- */}
       <Metadata title="Home | Kannada Vedike" />
 
-      {/* --- Hero Carousel --- */}
+      {/* --- Hero Image --- */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ height: 'calc(100vh - 110px)' }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        style={{ height: 'calc(100vh - 130px)' }}
       >
-        <div
-          className="flex h-full transition-transform duration-700 ease-out"
-          style={{
-            transform: `translateX(-${current * 100}%)`,
-            width: `${slides.length * 100}%`,
-          }}
-        >
-          {slides.map((src, idx) => (
-          
-              <img
-                src={src}
-                // This comment is fine
-                className="relative w-full h-auto object-cover"
-                alt={`carousel-img-${idx + 1}`}
-              />
-            
-          ))}
-        </div>
-
-        {/* ⬅️ LEFT ARROW BUTTON */}
-        <button
-          onClick={prevSlide}
-          aria-label="Previous Slide"
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 z-20 
-                     p-3 md:p-4 bg-black/40 hover:bg-black/60 rounded-full 
-                     text-white transition-all focus:outline-none"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-
-        {/* ➡️ RIGHT ARROW BUTTON */}
-        <button
-          onClick={nextSlide}
-          aria-label="Next Slide"
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 
-                     p-3 md:p-4 bg-black/40 hover:bg-black/60 rounded-full 
-                     text-white transition-all focus:outline-none"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-          </svg>
-        </button>
-
-        {/* Dots */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setCurrent(i);
-                setPaused(false); // Un-pause on dot click
-              }}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-2.5 w-2.5 rounded-full transition ${current === i
-                  ? 'bg-white'
-                  : 'bg-white/50 hover:bg-white/80'
-                }`}
-            />
-          ))}
-        </div>
-
-        {/* Autoplay */}
-        <AutoAdvance
-          setCurrent={setCurrent}
-          count={slides.length}
-          paused={paused}
+        <img
+          src={imgSlider1}
+          className="w-full h-full object-cover"
+          alt="Kannada Vedike"
         />
 
         {/* Hero Overlay */}
-        <div className="absolute md:relative bottom-0 left-0 right-0 grid md:grid-cols-2 grid-cols-1 min-h-[100px] bg-black/70 md:bg-black/85 px-4 py-2">
-          <p className="hidden md:block text-right pr-4 text-xl leading-[1.8] font-semibold text-[#f2b33d] py-2">
-            ಎಲ್ಲಾದರೂ ಇರು ಎಂತಾದರು ಇರು <br /> ಎಂದೆಂದಿಗು ನೀ ಕನ್ನಡವಾಗಿರು
-          </p>
-          <div className="text-center md:text-left pl-4 md:pl-4 text-[#f21d2f] py-2">
+        <div className="absolute bottom-0 left-0 right-0 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 bg-black/70 md:bg-black/85 px-4 py-6 md:py-4">
+          <div className="text-center md:text-right text-xl md:text-2xl leading-[1.8] font-semibold text-[#f2b33d]">
+            <p>ಎಲ್ಲಾದರೂ ಇರು ಎಂತಾದರು ಇರು</p>
+            <p>ಎಂದೆಂದಿಗು ನೀ ಕನ್ನಡವಾಗಿರು</p>
+          </div>
+          <div className="text-center text-[#f21d2f]">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold">
-              <strong> ಕನ್ನಡ ವೇದಿಕೆ </strong>
+              <strong>ಕನ್ನಡ ವೇದಿಕೆ</strong>
             </h2>
             <p className="text-[#f2b33d] text-base md:text-lg font-semibold">
               ಇದು ಕನ್ನಡ ಅಭಿಮಾನಿ ಬಳಗ
