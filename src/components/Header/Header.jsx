@@ -35,7 +35,7 @@ const Header = () => {
                         alt=""
                         className="h-16 w-16 object-cover rounded-full"
                     /></Link>
-                    <nav className="ml-auto flex items-center gap-4 text-sm md:text-base text-black">
+                    <nav className="ml-auto flex items-center gap-4 text-sm md:text-base text-black mr-10">
                         <Link className="all-nav-links transition" to="/">Home</Link>
                         <HashLink smooth className="all-nav-links transition" to="/#about">About Us</HashLink>
                         {/* <a className="all-nav-links transition" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
