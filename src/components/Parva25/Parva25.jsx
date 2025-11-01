@@ -9,13 +9,13 @@ import LogoLoop from "../../reactbits_components/LogoLoop"
 const Parva25 = () => {
     // Alternative with image sources
     const techLogos = [
-        { src: "/sponsors/s1.jpg", alt: "Sponsor 1", href: "https://sponsor1.com" },
-        { src: "/sponsors/s2.jpeg", alt: "Sponsor 2", href: "https://sponsor2.com" },
-        { src: "/sponsors/s3.png", alt: "Sponsor 3", href: "https://sponsor3.com" },
-        { src: "/sponsors/s4.png", alt: "Sponsor 4", href: "https://sponsor4.com" },
-        { src: "/sponsors/s5.jpeg", alt: "Sponsor 5", href: "https://sponsor5.com" },
-        { src: "/sponsors/s6.png", alt: "Sponsor 6", href: "https://sponsor6.com" },
-        { src: "/sponsors/s7.png", alt: "Sponsor 7", href: "https://sponsor7.com" },
+        { src: "/sponsors/s1.jpg", alt: "Sponsor 1", href: "#" },
+        { src: "/sponsors/s2.jpeg", alt: "Sponsor 2", href: "#" },
+        { src: "/sponsors/s3.png", alt: "Sponsor 3", href: "#" },
+        { src: "/sponsors/s4.png", alt: "Sponsor 4", href: "#" },
+        { src: "/sponsors/s5.jpeg", alt: "Sponsor 5", href: "#" },
+        { src: "/sponsors/s6.png", alt: "Sponsor 6", href: "#" },
+        { src: "/sponsors/s7.png", alt: "Sponsor 7", href: "#" },
     ];
     return (
         <div className="w-full h-full bg-linear-to-b from-[#FFDA1D] to-yellow-500">
@@ -42,7 +42,7 @@ const Parva25 = () => {
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
                         <div className="p-6 md:p-8 flex flex-col justify-center items-center">
                             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#FFDA1D]">Discover Parva 2025</h2>:
-                            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-black">Celebrating Karnataka's Rich Cultural Heritage</h2>
+                            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-black text-center">Celebrating Karnataka's Rich Cultural Heritage</h2>
                             <p className="mt-4 text-muted-foreground leading-7 text-center">
                                 Join us for Parva 2025: A grand celebration by NITK Kannada Vedike, paying homage to the 69th Kannada Rajyotsava and the 52nd anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture. Since 1960, Parva has grown into a magnificent cultural extravaganza, and this year, we're making it even bigger and better. Come celebrate Karnataka's diverse traditions, art, and linguistic splendor with us. Experience an enriching tapestry of music, dance, and festivities, showcasing the essence of Karnataka.
                             </p>
