@@ -9,9 +9,13 @@ import LogoLoop from "../../reactbits_components/LogoLoop"
 const Parva25 = () => {
     // Alternative with image sources
     const techLogos = [
-        { src: "/sponsors/sponsor1.png", alt: "Sponsor 1", href: "https://sponsor1.com" },
-        { src: "/sponsors/sponsor2.png", alt: "Sponsor 2", href: "https://sponsor2.com" },
-        { src: "/sponsors/sponsor3.png", alt: "Sponsor 3", href: "https://sponsor3.com" },
+        { src: "/sponsors/s1.jpg", alt: "Sponsor 1", href: "https://sponsor1.com" },
+        { src: "/sponsors/s2.jpeg", alt: "Sponsor 2", href: "https://sponsor2.com" },
+        { src: "/sponsors/s3.png", alt: "Sponsor 3", href: "https://sponsor3.com" },
+        { src: "/sponsors/s4.png", alt: "Sponsor 4", href: "https://sponsor4.com" },
+        { src: "/sponsors/s5.jpeg", alt: "Sponsor 5", href: "https://sponsor5.com" },
+        { src: "/sponsors/s6.png", alt: "Sponsor 6", href: "https://sponsor6.com" },
+        { src: "/sponsors/s7.png", alt: "Sponsor 7", href: "https://sponsor7.com" },
     ];
     return (
         <div className="w-full h-full bg-linear-to-b from-[#FFDA1D] to-yellow-500">
@@ -20,13 +24,13 @@ const Parva25 = () => {
                     <Silk />
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
-                    <h1 className="text-white text-9xl leading-none font-extrabold tracking-[2px] uppercase noto-serif-kannada-400">
+                    <h1 className="text-white md:text-9xl text-7xl leading-none font-extrabold tracking-[2px] uppercase noto-serif-kannada-400">
                         ಪರ್ವ ೨೫
                     </h1>
-                    <h1 className="text-red-500 text-5xl font-extrabold tracking-[2px] uppercase noto-serif-kannada-600">
+                    <h1 className="text-red-500 md:text-5xl font-extrabold tracking-[2px] uppercase noto-serif-kannada-600">
                         Parva 25
                     </h1>
-                    <p className="text-white">
+                    <p className="text-white text-sm md:text-base">
                         From 31th October to 2nd November
                     </p>
                 </div>
@@ -83,7 +87,7 @@ const Parva25 = () => {
             </section>
 
             {/* Gallery */}
-            <div style={{ width: '100vw', height: '100vh' }}>
+            <div style={{ width: '100vw', height: '80vh' }}>
                 <DomeGallery />
             </div>
         </div>
