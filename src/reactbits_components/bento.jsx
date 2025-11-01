@@ -7,18 +7,20 @@ const DEFAULT_GLOW_COLOR = '132, 0, 255';
 const MOBILE_BREAKPOINT = 768;
 
 const cardData = [
-    { color: '#060010', title: 'Sobagu', description: 'Pavilion', label: '31 Oct' },
-    { color: '#060010', title: 'Flashmob', description: 'BB Court', label: '30 Oct' },
-    { color: '#060010', title: 'Film: Bellbottom', description: '—', label: '29 Oct' },
-    { color: '#060010', title: 'Dumb Charades', description: 'MB', label: '31 Oct' },
-    { color: '#060010', title: 'Antakshari', description: 'MB', label: '31 Oct' },
-    { color: '#060010', title: 'Quiz', description: 'MB', label: '31 Oct' },
+    { color: '#060010', title: 'Sobagu', description: 'Pavilion', label: '31 Oct', image: '/events/sobagu.png' },
+    { color: '#060010', title: 'Flashmob', description: 'BB Court', label: '30 Oct', image: '/events/flashmob.jpg' },
+    { color: '#060010', title: 'Film: Bellbottom', description: 'SJA', label: '29 Oct', image: '/events/film.png' },
+    { color: '#060010', title: 'Dumb Charades', description: 'MB', label: '31 Oct', image: '/events/dumbcharades.png' },
+    { color: '#060010', title: 'Antakshari ', description: 'MB', label: '31 Oct', image: '/events/antakshari.png' },
+    { color: '#060010', title: 'Quiz', description: 'MB', label: '31 Oct', image: '/events/quiz.png' },
+    { color: '#060010', title: 'Cheif Guest: Dr. Shambhu Baligar', description: 'SJA', label: '01 Nov', image: '/events/cheifguest.png' },
     // Main events (make big)
-    { color: '#060010', title: 'Sangeeta Rasasanje', description: 'SAC', label: '01 Nov' },
-    { color: '#060010', title: 'Concert Music', description: 'SAC', label: '01 Nov' },
-    { color: '#060010', title: 'Vinay Kulkarni', description: 'SJA', label: '02 Nov' },
-    { color: '#060010', title: 'Karnataka Food', description: 'OSC', label: '02 Nov' },
-    { color: '#060010', title: 'Prof Drama', description: 'SJA', label: '02 Nov' }
+    { color: '#060010', title: 'Sangeeta Rasasanje', description: 'SAC', label: '01 Nov', image: '/events/sangeeta.png' },
+    { color: '#060010', title: 'Concert Music', description: 'SAC', label: '01 Nov', image: '/events/concert.png' },
+    { color: '#060010', title: 'Vinay Kulkarni', description: 'SJA', label: '02 Nov', image: '/events/vinaykulkarni.png' },
+    { color: '#060010', title: 'Bhoori Bhojana', description: 'OSC', label: '02 Nov', image: '/events/food.png' },
+    { color: '#060010', title: 'Guest of honor: Bhavana Rao', description: 'SJA', label: '02 Nov', image: '/events/bhavanarao.png' },
+    { color: '#060010', title: 'Prof Drama', description: 'SJA', label: '02 Nov', image: '/events/drama.png' }
 ];
 
 const createParticleElement = (x, y, color = DEFAULT_GLOW_COLOR) => {
@@ -626,7 +628,7 @@ const MagicBento = ({
                                     clickEffect={clickEffect}
                                     enableMagnetism={enableMagnetism}
                                 >
-                                    <img src="/events/event1.png" alt="event" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                                    <img src={card.image || '/events/cheifguest.png'} alt={card.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
                                     <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                                     <div className="card__header flex justify-between gap-3 relative text-white">
                                         <span className="card__label text-base">{card.label}</span>
@@ -760,7 +762,7 @@ const MagicBento = ({
                                     el.addEventListener('click', handleClick);
                                 }}
                             >
-                                <img src="/events/event1.png" alt="event" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                                <img src={card.image || '/events/cheifguest.png'} alt={card.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
                                 <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                                 <div className="card__header flex justify-between gap-3 relative text-white">
                                     <span className="card__label text-base">{card.label}</span>
