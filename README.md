@@ -1,70 +1,206 @@
-# Getting Started with Create React App
+# Kannada Vedike NITK - Website
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Official website for Kannada Vedike NITK Surathkal, showcasing the organization's activities, events, and cultural initiatives.
 
-## Available Scripts
+## 🚀 Technology Stack
 
-In the project directory, you can run:
+- **React 19** - UI Framework
+- **Vite** - Build tool and dev server
+- **React Router** - Navigation
+- **Tailwind CSS** - Styling
+- **GSAP** - Animations
+- **Framer Motion** - Motion library
 
-### `npm start`
+## 📋 Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js (v18 or higher recommended)
+- npm or yarn package manager
+- Git
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Setup Instructions
 
-### `npm test`
+### 1. Clone the Repository
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/kv-nitk/kv-nitk.github.io.git
+cd kv-nitk.github.io
+```
 
-### `npm run build`
+### 2. Install Dependencies
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This will install all required packages including React, Vite, Tailwind CSS, and other dependencies.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Development
 
-### `npm run eject`
+Start the development server:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm run dev
+```
+
+The application will be available at [http://localhost:5173](http://localhost:5173)
+
+### 4. Build for Production
+
+Build the optimized production bundle:
+
+```bash
+npm run build
+```
+
+The build output will be in the `build/` directory.
+
+### 5. Preview Production Build
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## 📦 Available Scripts
+
+- `npm run dev` or `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
+
+## 🌐 Deployment
+
+The website is deployed on a server at NITK. There are two deployment scripts available:
+
+### Standard Deployment (`deploy.sh`)
+
+Full deployment process including:
+- ✅ Pulling latest changes from Git
+- ✅ Installing/updating dependencies
+- ✅ Building the project
+- ✅ Creating backup of current deployment
+- ✅ Copying files to web directory
+- ✅ Setting proper permissions
+- ✅ Testing Nginx configuration
+- ✅ Reloading Nginx
+
+**Usage on server:**
+
+```bash
+ssh kannadavedike@10.14.0.80
+cd ~/kv-nitk.github.io
+./deploy.sh
+```
+
+Or from anywhere on the server:
+
+```bash
+~/kv-nitk.github.io/deploy.sh
+```
+
+### Fast Deployment (`deploy-fast.sh`)
+
+`git pull` once before this
+
+Quick deployment without Git operations (use when changes are already on server):
+- ✅ Installing dependencies
+- ✅ Building the project
+- ✅ Copying files to web directory
+- ✅ Setting permissions
+- ✅ Reloading Nginx
+
+**Usage on server:**
+
+```bash
+ssh kannadavedike@10.14.0.80
+cd ~/kv-nitk.github.io
+./deploy-fast.sh
+```
+
+Or:
+
+```bash
+~/kv-nitk.github.io/deploy-fast.sh
+```
+
+### Deployment Workflow
+
+1. **Make changes locally** and test them
+2. **Commit and push** to Git repository
+3. **SSH into the server**:
+   ```bash
+   ssh kannadavedike@10.14.0.80
+   ```
+4. **Run deployment script**:
+   - For full deployment (with Git pull): `~/kv-nitk.github.io/deploy.sh`
+   - For fast deployment (no Git pull): `~/kv-nitk.github.io/deploy-fast.sh`
+5. **Verify** the website is updated at [http://kannadavedike.nitk.ac.in](http://kannadavedike.nitk.ac.in)
+
+### Deployment Scripts Location
+
+Both scripts are located in the project root:
+- `deploy.sh` - Full deployment with Git pull
+- `deploy-fast.sh` - Fast deployment without Git pull
+
+## 📁 Project Structure
 
 If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🎨 Features
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Responsive design for all devices
+- Modern UI with animations
+- Event gallery with 3D dome view
+- Team member showcase
+- Parva 2025 event details
+- Sponsors section
+- Social media integration
 
-## Learn More
+## 🔧 Troubleshooting
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Build Issues
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+If `npm run build` fails:
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
 
-### Code Splitting
+### Deployment Issues
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+If deployment fails:
+1. Check Nginx status: `sudo systemctl status nginx`
+2. Check Nginx logs: `sudo tail -50 /var/log/nginx/error.log`
+3. Verify file permissions: `ls -la /var/www/kannadavedike/kv-nitk.github.io/`
+4. Test Nginx config: `sudo nginx -t`
 
-### Analyzing the Bundle Size
+### Port Issues
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+If port 5173 is in use during development:
+```bash
+# Kill process on port 5173
+lsof -ti:5173 | xargs kill -9
+# Or change port in vite.config.js
+```
 
-### Making a Progressive Web App
+## 📝 Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Always test locally before deploying
+- Keep backups before major updates
+- Check website functionality after deployment
+- Ensure all images and assets are in the `public/` folder
 
-### Advanced Configuration
+## 📞 Contact
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+For issues or questions, contact the Kannada Vedike NITK team.
 
-### Deployment
+## 📄 License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This project is for Kannada Vedike NITK internal use.
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Website**: [http://kannadavedike.nitk.ac.in](http://kannadavedike.nitk.ac.in)  
+**Server IP**: 10.14.0.80
