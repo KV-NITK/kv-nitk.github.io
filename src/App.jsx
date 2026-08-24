@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter as Router, Navigate } from 'react-router-dom';
+import { Routes, Route, BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import './App.css';
@@ -11,6 +11,35 @@ import Social from './components/Social/Social';
 import Parva25 from './components/Parva25/Parva25';
 import Parva from './components/Parva/Parva';
 import Merch from './components/merch/merch';
+import TeamRegistration from './components/team-registration/TeamRegistration';
+import HH2026 from './components/HH2026/HH2026';
+
+// Standalone microsite routes render their own header/footer instead of the
+// main site's chrome.
+const STANDALONE_ROUTES = ['/hh-2026'];
+
+function AppRoutes() {
+  const location = useLocation();
+  const isStandalone = STANDALONE_ROUTES.includes(location.pathname);
+
+  return (
+    <>
+      {isStandalone ? null : <Header />}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/social" element={<Social />} />
+        <Route path="/parva" element={<Parva25 />} />
+        <Route path="/parva-23" element={<Parva />} />
+        <Route path="/Merch" element={<Merch />} />
+        <Route path="/team-registration" element={<TeamRegistration />} />
+        <Route path="/hh-2026" element={<HH2026 />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      {isStandalone ? null : <Footer />}
+    </>
+  );
+}
 
 function App() {
   useEffect(() => {
@@ -25,17 +54,7 @@ function App() {
 
   return (
     <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/social" element={<Social />} />
-        <Route path="/parva" element={<Parva25 />} />
-        <Route path="/parva-23" element={<Parva />} />
-        <Route path="*" element={<Navigate to="/" />} />
-        <Route path="/Merch" element={<Merch />} />
-      </Routes>
-      <Footer />
+      <AppRoutes />
     </Router>
   );
 }

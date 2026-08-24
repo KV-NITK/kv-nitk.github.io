@@ -11,7 +11,9 @@ const MAX_TEAM_SIZE = 4;
 const MIN_MEMBERS = MIN_TEAM_SIZE - 1;
 const MAX_MEMBERS = MAX_TEAM_SIZE - 1;
 
+let memberIdCounter = 0;
 const createEmptyMember = () => ({
+  id: `member-${Date.now()}-${memberIdCounter++}`,
   name: "",
   email: "",
 });
@@ -78,13 +80,30 @@ const TeamRegistration = () => {
   };
 
   // --------------------------------------------------
+  // IRIS Logout
+  // --------------------------------------------------
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setUser(null);
+      setMessage("");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // --------------------------------------------------
   // Member changes
   // --------------------------------------------------
 
-  const handleMemberChange = (index, field, value) => {
+  const handleMemberChange = (id, field, value) => {
     setMembers((currentMembers) =>
-      currentMembers.map((member, currentIndex) =>
-        currentIndex === index
+      currentMembers.map((member) =>
+        member.id === id
           ? {
               ...member,
               [field]: value,
@@ -113,7 +132,7 @@ const TeamRegistration = () => {
   // Remove member
   // --------------------------------------------------
 
-  const removeMember = (index) => {
+  const removeMember = (id) => {
     // Never allow fewer than 2 additional members
     // because total team size must be at least 3.
     if (members.length <= MIN_MEMBERS) {
@@ -122,7 +141,7 @@ const TeamRegistration = () => {
 
     setMembers((currentMembers) =>
       currentMembers.filter(
-        (_, currentIndex) => currentIndex !== index
+        (member) => member.id !== id
       )
     );
   };
@@ -180,9 +199,19 @@ const TeamRegistration = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(
-          data.message || "Team registration failed."
-        );
+        let errorMsg = data.message || "Team registration failed.";
+        if (data.errors && typeof data.errors === "object") {
+          const fieldErrors = Object.values(data.errors)
+            .flat()
+            .filter(Boolean)
+            .join(". ");
+          if (fieldErrors) {
+            errorMsg += `: ${fieldErrors}`;
+          }
+        } else if (data.emails && Array.isArray(data.emails) && data.emails.length > 0) {
+          errorMsg += `: ${data.emails.join(", ")}`;
+        }
+        setMessage(errorMsg);
         return;
       }
 
@@ -247,9 +276,19 @@ const TeamRegistration = () => {
 
       {/* Leader information comes from IRIS */}
       <div className="leader-info">
-        <p>
-          <strong>Leader:</strong> {user.name}
-        </p>
+        <div className="leader-info-header">
+          <p>
+            <strong>Leader:</strong> {user.name}
+          </p>
+
+          <button
+            type="button"
+            className="logout-btn"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
 
         <p>
           <strong>Roll No:</strong> {user.rollNo}
@@ -315,20 +354,20 @@ const TeamRegistration = () => {
           {members.map((member, index) => (
             <div
               className="team-member"
-              key={index}
+              key={member.id}
             >
               <div className="form-group">
-                <label htmlFor={`member-name-${index}`}>
+                <label htmlFor={`member-name-${member.id}`}>
                   Member {index + 1} Name
                 </label>
 
                 <input
-                  id={`member-name-${index}`}
+                  id={`member-name-${member.id}`}
                   type="text"
                   value={member.name}
                   onChange={(event) =>
                     handleMemberChange(
-                      index,
+                      member.id,
                       "name",
                       event.target.value
                     )
@@ -339,22 +378,22 @@ const TeamRegistration = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor={`member-email-${index}`}>
-                  Member {index + 1} NITK Email
+                <label htmlFor={`member-email-${member.id}`}>
+                  Member {index + 1} Email
                 </label>
 
                 <input
-                  id={`member-email-${index}`}
+                  id={`member-email-${member.id}`}
                   type="email"
                   value={member.email}
                   onChange={(event) =>
                     handleMemberChange(
-                      index,
+                      member.id,
                       "email",
                       event.target.value
                     )
                   }
-                  placeholder="Enter NITK email"
+                  placeholder="Enter email"
                   required
                 />
               </div>
@@ -363,7 +402,7 @@ const TeamRegistration = () => {
                 <button
                   type="button"
                   onClick={() =>
-                    removeMember(index)
+                    removeMember(member.id)
                   }
                 >
                   Remove
