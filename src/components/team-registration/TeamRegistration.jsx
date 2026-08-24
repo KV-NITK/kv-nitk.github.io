@@ -241,31 +241,7 @@ const TeamRegistration = () => {
     }
 
 
-    // ----------------------------------------------
-    // Category validation
-    // ----------------------------------------------
 
-    const kannadigaCount = members.filter(
-      (member) => member.category === "kannadiga"
-    ).length;
-
-    const nonKannadigaCount = members.filter(
-      (member) => member.category === "non-kannadiga"
-    ).length;
-
-    if (kannadigaCount < MIN_KANNADIGAS) {
-      setMessage(
-        "The team must have at least 1 Kannadiga."
-      );
-      return;
-    }
-
-    if (nonKannadigaCount < MIN_NON_KANNADIGAS) {
-      setMessage(
-        "The team must have at least 1 Non-Kannadiga."
-      );
-      return;
-    }
 
 
     // ----------------------------------------------
@@ -341,8 +317,6 @@ const TeamRegistration = () => {
               email: member.email
                 .trim()
                 .toLowerCase(),
-
-              category: member.category,
             })),
           }),
         }
@@ -806,51 +780,6 @@ const TeamRegistration = () => {
                       required
                       className="w-full border-2 border-[#7a4823]/40 bg-[#fffdf9] px-4 py-2.5 text-base font-semibold text-[#1a0a03] placeholder:text-[#8a7260] transition-all focus:border-[#4a2206] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7a4823]/30 shadow-sm"
                     />
-
-                  </div>
-
-
-                  {/* Category */}
-
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-
-                    <label
-                      htmlFor={`member-category-${member.id}`}
-                      className="font-serif text-xs font-bold tracking-[0.16em] text-[#3d1e0b] uppercase"
-                    >
-                      Category{" "}
-                      <span className="text-[#8b261b]">
-                        *
-                      </span>
-                    </label>
-
-                    <select
-                      id={`member-category-${member.id}`}
-                      value={member.category}
-                      onChange={(event) =>
-                        handleMemberChange(
-                          member.id,
-                          "category",
-                          event.target.value
-                        )
-                      }
-                      required
-                      className="w-full border-2 border-[#7a4823]/40 bg-[#fffdf9] px-4 py-2.5 text-base font-semibold text-[#1a0a03] transition-all focus:border-[#4a2206] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7a4823]/30 shadow-sm"
-                    >
-
-                      <option value="">
-                        Select category
-                      </option>
-
-                      <option value="kannadiga">
-                        Kannadiga
-                      </option>
-
-                      <option value="non-kannadiga">
-                        Non-Kannadiga
-                      </option>
-
-                    </select>
 
                   </div>
 
