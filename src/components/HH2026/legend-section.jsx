@@ -108,7 +108,7 @@ export function LegendSection() {
               How the hunt runs
             </h3>
             <p className="font-serif text-xs tracking-[0.2em] text-muted-foreground uppercase">
-              09:00 → 21:00 · one day only
+              14:00 → 19:00 · one day only
             </p>
           </div>
 
