@@ -50,20 +50,26 @@ export function SiteFooter() {
             Reach us
           </p>
           <a
-            href="mailto:asnhunt@nitk.edu.in"
             className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
           >
-            <Mail className="size-4" strokeWidth={1.5} aria-hidden="true" />
-            asnhunt@nitk.edu.in
+            <p>Ishitha</p>
           </a>
           <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
+            href="tel:+919900262448"
             className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
           >
-            <AtSign className="size-4" strokeWidth={1.5} aria-hidden="true" />
-            @asn.hunt.nitk
+            <p>&#9742; +91 9900262448</p>
+          </a>
+          <a
+            className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <p>Sanjitha</p>
+          </a>
+          <a
+            href="tel:+917090121318"
+            className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <p>&#9742; +91 7090121318</p>
           </a>
           <p className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="size-4" strokeWidth={1.5} aria-hidden="true" />
