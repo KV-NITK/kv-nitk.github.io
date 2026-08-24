@@ -16,8 +16,8 @@ export const supabase = createClient(
       persistSession: false,
       autoRefreshToken: false,
     },
-    ...(typeof globalThis.WebSocket === "undefined"
-      ? { realtime: { WebSocket } }
-      : {}),
+    realtime: {
+      WebSocket: WebSocket,
+    },
   }
 );
