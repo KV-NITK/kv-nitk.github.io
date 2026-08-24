@@ -1,0 +1,113 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ----------------------------------------------------
+  # Job 1: Build & Verify (Frontend & Backend)
+  # ----------------------------------------------------
+  test-and-build:
+    name: Test & Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Build Frontend App
+        run: npm run build
+        env:
+          VITE_API_URL: https://kannadavedike.nitk.ac.in/api
+
+      - name: Install Backend Dependencies
+        run: cd server && npm ci
+
+      - name: Check Backend Syntax
+        run: cd server && node --check src/server.js src/app.js
+
+  # ----------------------------------------------------
+  # Job 2: Deploy Frontend to GitHub Pages
+  # ----------------------------------------------------
+  deploy-frontend:
+    name: Deploy Frontend (GitHub Pages)
+    needs: test-and-build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://kannadavedike.nitk.ac.in/api
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+
+  # ----------------------------------------------------
+  # Job 3: Build & Publish Backend Docker Image (GHCR)
+  # ----------------------------------------------------
+  build-and-push-backend:
+    name: Build & Push Backend Container Image
+    needs: test-and-build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/kv-backend
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/kv-backend:latest
+            ghcr.io/${{ github.repository_owner }}/kv-backend:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
