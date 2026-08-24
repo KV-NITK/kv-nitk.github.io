@@ -1,0 +1,188 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), Georgia, serif;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* ink-black soot */
+  --background: oklch(0.16 0.018 62);
+  --foreground: oklch(0.93 0.025 85);
+
+  /* aged parchment-on-wood panels */
+  --card: oklch(0.22 0.03 60);
+  --card-foreground: oklch(0.93 0.025 85);
+  --popover: oklch(0.22 0.03 60);
+  --popover-foreground: oklch(0.93 0.025 85);
+
+  /* temple gold */
+  --primary: oklch(0.79 0.135 79);
+  --primary-foreground: oklch(0.18 0.03 60);
+
+  --secondary: oklch(0.27 0.035 62);
+  --secondary-foreground: oklch(0.93 0.025 85);
+  --muted: oklch(0.25 0.03 62);
+  --muted-foreground: oklch(0.72 0.04 80);
+
+  /* saree crimson */
+  --accent: oklch(0.48 0.18 27);
+  --accent-foreground: oklch(0.96 0.03 85);
+
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.79 0.135 79 / 22%);
+  --input: oklch(0.79 0.135 79 / 28%);
+  --ring: oklch(0.79 0.135 79);
+  --radius: 0.25rem;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@utility text-gilded {
+  background-image: linear-gradient(
+    175deg,
+    oklch(0.94 0.07 92) 0%,
+    oklch(0.82 0.14 82) 38%,
+    oklch(0.62 0.12 62) 72%,
+    oklch(0.88 0.11 88) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-grain {
+  background-image: radial-gradient(
+      oklch(0.79 0.135 79 / 8%) 1px,
+      transparent 1px
+    ),
+    radial-gradient(oklch(0.79 0.135 79 / 5%) 1px, transparent 1px);
+  background-size: 22px 22px, 34px 34px;
+  background-position: 0 0, 11px 17px;
+}
+
+/* varnished teak planks, as on a painted lorry board */
+@utility bg-wood {
+  background-color: oklch(0.32 0.055 55);
+  background-image: repeating-linear-gradient(
+      90deg,
+      oklch(0 0 0 / 22%) 0 1px,
+      transparent 1px 7px,
+      oklch(1 0 0 / 4%) 7px 8px,
+      transparent 8px 19px
+    ),
+    linear-gradient(
+      180deg,
+      oklch(0.42 0.06 58) 0%,
+      oklch(0.3 0.05 52) 45%,
+      oklch(0.23 0.04 48) 100%
+    );
+}
+
+/* bevelled gold signwriting */
+@utility text-carved {
+  background-image: linear-gradient(
+    180deg,
+    oklch(0.96 0.06 95) 0%,
+    oklch(0.86 0.14 86) 30%,
+    oklch(0.68 0.13 68) 62%,
+    oklch(0.93 0.1 90) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 oklch(0.28 0.04 48))
+    drop-shadow(0 2px 1px oklch(0 0 0 / 70%))
+    drop-shadow(0 5px 8px oklch(0 0 0 / 55%));
+}
+
+/* truck-art diamond ribbon */
+@utility bg-diamond-band {
+  background-color: oklch(0.24 0.03 55);
+  background-image: linear-gradient(
+      45deg,
+      oklch(0.48 0.18 27) 25%,
+      transparent 25% 75%,
+      oklch(0.48 0.18 27) 75%
+    ),
+    linear-gradient(
+      45deg,
+      oklch(0.79 0.135 79) 25%,
+      transparent 25% 75%,
+      oklch(0.79 0.135 79) 75%
+    );
+  background-size: 18px 18px;
+  background-position: 0 0, 9px 9px;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.72;
+  }
+  70% {
+    opacity: 0.92;
+  }
+}
+
+@utility animate-flicker {
+  animation: flicker 3.5s ease-in-out infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-drift {
+  animation: drift 38s linear infinite;
+}

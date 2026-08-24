@@ -1,0 +1,94 @@
+import { AtSign, Mail, MapPin } from 'lucide-react'
+import Image from 'next/image'
+
+export function SiteFooter() {
+  return (
+    <footer className="bg-background">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/kannada-vedike-logo.png"
+              alt="Kannada Vedike NITK logo"
+              width={32}
+              height={32}
+              className="size-9 shrink-0 rounded-full ring-1 ring-primary/40"
+            />
+            <p className="font-serif text-base font-bold tracking-[0.18em] text-primary">
+              HUDUGATA HUDAKATA
+            </p>
+          </div>
+          <p className="leading-relaxed text-muted-foreground">
+            A treasure hunt by Kannada Vedike, NITK Surathkal, inspired by the
+            film Avane Srimannarayana. Unofficial and made by fans.
+          </p>
+        </div>
+
+        <nav aria-label="Footer" className="flex flex-col gap-3">
+          <p className="font-serif text-[0.65rem] tracking-[0.24em] text-primary uppercase">
+            Explore
+          </p>
+          {[
+            { href: '#about', label: 'The Legend' },
+            { href: '#hunt', label: 'How it runs' },
+            { href: '#team', label: 'Keepers' },
+          ].map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-muted-foreground transition-colors hover:text-primary"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex flex-col gap-3">
+          <p className="font-serif text-[0.65rem] tracking-[0.24em] text-primary uppercase">
+            Reach us
+          </p>
+          <a
+            href="mailto:asnhunt@nitk.edu.in"
+            className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <Mail className="size-4" strokeWidth={1.5} aria-hidden="true" />
+            asnhunt@nitk.edu.in
+          </a>
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <AtSign className="size-4" strokeWidth={1.5} aria-hidden="true" />
+            @asn.hunt.nitk
+          </a>
+          <p className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="size-4" strokeWidth={1.5} aria-hidden="true" />
+            Surathkal, Mangaluru 575025
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="font-serif text-[0.65rem] tracking-[0.24em] text-primary uppercase">
+            Starts
+          </p>
+          <p className="font-serif text-2xl font-bold text-foreground">
+            12 Sept
+          </p>
+          <p className="leading-relaxed text-muted-foreground">
+            09:00 IST at the open-air amphitheatre. Reach fifteen minutes early
+            — the first clue will not wait.
+          </p>
+        </div>
+      </div>
+
+      <div className="border-t border-primary/20">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-6 font-serif text-[0.65rem] tracking-[0.2em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 Hudugata Hudakata · Kannada Vedike, NITK</p>
+          <p>Somewhere on this page, a clue is waiting.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
