@@ -10,4 +10,4 @@ COPY src ./src
 
 EXPOSE 5000
 
-CMD ["node", "--env-file=.env", "src/server.js"]
+CMD ["node", "src/server.js"]
