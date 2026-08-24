@@ -8,6 +8,7 @@ import {
   checkLeaderRollNoExists,
   createTeam,
   getUserTeam,
+  deleteTeamByLeader,
 } from "../services/team.service.js";
 
 export const getMyTeam = async (req, res) => {
@@ -23,6 +24,30 @@ export const getMyTeam = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch user team",
+    });
+  }
+};
+
+export const deleteMyTeam = async (req, res) => {
+  try {
+    const result = await deleteTeamByLeader(req.user);
+
+    if (!result.success) {
+      return res.status(403).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    console.error("Delete team error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete team",
     });
   }
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export function RegisteredSquadCard({ userTeam, user, handleLogout }) {
+export function RegisteredSquadCard({ userTeam, user, handleLogout, handleDeleteTeam, deletingTeam }) {
   if (!userTeam) return null;
 
   return (
@@ -89,11 +89,23 @@ export function RegisteredSquadCard({ userTeam, user, handleLogout }) {
           onClick={handleLogout}
           className="w-full border-2 border-[#7a4823] bg-[#7a4823] text-[#fffdf9] hover:bg-[#4a2206] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer"
         >
-          Switch IRIS Account
+          Switch Account
         </button>
+
+        {userTeam.role === "leader" && (
+          <button
+            type="button"
+            disabled={deletingTeam}
+            onClick={handleDeleteTeam}
+            className="w-full border-2 border-[#8b261b] bg-[#8b261b] text-[#f7eed6] hover:bg-[#6e1e15] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            {deletingTeam ? "Deleting..." : "Delete Squad"}
+          </button>
+        )}
+
         <Link
           to="/hh-2026"
-          className="w-full text-center border-2 border-[#4a2206] bg-[#8b261b] text-[#f7eed6] hover:bg-[#6e1e15] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer"
+          className="w-full text-center border-2 border-[#4a2206] bg-[#4a2206] text-[#f7eed6] hover:bg-[#2b1810] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center"
         >
           Back to Event Rules
         </Link>
