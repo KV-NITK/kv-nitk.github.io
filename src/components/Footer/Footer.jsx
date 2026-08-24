@@ -88,7 +88,7 @@ const Footer = () => {
                                         <p className="text-sm opacity-90">kiranmanjappa@nitk.edu.in</p>
                                     </div>
                                     <div>
-                                        <h5 className="font-semibold mb-1 text-white/90">Srujan Mukund</h5>
+                                        <h5 className="font-semibold mb-1 text-white/90">Yashas Gowda</h5>
                                         <p className="text-sm opacity-90">Convenor</p>
                                         <p className="text-sm opacity-90">+91 91088 76997</p>
                                         <p className="text-sm opacity-90">ssmukund45@gmail.com</p>
