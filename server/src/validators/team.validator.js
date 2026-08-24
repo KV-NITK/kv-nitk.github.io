@@ -4,11 +4,7 @@ const nitkEmail = z
   .string()
   .trim()
   .toLowerCase()
-  .email("Invalid email address")
-  .refine(
-    (email) => email.endsWith("@nitk.edu.in"),
-    "Only NITK email addresses are allowed"
-  );
+  .email("Invalid email address");
 
 const memberSchema = z.object({
   name: z
@@ -34,5 +30,6 @@ export const registerTeamSchema = z.object({
 
   members: z
     .array(memberSchema)
-    .min(1, "At least one member is required"),
+    .min(2, "At least 2 additional members are required (team size must be at least 3 including leader)")
+    .max(3, "At most 3 additional members are allowed (team size cannot exceed 4 including leader)"),
 });
