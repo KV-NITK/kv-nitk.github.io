@@ -182,8 +182,7 @@ export function LegendSection() {
                 Rs 8,500
               </p>
               <p className="leading-relaxed text-muted-foreground">
-                Split across the first three squads to open the vault, plus
-                merch for every finisher.
+                Split across the first three squads to open the vault
               </p>
               <Roam
                 className="hidden -right-4 -bottom-6 w-20 rotate-6 opacity-90 md:block"
