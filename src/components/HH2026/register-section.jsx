@@ -29,8 +29,7 @@ export function RegisterSection() {
           </ArchSign>
         </div>
         <p className="max-w-xl text-lg leading-relaxed text-muted-foreground text-pretty">
-          Entry is free for NITK students. Squads are capped at 60 — once the
-          slots are gone, the trail closes.
+          Entry is free for NITK students. Squads of 3 to 4 (must contain at least <strong>1 Kannadiga</strong> and at least <strong>2 Non-Kannadigas</strong>). Slots are capped at 60 — once they're gone, the trail closes.
         </p>
 
         <div className="relative">

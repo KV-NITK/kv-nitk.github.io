@@ -369,6 +369,11 @@ const TeamRegistration = () => {
             </span>
           </div>
 
+          {/* Team Composition Rule Banner */}
+          <div className="rounded-sm border border-[#8b261b]/40 bg-[#8b261b]/10 px-4 py-2.5 font-serif text-xs font-bold text-[#8b261b] shadow-xs">
+            ⚠️ <span className="uppercase tracking-wider">Rule Notice:</span> Each squad must consist of at least <strong>1 Kannadiga</strong> and at least <strong>2 Non-Kannadigas</strong>.
+          </div>
+
           {/* List of Member Fields stacked on the paper */}
           <div className="flex flex-col gap-6 mt-2">
             {members.map((member, index) => (
