@@ -85,7 +85,7 @@ export const irisCallback = async (req, res) => {
     res.cookie("user_meta", encodedUser, getCookieOptions(24 * 60 * 60 * 1000));
 
     return res.redirect(
-      `${process.env.FRONTEND_URL}/team-registration`
+      `${process.env.FRONTEND_URL}/team-registration?t=${Date.now()}`
     );
 
   } catch (error) {
