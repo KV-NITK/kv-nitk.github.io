@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   registerTeam,
+  getMyTeam,
 } from "../controllers/team.controller.js";
 
 
@@ -16,6 +17,8 @@ import {
 import { requireTeamAuth } from "../middleware/teamAuth.middleware.js";
 
 const router = express.Router();
+
+router.get("/my-team", requireAuth, getMyTeam);
 
 router.post("/register", requireAuth, registerTeam);
 
