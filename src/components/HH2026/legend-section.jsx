@@ -44,7 +44,7 @@ const acts = [
 ]
 
 const rules = [
-  'Squads of 3 to 4 — mix your branches, you will need every brain.',
+  'Squads of 3 to 4 — minimum 1 Kannadiga & 2 Non-Kannadigas per squad, mix your branches.',
   'Phones allowed, but stolen answers are disqualification.',
   'No damaging property, no climbing where you should not.',
   'Volunteers in khaki are the referees. Their word is final.',
