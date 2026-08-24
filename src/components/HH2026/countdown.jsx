@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const TARGET = new Date('2026-08-30T09:00:00+05:30').getTime()
+const TARGET = new Date('2026-08-30T14:00:00+05:30').getTime()
 
 function split(ms) {
   const clamped = Math.max(ms, 0)
