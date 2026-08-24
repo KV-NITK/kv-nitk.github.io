@@ -59,7 +59,7 @@ export function MemberInputField({
             type="text"
             value={member.rollNo}
             onChange={(e) => handleMemberChange(member.id, "rollNo", e.target.value)}
-            placeholder="e.g. 261..."
+            placeholder="e.g. 26..."
             required
             className="w-full border-2 border-[#7a4823]/40 bg-[#fffdf9] px-4 py-2.5 text-base font-semibold text-[#1a0a03] placeholder:text-[#8a7260] transition-all focus:border-[#4a2206] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7a4823]/30 shadow-sm"
           />

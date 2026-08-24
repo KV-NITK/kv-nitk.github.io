@@ -200,11 +200,11 @@ const TeamRegistration = () => {
     }
 
     const invalidRollNo = members.find(
-      (member) => !/^261/.test(member.rollNo.trim().toUpperCase())
+      (member) => !/^26/.test(member.rollNo.trim().toUpperCase())
     );
 
     if (invalidRollNo) {
-      setMessage("Roll numbers must start with 261.");
+      setMessage("Roll numbers must start with 26.");
       return;
     }
 
