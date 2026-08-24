@@ -3,59 +3,88 @@ import "./teamRegistration.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const TeamRegistration = ({
-  minPlayers = 3,
-  maxPlayers = 4,
-}) => {
+// Total team size, INCLUDING the leader
+const MIN_TEAM_SIZE = 3;
+const MAX_TEAM_SIZE = 4;
+
+// Therefore, other members = 2 to 3
+const MIN_MEMBERS = MIN_TEAM_SIZE - 1;
+const MAX_MEMBERS = MAX_TEAM_SIZE - 1;
+
+const createEmptyMember = () => ({
+  name: "",
+  email: "",
+});
+
+const TeamRegistration = () => {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   const [teamName, setTeamName] = useState("");
   const [password, setPassword] = useState("");
 
+  // Start with minimum team size:
+  // 1 leader + 2 members = 3 total
   const [members, setMembers] = useState([
-    {
-      name: "",
-      email: "",
-    },
+    createEmptyMember(),
+    createEmptyMember(),
   ]);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Check whether the leader is logged in with IRIS
+  // --------------------------------------------------
+  // Check IRIS authentication
+  // --------------------------------------------------
+
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthentication = async () => {
       try {
         const response = await fetch(`${API_URL}/auth/me`, {
+          method: "GET",
           credentials: "include",
         });
 
-        if (response.ok) {
-          const data = await response.json();
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.user) {
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error("Authentication check failed:", error);
+        setUser(null);
       } finally {
         setCheckingAuth(false);
       }
     };
 
-    checkAuth();
+    checkAuthentication();
   }, []);
 
-  // Redirect leader to IRIS login
+  // --------------------------------------------------
+  // IRIS Login
+  // --------------------------------------------------
+
   const handleIrisLogin = () => {
     window.location.href = `${API_URL}/auth/iris`;
   };
 
-  // Update player details
+  // --------------------------------------------------
+  // Member changes
+  // --------------------------------------------------
+
   const handleMemberChange = (index, field, value) => {
-    setMembers((current) =>
-      current.map((member, i) =>
-        i === index
+    setMembers((currentMembers) =>
+      currentMembers.map((member, currentIndex) =>
+        currentIndex === index
           ? {
               ...member,
               [field]: value,
@@ -65,49 +94,60 @@ const TeamRegistration = ({
     );
   };
 
-  // Add player
+  // --------------------------------------------------
+  // Add member
+  // --------------------------------------------------
+
   const addMember = () => {
-    if (members.length >= maxPlayers) {
+    if (members.length >= MAX_MEMBERS) {
       return;
     }
 
-    setMembers((current) => [
-      ...current,
-      {
-        name: "",
-        email: "",
-      },
+    setMembers((currentMembers) => [
+      ...currentMembers,
+      createEmptyMember(),
     ]);
   };
 
-  // Remove player
+  // --------------------------------------------------
+  // Remove member
+  // --------------------------------------------------
+
   const removeMember = (index) => {
-    if (members.length <= minPlayers) {
+    // Never allow fewer than 2 additional members
+    // because total team size must be at least 3.
+    if (members.length <= MIN_MEMBERS) {
       return;
     }
 
-    setMembers((current) =>
-      current.filter((_, i) => i !== index)
+    setMembers((currentMembers) =>
+      currentMembers.filter(
+        (_, currentIndex) => currentIndex !== index
+      )
     );
   };
 
-  // Register team
+  // --------------------------------------------------
+  // Team registration
+  // --------------------------------------------------
+
   const handleRegister = async (event) => {
     event.preventDefault();
 
     setMessage("");
-    setSuccess(false);
+    setIsSuccess(false);
 
-    if (members.length < minPlayers) {
+    // Frontend validation
+    if (members.length < MIN_MEMBERS) {
       setMessage(
-        `At least ${minPlayers} players are required.`
+        `A minimum of ${MIN_TEAM_SIZE} members including the leader is required.`
       );
       return;
     }
 
-    if (members.length > maxPlayers) {
+    if (members.length > MAX_MEMBERS) {
       setMessage(
-        `Maximum ${maxPlayers} players are allowed.`
+        `A maximum of ${MAX_TEAM_SIZE} members including the leader is allowed.`
       );
       return;
     }
@@ -115,37 +155,40 @@ const TeamRegistration = ({
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${API_URL}/teams/register`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            teamName: teamName.trim(),
-            password,
-            members: members.map((member) => ({
-              name: member.name.trim(),
-              email: member.email.trim().toLowerCase(),
-            })),
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/teams/register`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        // IMPORTANT:
+        // Do NOT send leaderIrisId.
+        // Backend gets it from req.user.irisId.
+        body: JSON.stringify({
+          teamName: teamName.trim(),
+
+          password,
+
+          members: members.map((member) => ({
+            name: member.name.trim(),
+            email: member.email.trim().toLowerCase(),
+          })),
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         setMessage(
-          data.message || "Team registration failed"
+          data.message || "Team registration failed."
         );
         return;
       }
 
-      setSuccess(true);
+      setIsSuccess(true);
       setMessage(
-        data.message || "Team registered successfully"
+        data.message || "Team registered successfully."
       );
     } catch (error) {
       console.error("Team registration error:", error);
@@ -158,7 +201,10 @@ const TeamRegistration = ({
     }
   };
 
-  // Loading authentication state
+  // --------------------------------------------------
+  // Loading state
+  // --------------------------------------------------
+
   if (checkingAuth) {
     return (
       <div className="team-registration">
@@ -167,14 +213,18 @@ const TeamRegistration = ({
     );
   }
 
-  // Leader is not authenticated
+  // --------------------------------------------------
+  // Not logged in
+  // --------------------------------------------------
+
   if (!user) {
     return (
       <div className="team-registration">
         <h2>Team Registration</h2>
 
         <p>
-          Login with your IRIS account to register a team.
+          Login with your NITK IRIS account to register
+          your team.
         </p>
 
         <button
@@ -187,15 +237,28 @@ const TeamRegistration = ({
     );
   }
 
-  // Leader is authenticated
+  // --------------------------------------------------
+  // Logged in
+  // --------------------------------------------------
+
   return (
     <div className="team-registration">
       <h2>Team Registration</h2>
 
-      <p>
-        Logged in as{" "}
-        <strong>{user.name}</strong>
-      </p>
+      {/* Leader information comes from IRIS */}
+      <div className="leader-info">
+        <p>
+          <strong>Leader:</strong> {user.name}
+        </p>
+
+        <p>
+          <strong>Roll No:</strong> {user.rollNo}
+        </p>
+
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
+      </div>
 
       <form onSubmit={handleRegister}>
         {/* Team name */}
@@ -240,9 +303,14 @@ const TeamRegistration = ({
             <h3>Team Members</h3>
 
             <span>
-              {members.length}/{maxPlayers}
+              {members.length + 1}/{MAX_TEAM_SIZE}
             </span>
           </div>
+
+          <p>
+            Add {MIN_MEMBERS}–{MAX_MEMBERS} other members.
+            The leader is already included.
+          </p>
 
           {members.map((member, index) => (
             <div
@@ -250,11 +318,12 @@ const TeamRegistration = ({
               key={index}
             >
               <div className="form-group">
-                <label>
-                  Player {index + 1} Name
+                <label htmlFor={`member-name-${index}`}>
+                  Member {index + 1} Name
                 </label>
 
                 <input
+                  id={`member-name-${index}`}
                   type="text"
                   value={member.name}
                   onChange={(event) =>
@@ -264,17 +333,18 @@ const TeamRegistration = ({
                       event.target.value
                     )
                   }
-                  placeholder="Enter player name"
+                  placeholder="Enter member name"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label>
-                  Player {index + 1} NITK Email
+                <label htmlFor={`member-email-${index}`}>
+                  Member {index + 1} NITK Email
                 </label>
 
                 <input
+                  id={`member-email-${index}`}
                   type="email"
                   value={member.email}
                   onChange={(event) =>
@@ -289,7 +359,7 @@ const TeamRegistration = ({
                 />
               </div>
 
-              {members.length > minPlayers && (
+              {members.length > MIN_MEMBERS && (
                 <button
                   type="button"
                   onClick={() =>
@@ -302,12 +372,12 @@ const TeamRegistration = ({
             </div>
           ))}
 
-          {members.length < maxPlayers && (
+          {members.length < MAX_MEMBERS && (
             <button
               type="button"
               onClick={addMember}
             >
-              + Add Player
+              + Add Member
             </button>
           )}
         </div>
@@ -326,7 +396,7 @@ const TeamRegistration = ({
       {message && (
         <p
           className={
-            success
+            isSuccess
               ? "registration-message success"
               : "registration-message error"
           }
