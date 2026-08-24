@@ -2,8 +2,9 @@ import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
 
 const SESSION_DURATION = 1000 * 60 * 60 * 24; // 24 hours
+const sessionProfileMap = new Map();
 
-export const createSession = async (userId, sessionType) => {
+export const createSession = async (userId, sessionType, userData = null) => {
   const sessionId = crypto.randomUUID();
 
   const expiresAt = new Date(
@@ -23,6 +24,10 @@ export const createSession = async (userId, sessionType) => {
     throw error;
   }
 
+  if (userData) {
+    sessionProfileMap.set(sessionId, userData);
+  }
+
   return {
     sessionId,
     expiresAt,
@@ -32,13 +37,17 @@ export const createSession = async (userId, sessionType) => {
 export const getSession = async (sessionId) => {
   const { data, error } = await supabase
     .from("sessions")
-    .select("user_id, session_type, expires_at")
+    .select("*")
     .eq("id", sessionId)
     .gt("expires_at", new Date().toISOString())
     .maybeSingle();
 
   if (error) {
     throw error;
+  }
+
+  if (data) {
+    data.user_data = sessionProfileMap.get(sessionId) || null;
   }
 
   return data;

@@ -10,25 +10,25 @@ const {
 
 export const getIrisAuthorizationUrl = (state) => {
   const params = new URLSearchParams({
-    client_id: IRIS_CLIENT_ID,
-    redirect_uri: IRIS_REDIRECT_URI,
+    client_id: process.env.IRIS_CLIENT_ID,
+    redirect_uri: process.env.IRIS_REDIRECT_URI,
     response_type: "code",
     scope: "profile",
     state,
   });
 
-  return `https://iris.nitk.ac.in/oauth/authorize?${params.toString()}`;
+  return `${process.env.IRIS_AUTHORIZE_URL || "https://iris.nitk.ac.in/oauth/authorize"}?${params.toString()}`;
 };
 
 export const getIrisProfile = async (code) => {
   const tokenResponse = await axios.post(
-    IRIS_TOKEN_URL,
+    process.env.IRIS_TOKEN_URL || "https://iris.nitk.ac.in/oauth/token",
     new URLSearchParams({
-      client_id: IRIS_CLIENT_ID,
-      client_secret: IRIS_CLIENT_SECRET,
+      client_id: process.env.IRIS_CLIENT_ID,
+      client_secret: process.env.IRIS_CLIENT_SECRET,
       code,
       grant_type: "authorization_code",
-      redirect_uri: IRIS_REDIRECT_URI,
+      redirect_uri: process.env.IRIS_REDIRECT_URI,
     }).toString(),
     {
       headers: {
@@ -39,11 +39,17 @@ export const getIrisProfile = async (code) => {
 
   const { access_token } = tokenResponse.data;
 
-  const profileResponse = await axios.get(IRIS_PROFILE_URL, {
-    params: {
-      access_token,
-    },
-  });
+  const profileResponse = await axios.get(
+    process.env.IRIS_PROFILE_URL || "https://iris.nitk.ac.in/oauth/userinfo",
+    {
+      params: {
+        access_token,
+      },
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    }
+  );
 
   return profileResponse.data;
 };

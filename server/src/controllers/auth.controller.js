@@ -9,15 +9,19 @@ import {
   getIrisProfile,
 } from "../services/iris.service.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const getCookieOptions = (maxAge) => ({
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  ...(maxAge ? { maxAge } : {}),
+});
+
 export const irisLogin = (req, res) => {
   const state = crypto.randomBytes(32).toString("hex");
 
-  res.cookie("iris_oauth_state", state, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    maxAge: 10 * 60 * 1000,
-  });
+  res.cookie("iris_oauth_state", state, getCookieOptions(10 * 60 * 1000));
 
   const url = getIrisAuthorizationUrl(state);
 
@@ -41,37 +45,44 @@ export const irisCallback = async (req, res) => {
       !req.cookies.iris_oauth_state ||
       state !== req.cookies.iris_oauth_state
     ) {
+      console.error("OAuth State Mismatch:", {
+        queryState: state,
+        cookieState: req.cookies.iris_oauth_state,
+        cookies: req.cookies,
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid OAuth state",
       });
     }
 
-    res.clearCookie("iris_oauth_state");
+    res.clearCookie("iris_oauth_state", getCookieOptions());
 
     // Get IRIS profile
     const profile = await getIrisProfile(code);
+    console.log("IRIS Profile received successfully:", profile);
 
+    const userProfile = profile.user || profile;
     const user = {
-      irisId: String(profile.reg_no),
-      name: `${profile.first_name} ${profile.last_name}`.trim(),
-      email: profile.email,
-      rollNo: profile.roll_no,
+      irisId: String(userProfile.reg_no || userProfile.id || userProfile.roll_no || "unknown"),
+      name: `${userProfile.first_name || ""} ${userProfile.last_name || ""}`.trim() || userProfile.name || "IRIS Student",
+      email: userProfile.email || "",
+      rollNo: userProfile.roll_no || userProfile.reg_no || "",
     };
 
-    // Create YOUR application's session
+    // Create YOUR application's session with profile info
     const { sessionId } = await createSession(
-  user.irisId,
-  "user"
-);
+      user.irisId,
+      "user",
+      user
+    );
 
-    // Send session ID as HTTP-only cookie
-    res.cookie("session_id", sessionId, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    console.log("Created session for user:", user.email, "Session ID:", sessionId);
+
+    // Send session ID and user metadata cookies
+    res.cookie("session_id", sessionId, getCookieOptions(24 * 60 * 60 * 1000));
+    const encodedUser = Buffer.from(JSON.stringify(user)).toString("base64");
+    res.cookie("user_meta", encodedUser, getCookieOptions(24 * 60 * 60 * 1000));
 
     return res.redirect(
       `${process.env.FRONTEND_URL}/team-registration`
@@ -105,11 +116,8 @@ export const logout = async (req, res) => {
       await deleteSession(sessionId);
     }
 
-    res.clearCookie("session_id", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-    });
+    res.clearCookie("session_id", getCookieOptions());
+    res.clearCookie("user_meta", getCookieOptions());
 
     return res.json({
       success: true,
