@@ -1,15 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export function RegisteredSquadCard({ userTeam, user, handleLogout, handleDeleteTeam, deletingTeam }) {
+export function RegisteredSquadCard({
+  userTeam,
+  user,
+  handleLogout,
+  handleDeleteTeam,
+  deletingTeam,
+}) {
   if (!userTeam) return null;
+
+  const isLeader = userTeam.role === "leader";
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header / Plaque */}
       <div className="border-b-2 border-[#8b5a2b]/30 pb-4 text-center">
         <span className="inline-block rounded-full bg-[#8b261b] px-4 py-1 font-serif text-xs font-bold uppercase tracking-[0.2em] text-[#f7eed6] shadow-sm">
-          {userTeam.role === "leader" ? "👑 Squad Leader" : "⚔️ Squad Member"}
+          {isLeader ? "👑 Squad Leader" : "⚔️ Squad Member"}
         </span>
         <h2 className="mt-3 font-serif text-2xl sm:text-4xl font-black uppercase text-[#2b1810] tracking-wide">
           {userTeam.teamName}
@@ -30,26 +38,33 @@ export function RegisteredSquadCard({ userTeam, user, handleLogout, handleDelete
 
       {/* Squad Leader Info */}
       <div className="border-2 border-[#7a4823]/40 bg-[#fffdf9] p-5 rounded-sm shadow-sm">
-        <h3 className="font-serif text-xs font-bold uppercase tracking-[0.18em] text-[#7a4823] border-b border-[#7a4823]/20 pb-2">
-          Squad Leader Details
+        <h3 className="font-serif text-xs font-bold uppercase tracking-[0.18em] text-[#7a4823] border-b border-[#7a4823]/20 pb-2 flex items-center justify-between">
+          <span>Squad Leader</span>
+          {isLeader && (
+            <span className="font-mono text-xs font-bold text-[#8b261b] bg-[#8b261b]/10 px-2 py-0.5 rounded border border-[#8b261b]/30 uppercase">
+              (You)
+            </span>
+          )}
         </h3>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[#2b1810]">
           <div>
             <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
-              IRIS ID / Roll No
+              Roll No / IRIS ID
             </span>
             <strong className="font-mono text-base">
               {userTeam.leader?.rollNo || userTeam.leader?.irisId}
             </strong>
           </div>
-          <div>
-            <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
-              Current Account
-            </span>
-            <strong className="font-sans text-base">
-              {user?.name || "IRIS Leader"} ({user?.email})
-            </strong>
-          </div>
+          {isLeader && (
+            <div>
+              <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
+                Account Name & Email
+              </span>
+              <strong className="font-sans text-base">
+                {user?.name} ({user?.email})
+              </strong>
+            </div>
+          )}
         </div>
       </div>
 
@@ -60,25 +75,39 @@ export function RegisteredSquadCard({ userTeam, user, handleLogout, handleDelete
         </h3>
 
         <div className="grid grid-cols-1 gap-3">
-          {userTeam.members?.map((member, index) => (
-            <div
-              key={member.id || index}
-              className="border-2 border-[#7a4823]/30 bg-[#fffdf9] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 rounded-sm shadow-sm"
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="font-serif text-[0.65rem] font-bold tracking-[0.2em] text-[#8b261b] uppercase">
-                  Hunter #{index + 2}
-                </span>
-                <p className="font-serif text-base font-bold text-[#1a0a03]">
-                  {member.name}
-                </p>
-                <p className="text-xs text-[#5c3418]">{member.email}</p>
+          {userTeam.members?.map((member, index) => {
+            const isCurrentUser =
+              user?.email?.toLowerCase() === member.email?.toLowerCase() ||
+              (user?.rollNo &&
+                user.rollNo.toUpperCase() === member.roll_no?.toUpperCase());
+
+            return (
+              <div
+                key={member.id || index}
+                className="border-2 border-[#7a4823]/30 bg-[#fffdf9] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 rounded-sm shadow-sm"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-serif text-[0.65rem] font-bold tracking-[0.2em] text-[#8b261b] uppercase">
+                      Hunter #{index + 2}
+                    </span>
+                    {isCurrentUser && (
+                      <span className="font-mono text-[0.65rem] font-bold text-[#8b261b] bg-[#8b261b]/15 px-2 py-0.5 rounded border border-[#8b261b]/30 uppercase">
+                        (You)
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-serif text-base font-bold text-[#1a0a03]">
+                    {member.name}
+                  </p>
+                  <p className="text-xs text-[#5c3418]">{member.email}</p>
+                </div>
+                <div className="font-mono text-xs font-bold text-[#4a2206] bg-[#eedca8] px-3 py-1 rounded border border-[#7a4823]/30">
+                  {member.roll_no}
+                </div>
               </div>
-              <div className="font-mono text-xs font-bold text-[#4a2206] bg-[#eedca8] px-3 py-1 rounded border border-[#7a4823]/30">
-                {member.roll_no}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -92,7 +121,7 @@ export function RegisteredSquadCard({ userTeam, user, handleLogout, handleDelete
           Switch Account
         </button>
 
-        {userTeam.role === "leader" && (
+        {isLeader && (
           <button
             type="button"
             disabled={deletingTeam}
