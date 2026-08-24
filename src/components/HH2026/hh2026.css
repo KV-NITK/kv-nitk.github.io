@@ -1,0 +1,290 @@
+/*
+ * Styles for the /hh-2026 (Hudugata Hudakata treasure hunt) landing page,
+ * ported from a standalone Next.js app. Color tokens and fonts are scoped
+ * under .hh2026-page instead of :root so they don't leak into the rest of
+ * the site's theme; the utility classes/keyframes below are new names that
+ * don't collide with anything else in the app, so they're registered
+ * globally the way Tailwind v4's @utility/@keyframes normally work.
+ */
+
+:root {
+  --hh2026-font-display: 'Cinzel', Georgia, serif;
+  --hh2026-font-body: 'Karla', ui-sans-serif, system-ui, sans-serif;
+}
+
+.hh2026-page {
+  color-scheme: dark;
+  font-family: var(--hh2026-font-body);
+
+  /* ink-black soot */
+  --background: oklch(0.16 0.018 62);
+  --foreground: oklch(0.93 0.025 85);
+
+  /* aged parchment-on-wood panels */
+  --card: oklch(0.22 0.03 60);
+  --card-foreground: oklch(0.93 0.025 85);
+  --popover: oklch(0.22 0.03 60);
+  --popover-foreground: oklch(0.93 0.025 85);
+
+  /* temple gold */
+  --primary: oklch(0.79 0.135 79);
+  --primary-foreground: oklch(0.18 0.03 60);
+
+  --secondary: oklch(0.27 0.035 62);
+  --secondary-foreground: oklch(0.93 0.025 85);
+  --muted: oklch(0.25 0.03 62);
+  --muted-foreground: oklch(0.72 0.04 80);
+
+  /* saree crimson */
+  --accent: oklch(0.48 0.18 27);
+  --accent-foreground: oklch(0.96 0.03 85);
+
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.79 0.135 79 / 22%);
+  --input: oklch(0.79 0.135 79 / 28%);
+  --ring: oklch(0.79 0.135 79);
+  --radius: 0.25rem;
+}
+
+.hh2026-page :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--hh2026-font-display);
+}
+
+.hh2026-page .font-serif {
+  font-family: var(--hh2026-font-display);
+}
+
+@utility text-gilded {
+  background-image: linear-gradient(
+    175deg,
+    oklch(0.94 0.07 92) 0%,
+    oklch(0.82 0.14 82) 38%,
+    oklch(0.62 0.12 62) 72%,
+    oklch(0.88 0.11 88) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-grain {
+  background-image: radial-gradient(
+      oklch(0.79 0.135 79 / 8%) 1px,
+      transparent 1px
+    ),
+    radial-gradient(oklch(0.79 0.135 79 / 5%) 1px, transparent 1px);
+  background-size: 22px 22px, 34px 34px;
+  background-position: 0 0, 11px 17px;
+}
+
+/* varnished teak planks, as on a painted lorry board */
+@utility bg-wood {
+  background-color: oklch(0.32 0.055 55);
+  background-image: url('/hh2026/wood-panel-texture.png'),
+    repeating-linear-gradient(
+      90deg,
+      oklch(0 0 0 / 22%) 0 1px,
+      transparent 1px 7px,
+      oklch(1 0 0 / 4%) 7px 8px,
+      transparent 8px 19px
+    ),
+    linear-gradient(
+      180deg,
+      oklch(0.42 0.06 58) 0%,
+      oklch(0.3 0.05 52) 45%,
+      oklch(0.23 0.04 48) 100%
+    );
+  background-size:
+    cover,
+    auto,
+    auto;
+  background-blend-mode: overlay, normal, normal;
+}
+
+/*
+ * Aged parchment atmosphere: gold grain dots + a dark tint (matching
+ * --background) sitting over the parchment photo, so the warm texture
+ * reads as a subtle backdrop rather than replacing the dark theme.
+ */
+@utility bg-parchment {
+  background-image: radial-gradient(
+      oklch(0.79 0.135 79 / 8%) 1px,
+      transparent 1px
+    ),
+    radial-gradient(oklch(0.79 0.135 79 / 5%) 1px, transparent 1px),
+    linear-gradient(oklch(0.16 0.018 62 / 80%), oklch(0.16 0.018 62 / 80%)),
+    url('/hh2026/parchment-texture.png');
+  background-size:
+    22px 22px,
+    34px 34px,
+    cover,
+    cover;
+  background-position:
+    0 0,
+    11px 17px,
+    center,
+    center;
+}
+
+@utility clip-torn {
+  clip-path: url('#torn-edge');
+}
+
+/*
+ * Each "card" sits on its own paper/pamphlet cutout instead of a bordered
+ * rectangle. The image is stretched to exactly fill the element (its own
+ * alpha edges define the visible shape), so no separate border or
+ * clip-path is needed. Two variants, alternated per-card by callers, so
+ * adjacent cards don't look identically stamped.
+ */
+@utility bg-pamphlet {
+  background-color: oklch(0.22 0.03 60 / 40%);
+  background-image: url('/hh2026/prop-parchment-scrap-1.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+@utility bg-pamphlet-alt {
+  background-color: oklch(0.22 0.03 60 / 40%);
+  background-image: url('/hh2026/prop-parchment-scrap-2.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/*
+ * Ink tones for content sitting directly on the light pamphlet/parchment
+ * cards above — the site's normal light-on-dark text (--foreground,
+ * --primary) is unreadable on a cream background, so pamphlet content
+ * uses these dark "ink" colors instead.
+ */
+@utility text-ink {
+  color: oklch(0.15 0.03 45);
+}
+
+@utility text-ink-muted {
+  color: oklch(0.24 0.035 45 / 95%);
+}
+
+@utility text-ink-accent {
+  color: oklch(0.3 0.16 30);
+}
+
+/* bevelled gold signwriting */
+@utility text-carved {
+  background-image: linear-gradient(
+    180deg,
+    oklch(0.96 0.06 95) 0%,
+    oklch(0.86 0.14 86) 30%,
+    oklch(0.68 0.13 68) 62%,
+    oklch(0.93 0.1 90) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 oklch(0.28 0.04 48))
+    drop-shadow(0 2px 1px oklch(0 0 0 / 70%))
+    drop-shadow(0 5px 8px oklch(0 0 0 / 55%));
+}
+
+/* truck-art diamond ribbon */
+@utility bg-diamond-band {
+  background-color: oklch(0.24 0.03 55);
+  background-image: linear-gradient(
+      45deg,
+      oklch(0.48 0.18 27) 25%,
+      transparent 25% 75%,
+      oklch(0.48 0.18 27) 75%
+    ),
+    linear-gradient(
+      45deg,
+      oklch(0.79 0.135 79) 25%,
+      transparent 25% 75%,
+      oklch(0.79 0.135 79) 75%
+    );
+  background-size: 18px 18px;
+  background-position: 0 0, 9px 9px;
+}
+
+@keyframes hh2026-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.72;
+  }
+  70% {
+    opacity: 0.92;
+  }
+}
+
+@utility animate-flicker {
+  animation: hh2026-flicker 3.5s ease-in-out infinite;
+}
+
+@keyframes hh2026-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-drift {
+  animation: hh2026-drift 38s linear infinite;
+}
+
+@keyframes hh2026-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--roam-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(calc(var(--roam-rotate, 0deg) + 3deg));
+  }
+}
+
+@keyframes hh2026-sway {
+  0%,
+  100% {
+    transform: rotate(calc(var(--roam-rotate, 0deg) - 4deg));
+  }
+  50% {
+    transform: rotate(calc(var(--roam-rotate, 0deg) + 4deg));
+  }
+}
+
+@keyframes hh2026-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility animate-float {
+  animation: hh2026-float var(--roam-duration, 8s) ease-in-out infinite;
+  animation-delay: var(--roam-delay, 0s);
+}
+
+@utility animate-sway {
+  animation: hh2026-sway var(--roam-duration, 6s) ease-in-out infinite;
+  animation-delay: var(--roam-delay, 0s);
+  transform-origin: top center;
+}
+
+@utility animate-spin-slow {
+  animation: hh2026-spin-slow var(--roam-duration, 90s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hh2026-page .animate-float,
+  .hh2026-page .animate-sway,
+  .hh2026-page .animate-spin-slow,
+  .hh2026-page .animate-drift,
+  .hh2026-page .animate-flicker {
+    animation: none;
+  }
+}
