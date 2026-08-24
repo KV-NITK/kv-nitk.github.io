@@ -6,14 +6,17 @@ import {
   MapPin,
   Puzzle,
   Search,
+  Trophy,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Plaque, Rivets } from './ornaments'
 import {
   FootprintTrail,
+  Key,
   Revolver,
   Roam,
   Rope,
+  TreasureChest,
   TreasureMap,
 } from './roaming-assets'
 
@@ -144,7 +147,7 @@ export function LegendSection() {
             </Roam>
           </div>
 
-          <div className="relative grid gap-8 border border-primary/25 bg-secondary/30 p-7 pt-12">
+          <div className="relative grid gap-8 border border-primary/25 bg-secondary/30 p-7 pt-12 md:grid-cols-2">
             <Rope className="absolute -top-6 right-6 left-6 h-9 animate-sway" />
             <div className="flex flex-col gap-4">
               <h4 className="font-serif text-lg font-bold tracking-[0.16em] uppercase">
@@ -161,6 +164,35 @@ export function LegendSection() {
                   </li>
                 ))}
               </ul>
+            </div>
+            <div className="relative flex flex-col gap-3 border-t border-primary/20 pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-8">
+              <Roam
+                className="hidden -top-4 right-0 w-28 -rotate-12 md:block"
+                motion="sway"
+                duration="6.5s"
+              >
+                <Key />
+              </Roam>
+              <Trophy
+                className="size-6 text-primary"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <p className="font-serif text-3xl font-black text-primary">
+                Rs 8,500
+              </p>
+              <p className="leading-relaxed text-muted-foreground">
+                Split across the first three squads to open the vault, plus
+                merch for every finisher.
+              </p>
+              <Roam
+                className="hidden -right-4 -bottom-6 w-20 rotate-6 opacity-90 md:block"
+                motion="float"
+                duration="7.5s"
+                delay="0.3s"
+              >
+                <TreasureChest className="drop-shadow-[0_10px_10px_oklch(0_0_0/50%)]" />
+              </Roam>
             </div>
           </div>
         </div>
