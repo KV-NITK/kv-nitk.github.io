@@ -250,3 +250,100 @@ export const createTeam = async ({
 
   return data;
 };
+
+
+// ==========================================
+// Get User's Team (as Leader or Member)
+// ==========================================
+
+export const getUserTeam = async (user) => {
+  if (!user) return null;
+
+  const rollNo = user.rollNo ? user.rollNo.trim().toUpperCase() : null;
+  const email = user.email ? user.email.trim().toLowerCase() : null;
+  const irisId = user.irisId ? String(user.irisId) : null;
+
+  let team = null;
+
+  // 1. Check if user is a Leader
+  if (irisId || rollNo) {
+    let query = supabase
+      .from("teams")
+      .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at");
+
+    if (irisId) {
+      query = query.eq("leader_iris_id", irisId);
+    } else {
+      query = query.eq("leader_roll_no", rollNo);
+    }
+
+    const { data: leaderTeam, error } = await query.maybeSingle();
+
+    if (error) {
+      console.error("Error finding leader team:", error);
+    } else if (leaderTeam) {
+      team = { ...leaderTeam, role: "leader" };
+    }
+  }
+
+  // 2. If not a leader, check if user is a Member
+  if (!team && (rollNo || email)) {
+    let memberMatch = null;
+
+    if (rollNo) {
+      const { data } = await supabase
+        .from("team_members")
+        .select("team_id")
+        .eq("roll_no", rollNo)
+        .maybeSingle();
+      memberMatch = data;
+    }
+
+    if (!memberMatch && email) {
+      const { data } = await supabase
+        .from("team_members")
+        .select("team_id")
+        .eq("normalized_email", email)
+        .maybeSingle();
+      memberMatch = data;
+    }
+
+    if (memberMatch) {
+      const { data: memberTeam, error } = await supabase
+        .from("teams")
+        .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at")
+        .eq("id", memberMatch.team_id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error finding member team:", error);
+      } else if (memberTeam) {
+        team = { ...memberTeam, role: "member" };
+      }
+    }
+  }
+
+  if (!team) return null;
+
+  // 3. Fetch all squad members for this team
+  const { data: members, error: membersError } = await supabase
+    .from("team_members")
+    .select("id, name, roll_no, email")
+    .eq("team_id", team.id);
+
+  if (membersError) {
+    console.error("Error fetching team members:", membersError);
+  }
+
+  return {
+    id: team.id,
+    teamName: team.team_name,
+    status: team.status,
+    role: team.role,
+    leader: {
+      irisId: team.leader_iris_id,
+      rollNo: team.leader_roll_no,
+    },
+    members: members || [],
+  };
+};

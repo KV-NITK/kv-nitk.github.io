@@ -7,7 +7,25 @@ import {
   checkLeaderExists,
   checkLeaderRollNoExists,
   createTeam,
+  getUserTeam,
 } from "../services/team.service.js";
+
+export const getMyTeam = async (req, res) => {
+  try {
+    const team = await getUserTeam(req.user);
+
+    return res.json({
+      success: true,
+      team,
+    });
+  } catch (error) {
+    console.error("Get my team error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch user team",
+    });
+  }
+};
 
 import { hashPassword } from "../utils/password.js";
 
