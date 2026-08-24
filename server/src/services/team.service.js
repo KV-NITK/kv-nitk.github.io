@@ -94,12 +94,12 @@ export const validateMemberDetails = (
   members,
   leaderRollNo = null
 ) => {
-  const emails = members.map((member) =>
-    member.email.trim().toLowerCase()
-  );
+  const emails = members
+    .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
+    .filter((e) => e.length > 0);
 
   const rollNumbers = members.map((member) =>
-    member.rollNo.trim().toUpperCase()
+    member.rollNo ? member.rollNo.trim().toUpperCase() : ""
   );
 
   // ----------------------------------------
@@ -120,7 +120,7 @@ export const validateMemberDetails = (
   }
 
   // ----------------------------------------
-  // Duplicate emails in same request
+  // Duplicate emails in same request (if provided)
   // ----------------------------------------
 
   const uniqueEmails = new Set(emails);
@@ -161,54 +161,47 @@ export const validateMemberDetails = (
 // ==========================================
 
 export const checkExistingMembers = async (members) => {
-  const emails = members.map((member) =>
-    member.email.trim().toLowerCase()
-  );
+  const emails = members
+    .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
+    .filter((e) => e.length > 0);
 
   const rollNumbers = members.map((member) =>
-    member.rollNo.trim().toUpperCase()
+    member.rollNo ? member.rollNo.trim().toUpperCase() : ""
   );
 
   // ----------------------------------------
-  // Existing emails
+  // Existing emails (only check non-empty)
   // ----------------------------------------
 
-  const { data: emailData, error: emailError } =
-    await supabase
+  let emailData = [];
+  if (emails.length > 0) {
+    const { data, error: emailError } = await supabase
       .from("team_members")
       .select("email")
       .in("normalized_email", emails);
 
-  if (emailError) {
-    throw new Error(
-      "Failed to check member emails"
-    );
+    if (emailError) {
+      throw new Error("Failed to check member emails");
+    }
+    emailData = data || [];
   }
 
   // ----------------------------------------
   // Existing roll numbers
   // ----------------------------------------
 
-  const { data: rollData, error: rollError } =
-    await supabase
-      .from("team_members")
-      .select("roll_no")
-      .in("roll_no", rollNumbers);
+  const { data: rollData, error: rollError } = await supabase
+    .from("team_members")
+    .select("roll_no")
+    .in("roll_no", rollNumbers);
 
   if (rollError) {
-    throw new Error(
-      "Failed to check member roll numbers"
-    );
+    throw new Error("Failed to check member roll numbers");
   }
 
   return {
-    emails: emailData.map(
-      (member) => member.email
-    ),
-
-    rollNumbers: rollData.map(
-      (member) => member.roll_no
-    ),
+    emails: emailData.map((member) => member.email),
+    rollNumbers: (rollData || []).map((member) => member.roll_no),
   };
 };
 

@@ -71,15 +71,14 @@ export function MemberInputField({
             htmlFor={`member-email-${member.id}`}
             className="font-serif text-xs font-bold tracking-[0.16em] text-[#3d1e0b] uppercase"
           >
-            Email Address <span className="text-[#8b261b]">*</span>
+            Email Address <span className="font-normal text-[#5c3418]">(Optional)</span>
           </label>
           <input
             id={`member-email-${member.id}`}
             type="email"
             value={member.email}
             onChange={(e) => handleMemberChange(member.id, "email", e.target.value)}
-            placeholder="Enter email address"
-            required
+            placeholder="Enter email address (optional)"
             className="w-full border-2 border-[#7a4823]/40 bg-[#fffdf9] px-4 py-2.5 text-base font-semibold text-[#1a0a03] placeholder:text-[#8a7260] transition-all focus:border-[#4a2206] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7a4823]/30 shadow-sm"
           />
         </div>

@@ -214,7 +214,10 @@ const TeamRegistration = () => {
       return;
     }
 
-    const emails = members.map((member) => member.email.trim().toLowerCase());
+    const emails = members
+      .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
+      .filter((e) => e.length > 0);
+
     if (new Set(emails).size !== emails.length) {
       setMessage("Duplicate member email addresses are not allowed.");
       return;
@@ -235,7 +238,7 @@ const TeamRegistration = () => {
           members: members.map((member) => ({
             name: member.name.trim(),
             rollNo: member.rollNo.trim().toUpperCase(),
-            email: member.email.trim().toLowerCase(),
+            email: member.email ? member.email.trim().toLowerCase() : "",
           })),
         }),
       });

@@ -22,7 +22,9 @@ const memberSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .email("Invalid email address"),
+    .email("Invalid email address")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const registerTeamSchema = z.object({
