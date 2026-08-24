@@ -4,6 +4,7 @@ import {
   validateMemberEmails,
   checkTeamNameExists,
   checkMemberEmailsExist,
+  checkLeaderExists,
   createTeam,
 } from "../services/team.service.js";
 
@@ -24,8 +25,8 @@ export const registerTeam = async (req, res) => {
 
     const data = result.data;
 
-    // 2. Check duplicate emails inside request
-    const emailCheck = validateMemberEmails(data.members);
+    // 2. Check duplicate emails inside request (including leader email)
+    const emailCheck = validateMemberEmails(data.members, req.user?.email);
 
     if (!emailCheck.valid) {
       return res.status(400).json({
@@ -34,7 +35,18 @@ export const registerTeam = async (req, res) => {
       });
     }
 
-    // 3. Check team name
+    // 3. Check if team leader is already registered
+    const leaderIrisId = req.user.irisId;
+    const leaderExists = await checkLeaderExists(leaderIrisId);
+
+    if (leaderExists) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already registered a team as leader",
+      });
+    }
+
+    // 4. Check team name
     const teamExists = await checkTeamNameExists(data.teamName);
 
     if (teamExists) {
@@ -44,7 +56,7 @@ export const registerTeam = async (req, res) => {
       });
     }
 
-    // 4. Check existing member emails
+    // 5. Check existing member emails
     const existingMembers =
       await checkMemberEmailsExist(data.members);
 
@@ -60,9 +72,6 @@ export const registerTeam = async (req, res) => {
 
     // 5. Hash password
     const passwordHash = await hashPassword(data.password);
-
-  
-    const leaderIrisId = req.user.irisId;
 
     // 6. Create team + members atomically
     const teamId = await createTeam({

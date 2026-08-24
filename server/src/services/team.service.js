@@ -32,10 +32,31 @@ export const checkMemberEmailsExist = async (members) => {
   return data;
 };
 
-export const validateMemberEmails = (members) => {
+export const checkLeaderExists = async (leaderIrisId) => {
+  const { data, error } = await supabase
+    .from("teams")
+    .select("id")
+    .eq("leader_iris_id", leaderIrisId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Failed to check leader registration status");
+  }
+
+  return !!data;
+};
+
+export const validateMemberEmails = (members, leaderEmail = null) => {
   const emails = members.map((member) =>
     member.email.trim().toLowerCase()
   );
+
+  if (leaderEmail && emails.includes(leaderEmail.trim().toLowerCase())) {
+    return {
+      valid: false,
+      message: "Leader email cannot be included in the members list",
+    };
+  }
 
   const uniqueEmails = new Set(emails);
 
