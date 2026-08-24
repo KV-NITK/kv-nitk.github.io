@@ -40,10 +40,6 @@ export function RegisterSection() {
             Register your squad
           </Link>
         </div>
-
-        <p className="font-serif text-xs tracking-[0.18em] text-muted-foreground uppercase">
-          Doubts? Write to asnhunt@nitk.edu.in
-        </p>
       </div>
     </section>
   )
