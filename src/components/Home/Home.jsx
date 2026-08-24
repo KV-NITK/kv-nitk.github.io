@@ -4,6 +4,7 @@ import imgSlider1 from '../../images/img-slider/imgSlider1.JPG';
 import aboutImg1 from '../../images/aboutImg1.jpg';
 import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
+import { DiamondBand } from '../HH2026/ornaments';
 
 const Home = () => {
 
@@ -40,7 +41,46 @@ const Home = () => {
         </div>
       </div>
 
-      {/* --- Parva 2025 Banner --- */}
+      {/* --- Hudugata Hudakata (hh-2026) Banner --- */}
+      <Link
+        to="/hh-2026"
+        className="hh2026-page block relative w-full overflow-hidden bg-background group"
+      >
+        <DiamondBand />
+        <div className="relative bg-parchment px-4 py-10 md:px-8 md:py-14">
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
+            <div className="flex-1 text-center md:text-left">
+              <p className="mb-3 font-serif text-xs tracking-[0.3em] text-primary uppercase md:text-sm">
+                Kannada Vedike Presents · 30 Aug 2026
+              </p>
+              <h2 className="mb-3 font-serif text-4xl font-black tracking-tight text-carved md:text-6xl">
+                Hudugata Hudakata
+              </h2>
+              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                A campus-wide treasure hunt inspired by Avane Srimannarayana.
+                Crack the clues, chase the trail, claim the gold — squads of
+                3 to 4, entry free.
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center justify-center md:justify-end">
+              <div className="transform rounded-full border border-primary/40 bg-primary/15 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/25 md:p-6">
+                <svg
+                  className="h-6 w-6 text-primary md:h-8 md:w-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DiamondBand />
+      </Link>
+
+      {/* --- Parva 2025 Banner ---
+      Commented out: moved down into the "Past Events" section below.
       <Link to="/parva" className="block relative w-full overflow-hidden group">
         <div
           className="relative w-full py-8 md:py-12 px-4 md:px-8"
@@ -78,6 +118,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-all duration-300"></div>
         </div>
       </Link>
+      --- */}
 
       {/* --- About Section --- */}
       <div id="about" className="relative py-16 md:py-24 px-4 overflow-hidden">
@@ -152,6 +193,59 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* --- Past Events Section --- */}
+      <div id="past-events" className="relative py-16 md:py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 bg-linear-to-r from-[#f21d2f] via-[#FFDA1D] to-[#f21d2f] bg-clip-text text-transparent">
+              Past Events
+            </h2>
+            <div className="w-24 h-1 bg-linear-to-r from-[#FFDA1D] to-[#f21d2f] mx-auto rounded-full"></div>
+          </div>
+
+          <Link
+            to="/parva"
+            className="block relative w-full overflow-hidden group rounded-2xl shadow-2xl"
+          >
+            <div
+              className="relative w-full py-8 md:py-12 px-4 md:px-8"
+              style={{
+                background: 'linear-gradient(135deg, #FFDA1D 0%, #FFA500 25%, #f21d2f 75%, #C8102E 100%)',
+                backgroundSize: '200% 200%',
+                animation: 'gradientShift 8s ease infinite'
+              }}
+            >
+              <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-3xl md:text-5xl font-extrabold text-black mb-3 drop-shadow-lg">
+                    ಪರ್ವ ೨೫
+                  </h3>
+                  <h4 className="text-xl md:text-3xl font-bold text-black/90 mb-4 drop-shadow-md">
+                    Parva 2025
+                  </h4>
+                  <p className="text-black/95 text-sm md:text-base leading-relaxed font-medium drop-shadow">
+                    Join us for Parva 2025: A grand celebration by NITK Kannada Vedike, paying homage to the 69th Kannada Rajyotsava and the 52nd anniversary of Karnataka's renaming. It's more than a festival; it's a vibrant tribute to language, art, and culture.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center md:justify-end">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 md:p-6 group-hover:bg-white/30 transition-all duration-300 transform group-hover:scale-110">
+                    <svg
+                      className="w-6 h-6 md:w-8 md:h-8 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-all duration-300"></div>
+            </div>
+          </Link>
         </div>
       </div>
 
