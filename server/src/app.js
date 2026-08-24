@@ -1,10 +1,15 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import path from "path";
+import { fileURLToPath } from "url";
 import teamRoutes from "./routes/team.routes.js";
 import { supabase } from "./config/supabase.js";
 import authRoutes from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -44,5 +49,15 @@ app.get("/api/health", (req, res) => {
 app.use("/api/teams", teamRoutes);
 app.use("/api/auth", authRoutes);
 
+// Serve frontend static build if present in container / root
+const clientBuildPath = path.join(__dirname, "../../build");
+app.use(express.static(clientBuildPath));
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) return next();
+  res.sendFile(path.join(clientBuildPath, "index.html"), (err) => {
+    if (err) next();
+  });
+});
 
 export default app;
