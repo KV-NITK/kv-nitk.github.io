@@ -95,11 +95,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lower case repository owner
+        run: |
+          echo "IMAGE_REPOSITORY=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/kv-backend" >> $GITHUB_ENV
+
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/kv-backend
+          images: ${{ env.IMAGE_REPOSITORY }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
@@ -108,6 +112,6 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/kv-backend:latest
-            ghcr.io/${{ github.repository_owner }}/kv-backend:${{ github.sha }}
+            ${{ env.IMAGE_REPOSITORY }}:latest
+            ${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
