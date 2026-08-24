@@ -3,6 +3,7 @@ import express from "express";
 import {
   registerTeam,
   getMyTeam,
+  deleteMyTeam,
 } from "../controllers/team.controller.js";
 
 
@@ -19,6 +20,7 @@ import { requireTeamAuth } from "../middleware/teamAuth.middleware.js";
 const router = express.Router();
 
 router.get("/my-team", requireAuth, getMyTeam);
+router.delete("/my-team", requireAuth, deleteMyTeam);
 
 router.post("/register", requireAuth, registerTeam);
 

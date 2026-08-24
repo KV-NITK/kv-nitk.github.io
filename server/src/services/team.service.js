@@ -347,3 +347,70 @@ export const getUserTeam = async (user) => {
     members: members || [],
   };
 };
+
+
+// ==========================================
+// Delete team (Leader only)
+// ==========================================
+
+export const deleteTeamByLeader = async (user) => {
+  if (!user) {
+    return { success: false, message: "User authentication required" };
+  }
+
+  const rollNo = user.rollNo ? user.rollNo.trim().toUpperCase() : null;
+  const irisId = user.irisId ? String(user.irisId) : null;
+
+  if (!irisId && !rollNo) {
+    return { success: false, message: "User roll number or IRIS ID required" };
+  }
+
+  // 1. Find team where user is leader
+  let query = supabase.from("teams").select("id, team_name");
+  if (irisId) {
+    query = query.eq("leader_iris_id", irisId);
+  } else {
+    query = query.eq("leader_roll_no", rollNo);
+  }
+
+  const { data: team, error } = await query.maybeSingle();
+
+  if (error) {
+    console.error("Error finding leader team for deletion:", error);
+    throw new Error("Database query error while checking team leadership");
+  }
+
+  if (!team) {
+    return {
+      success: false,
+      message: "Only the squad leader can delete the team, or team was not found",
+    };
+  }
+
+  // 2. Delete team members
+  const { error: membersDeleteError } = await supabase
+    .from("team_members")
+    .delete()
+    .eq("team_id", team.id);
+
+  if (membersDeleteError) {
+    console.error("Error deleting team members:", membersDeleteError);
+    throw new Error("Failed to delete squad members");
+  }
+
+  // 3. Delete team entry
+  const { error: teamDeleteError } = await supabase
+    .from("teams")
+    .delete()
+    .eq("id", team.id);
+
+  if (teamDeleteError) {
+    console.error("Error deleting team:", teamDeleteError);
+    throw new Error("Failed to delete squad");
+  }
+
+  return {
+    success: true,
+    message: `Squad "${team.team_name}" deleted successfully`,
+  };
+};

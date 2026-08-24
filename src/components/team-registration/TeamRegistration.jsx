@@ -43,8 +43,43 @@ const TeamRegistration = () => {
   ]);
 
   const [loading, setLoading] = useState(false);
+  const [deletingTeam, setDeletingTeam] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleDeleteTeam = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete your squad? All members will be unregistered and this action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setDeletingTeam(true);
+
+    try {
+      const response = await fetch(`${API_URL}/teams/my-team`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setUserTeam(null);
+        setMessage(data.message || "Squad deleted successfully.");
+        setIsSuccess(true);
+      } else {
+        alert(data.message || "Failed to delete team.");
+      }
+    } catch (error) {
+      console.error("Delete team error:", error);
+      alert("Failed to connect to server to delete team.");
+    } finally {
+      setDeletingTeam(false);
+    }
+  };
 
   // ==================================================
   // CHECK IRIS AUTHENTICATION
@@ -270,6 +305,8 @@ const TeamRegistration = () => {
         userTeam={userTeam}
         user={user}
         handleLogout={handleLogout}
+        handleDeleteTeam={handleDeleteTeam}
+        deletingTeam={deletingTeam}
       />
     );
   } else {
