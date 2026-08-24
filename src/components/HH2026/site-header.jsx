@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { HashLink } from 'react-router-hash-link'
 
 const links = [
   { href: '#about', label: 'The Legend' },
@@ -30,22 +31,24 @@ export function SiteHeader() {
 
         <nav aria-label="Sections" className="hidden items-center gap-7 md:flex">
           {links.map((link) => (
-            <a
+            <HashLink
+              smooth
               key={link.href}
-              href={link.href}
+              to={`/hh-2026${link.href}`}
               className="font-serif text-xs tracking-[0.18em] text-muted-foreground uppercase transition-colors hover:text-primary"
             >
               {link.label}
-            </a>
+            </HashLink>
           ))}
         </nav>
 
-        <a
-          href="#register"
+        <HashLink
+          smooth
+          to="/hh-2026#register"
           className="border border-primary bg-primary px-4 py-2 font-serif text-xs font-bold tracking-[0.18em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
         >
           Register
-        </a>
+        </HashLink>
       </div>
     </header>
   )

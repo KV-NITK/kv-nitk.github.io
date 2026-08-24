@@ -1,4 +1,5 @@
 import { AtSign, Mail, MapPin } from 'lucide-react'
+import { HashLink } from 'react-router-hash-link'
 import { Rope } from './roaming-assets'
 
 export function SiteFooter() {
@@ -33,13 +34,14 @@ export function SiteFooter() {
             { href: '#hunt', label: 'How it runs' },
             { href: '#team', label: 'Keepers' },
           ].map((link) => (
-            <a
+            <HashLink
+              smooth
               key={link.href}
-              href={link.href}
+              to={`/hh-2026${link.href}`}
               className="text-muted-foreground transition-colors hover:text-primary"
             >
               {link.label}
-            </a>
+            </HashLink>
           ))}
         </nav>
 
