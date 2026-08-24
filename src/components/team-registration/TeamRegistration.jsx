@@ -15,7 +15,7 @@ import { SiteFooter } from "../HH2026/site-footer";
 import { Plaque, DiamondBand, Rivets, CrossedFlintlocks } from "../HH2026/ornaments";
 import { cn } from "../../lib/utils";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // Total team size, INCLUDING the leader
 const MIN_TEAM_SIZE = 3;
