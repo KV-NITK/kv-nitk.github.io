@@ -5,6 +5,15 @@ import {
 } from "../services/session.service.js";
 import { supabase } from "../config/supabase.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const getCookieOptions = (maxAge) => ({
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  ...(maxAge ? { maxAge } : {}),
+});
+
 export const teamLogin = async (req, res) => {
   try {
     const { teamName, password } = req.body;
@@ -31,12 +40,7 @@ export const teamLogin = async (req, res) => {
       "team"
     );
 
-    res.cookie("team_session_id", sessionId, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie("team_session_id", sessionId, getCookieOptions(24 * 60 * 60 * 1000));
 
     return res.json({
       success: true,
@@ -102,11 +106,7 @@ export const teamLogout = async (req, res) => {
       await deleteSession(sessionId);
     }
 
-    res.clearCookie("team_session_id", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-    });
+    res.clearCookie("team_session_id", getCookieOptions());
 
     return res.json({
       success: true,
