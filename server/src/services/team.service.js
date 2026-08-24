@@ -158,6 +158,7 @@ export const validateMemberDetails = (
 // ==========================================
 // Check existing members
 // Email OR roll number already registered
+// TODO: Consolidate normalized_email into email column directly since email is already trimmed & lowercased.
 // ==========================================
 
 export const checkExistingMembers = async (members) => {

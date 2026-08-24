@@ -115,3 +115,25 @@ jobs:
             ${{ env.IMAGE_REPOSITORY }}:latest
             ${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  # ----------------------------------------------------
+  # Job 4: Auto-Deploy on NITK Campus Server (10.14.0.80)
+  # Runs on self-hosted runner on 10.14.0.80 (outbound connection, works behind campus firewall/private IP)
+  # ----------------------------------------------------
+  deploy-to-nitk-server:
+    name: Auto-Deploy to NITK Campus Server
+    needs: [test-and-build, build-and-push-backend]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restart Backend & Deploy Frontend
+        run: |
+          cd /home/kannadavedike/kv-nitk.github.io
+          git pull origin master
+          echo KVedike@nitk | sudo -S systemctl restart kv-backend
+          npm run build
+          echo KVedike@nitk | sudo -S bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
+
