@@ -1,10 +1,13 @@
 import { z } from "zod";
 
-const nitkEmail = z
+const rollNo = z
   .string()
   .trim()
-  .toLowerCase()
-  .email("Invalid email address");
+  .toUpperCase()
+  .regex(
+    /^26/,
+    "Roll number must start with 26"
+  );
 
 const memberSchema = z.object({
   name: z
@@ -13,7 +16,13 @@ const memberSchema = z.object({
     .min(2, "Member name is required")
     .max(100, "Member name is too long"),
 
-  email: nitkEmail,
+  rollNo,
+
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Invalid email address"),
 });
 
 export const registerTeamSchema = z.object({
@@ -30,6 +39,12 @@ export const registerTeamSchema = z.object({
 
   members: z
     .array(memberSchema)
-    .min(2, "At least 2 additional members are required (team size must be at least 3 including leader)")
-    .max(3, "At most 3 additional members are allowed (team size cannot exceed 4 including leader)"),
+    .min(
+      2,
+      "At least 2 additional members are required (team size must be at least 3 including leader)"
+    )
+    .max(
+      3,
+      "At most 3 additional members are allowed (team size cannot exceed 4 including leader)"
+    ),
 });

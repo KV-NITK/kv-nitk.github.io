@@ -1,10 +1,11 @@
 import { registerTeamSchema } from "../validators/team.validator.js";
 
 import {
-  validateMemberEmails,
+  validateMemberDetails,
   checkTeamNameExists,
-  checkMemberEmailsExist,
+  checkExistingMembers,
   checkLeaderExists,
+  checkLeaderRollNoExists,
   createTeam,
 } from "../services/team.service.js";
 
@@ -25,18 +26,24 @@ export const registerTeam = async (req, res) => {
 
     const data = result.data;
 
-    // 2. Check duplicate emails inside request (including leader email)
-    const emailCheck = validateMemberEmails(data.members, req.user?.email);
+    // Leader information comes from IRIS session
+    const leaderIrisId = req.user.irisId;
+    const leaderRollNo = req.user.rollNo;
 
-    if (!emailCheck.valid) {
+    // 2. Validate member emails + roll numbers
+    const memberValidation = validateMemberDetails(
+      data.members,
+      leaderRollNo
+    );
+
+    if (!memberValidation.valid) {
       return res.status(400).json({
         success: false,
-        message: emailCheck.message,
+        message: memberValidation.message,
       });
     }
 
-    // 3. Check if team leader is already registered
-    const leaderIrisId = req.user.irisId;
+    // 3. Check if leader is already registered as a leader
     const leaderExists = await checkLeaderExists(leaderIrisId);
 
     if (leaderExists) {
@@ -46,8 +53,22 @@ export const registerTeam = async (req, res) => {
       });
     }
 
-    // 4. Check team name
-    const teamExists = await checkTeamNameExists(data.teamName);
+    // 4. Check if leader's roll number is already registered
+    const leaderRollExists =
+      await checkLeaderRollNoExists(leaderRollNo);
+
+    if (leaderRollExists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Your roll number is already registered with a team",
+      });
+    }
+
+    // 5. Check team name
+    const teamExists = await checkTeamNameExists(
+      data.teamName
+    );
 
     if (teamExists) {
       return res.status(409).json({
@@ -56,28 +77,31 @@ export const registerTeam = async (req, res) => {
       });
     }
 
-    // 5. Check existing member emails
+    // 6. Check existing member emails + roll numbers
     const existingMembers =
-      await checkMemberEmailsExist(data.members);
+      await checkExistingMembers(data.members);
 
-    if (existingMembers.length > 0) {
+    if (
+      existingMembers.emails.length > 0 ||
+      existingMembers.rollNumbers.length > 0
+    ) {
       return res.status(409).json({
         success: false,
         message: "One or more members are already registered",
-        emails: existingMembers.map(
-          (member) => member.email
-        ),
+        emails: existingMembers.emails,
+        rollNumbers: existingMembers.rollNumbers,
       });
     }
 
-    // 5. Hash password
+    // 7. Hash password
     const passwordHash = await hashPassword(data.password);
 
-    // 6. Create team + members atomically
+    // 8. Create team + members atomically
     const teamId = await createTeam({
       teamName: data.teamName,
       passwordHash,
       leaderIrisId,
+      leaderRollNo,
       members: data.members,
     });
 
@@ -86,7 +110,6 @@ export const registerTeam = async (req, res) => {
       message: "Team registered successfully",
       teamId,
     });
-
   } catch (error) {
     console.error("Registration error:", error);
 
