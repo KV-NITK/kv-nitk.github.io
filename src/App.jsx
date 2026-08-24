@@ -16,7 +16,7 @@ import HH2026 from './components/HH2026/HH2026';
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026'];
+const STANDALONE_ROUTES = ['/hh-2026', '/team-registration'];
 
 function AppRoutes() {
   const location = useLocation();
