@@ -59,7 +59,7 @@ const Home = () => {
               <p className="max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
                 A campus-wide treasure hunt inspired by Avane Srimannarayana.
                 Crack the clues, chase the trail, claim the gold — squads of
-                3 to 4 (min 1 Kannadiga & 2 Non-Kannadigas), entry free.
+                3 to 4 (min 1 Kannadiga & min 1 Non-Kannadiga), entry free.
               </p>
             </div>
             <div className="flex shrink-0 items-center justify-center md:justify-end">
