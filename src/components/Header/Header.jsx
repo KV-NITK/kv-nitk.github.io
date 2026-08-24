@@ -40,6 +40,7 @@ const Header = () => {
                         <HashLink smooth className="all-nav-links transition" to="/#about">About Us</HashLink>
                         {/* <a className="all-nav-links transition" href={brochureLink} target="_blank" rel="noreferrer">Brochure</a> */}
                         <Link className="all-nav-links transition" to="/parva">Parva</Link>
+                        <Link className="all-nav-links transition" to="/hh-2026">Hudugata Hudakata</Link>
                         {/* <Link className="all-nav-links transition" to="/events">Events</Link> */}
                         {/* <Link className="all-nav-links transition" to="/social">Social Activities</Link> */}
                         {/* <Link className="all-nav-links transition" to="/merch">Merch</Link> */}
