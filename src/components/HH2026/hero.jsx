@@ -7,8 +7,7 @@ const facts = [
   { label: 'Date', value: '30 Aug 2026' },
   { label: 'Where', value: 'West Campus, NITK' },
   { label: 'Squad', value: '3–4 hunters' },
-  // Prize pool — commented out for now, will add back later.
-  // { label: 'Bounty', value: 'Rs 40,000' },
+  { label: 'Bounty', value: 'Rs 8,500' },
 ]
 
 export function Hero() {
@@ -84,7 +83,7 @@ export function Hero() {
 
           <Countdown />
 
-          <dl className="relative grid w-full grid-cols-3 gap-x-6 gap-y-5 border-t border-primary/20 pt-6">
+          <dl className="relative grid w-full grid-cols-2 gap-x-6 gap-y-5 border-t border-primary/20 pt-6 sm:grid-cols-4">
             {facts.map((fact) => (
               <div key={fact.label} className="flex flex-col gap-1">
                 <dt className="font-serif text-[0.6rem] tracking-[0.24em] text-muted-foreground uppercase">
