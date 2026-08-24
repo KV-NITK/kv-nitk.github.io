@@ -53,7 +53,8 @@ app.use("/api/auth", authRoutes);
 const clientBuildPath = path.join(__dirname, "../../build");
 app.use(express.static(clientBuildPath));
 
-app.get("(.*)", (req, res, next) => {
+// Fallback to React static build for non-API requests
+app.use((req, res, next) => {
   if (req.path.startsWith("/api/")) return next();
   res.sendFile(path.join(clientBuildPath, "index.html"), (err) => {
     if (err) next();
