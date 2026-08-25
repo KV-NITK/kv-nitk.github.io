@@ -15,9 +15,11 @@ import TeamRegistration from './components/team-registration/TeamRegistration';
 import HH2026 from './components/HH2026/HH2026';
 import ListOfMembers from './components/list-of-members/ListOfMembers';
 
+import HH2026Leaderboard from './components/HH2026/leaderboard';
+
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/team-registration', '/list-of-members'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/leaderboard', '/team-registration', '/list-of-members'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -36,6 +38,7 @@ function AppRoutes() {
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/list-of-members" element={<ListOfMembers />} />
         <Route path="/hh-2026" element={<HH2026 />} />
+        <Route path="/hh-2026/leaderboard" element={<HH2026Leaderboard />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       {isStandalone ? null : <Footer />}
