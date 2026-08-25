@@ -113,7 +113,7 @@ export function Hero() {
             <Rivets count={7} className="px-1 pb-2" />
             <div className="border border-primary/30 p-1.5">
               <img
-                src="/hh2026/asn-poster.png"
+                src="/hh2026/hero-img.png"
                 alt="Avane Srimannarayana film poster with an ornate golden frame"
                 width={462}
                 height={648}
