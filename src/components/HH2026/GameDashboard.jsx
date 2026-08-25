@@ -844,7 +844,7 @@ export default function GameDashboard() {
                   href="/hh2026/fog-overlay.png" 
                   width="1500" 
                   height="1000" 
-                  opacity="0.94" 
+                  opacity="0.60" 
                   mask="url(#cloud-mask)" 
                 />
                 
@@ -855,7 +855,7 @@ export default function GameDashboard() {
                   width="1500" 
                   height="1000" 
                   fill="#1a1412" 
-                  opacity="0.16" 
+                  opacity="0.10" 
                   mask="url(#cloud-mask)" 
                   className="animate-flicker"
                 />
