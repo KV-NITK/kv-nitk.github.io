@@ -1,20 +1,5 @@
 import React from 'react';
-
-export const teamMembers = [
-  { id: 1, name: 'Abhijith Sogal V', role: 'Convener', img: '/team/2026-27/abhijith.jpg' },
-  { id: 2, name: 'Anindith B L', role: 'Joint Convener', img: '/team/2026-27/anindith.jpg' },
-  { id: 3, name: 'Chetan S Goudar', role: 'Core Committee', img: '/team/2026-27/chetan.jpg' },
-  { id: 4, name: 'Chethana Ramesh', role: 'Core Committee', img: '/team/2026-27/chethana.jpg' },
-  { id: 5, name: 'Karthik Thippeswamy', role: 'Core Committee', img: '/team/2026-27/karthik.jpg' },
-  { id: 6, name: 'Naveenkumar', role: 'Core Committee', img: '/team/2026-27/naveenkumar.jpg' },
-  { id: 7, name: 'Sahana Kapparad', role: 'Core Committee', img: '/team/2026-27/sahana.jpg' },
-  { id: 8, name: 'Satwik B Gurav', role: 'Core Committee', img: '/team/2026-27/satwik.jpg' },
-  { id: 9, name: 'Sinchana', role: 'Core Committee', img: '/team/2026-27/sinchana.jpg' },
-  { id: 10, name: 'Varsha J P', role: 'Core Committee', img: '/team/2026-27/varsha.jpg' },
-  { id: 11, name: 'Varun D H', role: 'Core Committee', img: '/team/2026-27/varun.jpg' },
-  { id: 12, name: 'Yashas Gowda M', role: 'Core Committee', img: '/team/2026-27/yashas-gowda.jpg' },
-  { id: 13, name: 'Yashas R', role: 'Core Committee', img: '/team/2026-27/yashas-r.jpg' },
-];
+import { teamMembers } from '../../data/teamData';
 
 export const TeamSection = () => {
   return (
@@ -27,7 +12,7 @@ export const TeamSection = () => {
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#f21d2f] via-[#FFDA1D] to-[#f21d2f] bg-clip-text text-transparent">
-            Our Team (2026-27)
+            Our Team
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-[#FFDA1D] to-[#f21d2f] mx-auto rounded-full"></div>
           <p className="mt-4 max-w-xl mx-auto text-sm sm:text-base font-medium text-gray-600">
