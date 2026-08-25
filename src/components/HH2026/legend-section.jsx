@@ -18,14 +18,13 @@ import {
 
 const eligibilityRules = [
   'TEAM SIZE: MIN 3 & MAX 4 MEMBERS',
-  'WHO CAN READ AND UNDERSTAND KANNADA IS A MUST. (MOST OF THE CLUES ARE RELATED TO KANNADA)',
+  'WHO CAN READ AND UNDERSTAND KANNADA IS A MUST (MOST OF THE CLUES ARE RELATED TO KANNADA).',
   'EACH TEAM MUST HAVE AT LEAST ONE NON-KANNADIGA.',
 ]
 
 const generalRulesList = [
   'BE THERE ON TIME, SO THAT YOU CAN HAVE FUN FINDING THE TREASURE.',
-  'THE CLUES ARE TO BE FOUND IN PARTICULAR ORDER AS PROVIDED.',
-  'NO CLUE CAN BE SKIPPED.',
+  'THE CLUES ARE TO BE FOUND IN PARTICULAR ORDER AS PROVIDED. NO CLUE CAN BE SKIPPED.',
   'ENTIRE TEAM MUST STAY TOGETHER THROUGHOUT THE GAME TO GET THE NEXT CLUE AT EVERY LOCATION.',
   'ALL ELIGIBLE ENTRIES WILL BE JUDGED AND DISREGARDING THE RULES MAY RESULT IN DISQUALIFICATION OF THE ENTIRE TEAM.',
   'BICYCLES OR ANY VEHICLES CANNOT BE USED.',
@@ -95,36 +94,36 @@ export function LegendSection() {
           </div>
 
           {/* 1. TEAM ELIGIBILITY & WHATSAPP CTA BANNER */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Eligibility Card */}
-            <div className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
-              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
-                <Users className="size-6 text-primary shrink-0" />
-                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Eligibility Card (No outer border, deep padding so text sits inside parchment image) */}
+            <div className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+              <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
+                <Users className="size-6 text-ink-accent shrink-0" />
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
                   Team Eligibility
                 </h3>
               </div>
               <ul className="flex flex-col gap-3">
                 {eligibilityRules.map((rule, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-sm font-semibold leading-relaxed text-ink">
-                    <CheckCircle2 className="size-4 text-primary shrink-0 mt-1" />
+                  <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm font-bold leading-relaxed text-ink">
+                    <CheckCircle2 className="size-4 text-ink-accent shrink-0 mt-0.5" />
                     <span>{rule}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* WhatsApp Group & Updates Banner */}
-            <div className="border-2 border-emerald-700/60 bg-emerald-950/20 p-6 sm:p-8 rounded-sm shadow-md flex flex-col justify-between gap-4">
+            {/* WhatsApp Group & Updates Banner (No outer border, deep padding inside parchment image) */}
+            <div className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col justify-between gap-4 rotate-1 hover:rotate-0 transition-transform">
               <div>
-                <div className="flex items-center gap-3 border-b border-emerald-800/30 pb-3">
-                  <MessageCircle className="size-6 text-emerald-700 shrink-0" />
-                  <h3 className="font-serif text-xl font-bold text-emerald-950 uppercase">
+                <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
+                  <MessageCircle className="size-6 text-emerald-800 shrink-0" />
+                  <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
                     Official WhatsApp Group
                   </h3>
                 </div>
-                <p className="mt-4 text-sm font-semibold text-emerald-950 leading-relaxed uppercase">
-                  Stay updated on our social media & the WhatsApp group of the event!
+                <p className="mt-3 text-xs sm:text-sm font-bold text-ink leading-relaxed">
+                  STAY UPDATED ON OUR SOCIAL MEDIA & THE WHATSAPP GROUP OF THE EVENT!
                 </p>
               </div>
 
@@ -132,7 +131,7 @@ export function LegendSection() {
                 href="https://chat.whatsapp.com/EqzxIHeU7Ol9AYZcfbFSUW?s=sw&p=a&ilr=1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center justify-center gap-3 bg-emerald-700 hover:bg-emerald-800 text-white font-serif text-xs sm:text-sm font-bold tracking-wider uppercase px-6 py-3.5 rounded shadow-lg transition-all transform hover:scale-105"
+                className="mt-2 inline-flex items-center justify-center gap-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-serif text-xs font-bold tracking-wider uppercase px-5 py-3 rounded shadow-md transition-all transform hover:scale-105"
               >
                 <span>Join Event WhatsApp Group</span>
                 <ArrowRight className="size-4" />
@@ -146,55 +145,59 @@ export function LegendSection() {
               Event Structure
             </h3>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
               {/* Round 1 Card */}
-              <article className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
-                <div className="flex items-center justify-between border-b border-primary/20 pb-3">
-                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-primary uppercase">
+              <article className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+                <div className="flex items-center justify-between border-b border-[#8b5a2b]/30 pb-3">
+                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-ink-accent uppercase">
                     Round 1
                   </span>
-                  <MapPin className="size-5 text-primary" />
+                  <MapPin className="size-5 text-ink-accent" />
                 </div>
-                <h4 className="font-serif text-2xl font-bold text-carved">East Campus Trail</h4>
-                <ul className="flex flex-col gap-2.5 text-sm text-ink font-semibold leading-relaxed">
+                <h4 className="font-serif text-xl sm:text-2xl font-bold text-ink-accent uppercase">
+                  East Campus Trail
+                </h4>
+                <ul className="flex flex-col gap-2.5 text-xs sm:text-sm text-ink font-bold leading-relaxed">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">&bull;</span>
+                    <span className="text-ink-accent font-bold">&bull;</span>
                     <span>EVERY REGISTERED TEAM MEETING ELIGIBILITY CRITERIA IS ELIGIBLE FOR ROUND 1.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">&bull;</span>
+                    <span className="text-ink-accent font-bold">&bull;</span>
                     <span>EACH CLUE REFERS TO A PLACE IN NITK EAST CAMPUS.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">&bull;</span>
+                    <span className="text-ink-accent font-bold">&bull;</span>
                     <span>PARTICIPANTS SHOULD DECIPHER THE CLUES TO SOLVE THE QUESTION TO FIND THE LOCATION TO THE NEXT CLUE.</span>
                   </li>
-                  <li className="flex items-start gap-2 text-primary font-bold">
-                    <span className="text-primary font-bold">&bull;</span>
+                  <li className="flex items-start gap-2 text-ink-accent font-black">
+                    <span className="text-ink-accent font-bold">&bull;</span>
                     <span>TOP 10 TEAMS WILL BE SELECTED TO ROUND 2.</span>
                   </li>
                 </ul>
               </article>
 
               {/* Round 2 Card */}
-              <article className="border-2 border-primary/40 bg-pamphlet-alt p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
-                <div className="flex items-center justify-between border-b border-primary/20 pb-3">
-                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-primary uppercase">
+              <article className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
+                <div className="flex items-center justify-between border-b border-[#8b5a2b]/30 pb-3">
+                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-ink-accent uppercase">
                     Round 2
                   </span>
-                  <Trophy className="size-5 text-primary" />
+                  <Trophy className="size-5 text-ink-accent" />
                 </div>
-                <h4 className="font-serif text-2xl font-bold text-carved">The Final Bounty</h4>
-                <div className="flex flex-col gap-3 text-sm text-ink font-semibold leading-relaxed">
+                <h4 className="font-serif text-xl sm:text-2xl font-bold text-ink-accent uppercase">
+                  The Final Bounty
+                </h4>
+                <div className="flex flex-col gap-3 text-xs sm:text-sm text-ink font-bold leading-relaxed">
                   <p>
                     FURTHER INSTRUCTIONS WILL BE PROVIDED AFTER YOU QUALIFY ROUND 1.
                   </p>
-                  <div className="mt-2 border-t border-primary/20 pt-3">
-                    <p className="font-serif text-2xl font-black text-primary">
+                  <div className="mt-2 border-t border-[#8b5a2b]/30 pt-3">
+                    <p className="font-serif text-xl sm:text-2xl font-black text-ink-accent">
                       Rs 8,500 Bounty!
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Awarded to the top qualifying squads to open the vault.
+                    <p className="text-xs text-ink-muted mt-1">
+                      Awarded to top qualifying squads to open the vault.
                     </p>
                   </div>
                 </div>
@@ -203,19 +206,19 @@ export function LegendSection() {
           </div>
 
           {/* 3. GENERAL RULES & THINGS TO BRING */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             {/* General Rules */}
-            <div className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
-              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
-                <ShieldAlert className="size-6 text-primary shrink-0" />
-                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+            <div className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+              <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
+                <ShieldAlert className="size-6 text-ink-accent shrink-0" />
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
                   General Rules
                 </h3>
               </div>
               <ul className="flex flex-col gap-3">
                 {generalRulesList.map((rule, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm font-semibold leading-relaxed text-ink">
-                    <span className="text-primary font-bold mt-0.5">&bull;</span>
+                  <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm font-bold leading-relaxed text-ink">
+                    <span className="text-ink-accent font-bold mt-0.5">&bull;</span>
                     <span>{rule}</span>
                   </li>
                 ))}
@@ -223,17 +226,17 @@ export function LegendSection() {
             </div>
 
             {/* Things to Bring */}
-            <div className="border-2 border-primary/40 bg-pamphlet-alt p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
-              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
-                <PackageCheck className="size-6 text-primary shrink-0" />
-                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+            <div className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
+              <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
+                <PackageCheck className="size-6 text-ink-accent shrink-0" />
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
                   Things to Bring – Be Prepared, Be Awesome!
                 </h3>
               </div>
               <ul className="flex flex-col gap-3">
                 {thingsToBring.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm font-semibold leading-relaxed text-ink">
-                    <CheckCircle2 className="size-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm font-bold leading-relaxed text-ink">
+                    <CheckCircle2 className="size-4 text-emerald-800 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
