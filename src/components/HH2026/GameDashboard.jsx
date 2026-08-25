@@ -153,6 +153,10 @@ export default function GameDashboard() {
   const [touchStartPan, setTouchStartPan] = useState({ x: 0, y: 0 });
   const [touchFocalPoint, setTouchFocalPoint] = useState({ x: 0, y: 0 });
 
+  // Eagle (Garuda Messenger) state
+  const [eaglePos, setEaglePos] = useState({ x: 150, y: 150 });
+  const [eagleFacingRight, setEagleFacingRight] = useState(true);
+
   // Dev Simulation panel state
   const [selectedScanQr, setSelectedScanQr] = useState("");
   const [scanResult, setScanResult] = useState(null); // { success: boolean, message: string }
@@ -250,26 +254,9 @@ export default function GameDashboard() {
   }, [loadingState, !!gameState]);
 
   const resetMap = () => {
-    const rect = mapContainerRef.current?.getBoundingClientRect();
-    if (!rect || !rect.width || !rect.height) return;
-
-    const fitZoom = getFitZoom(rect);
-    fitZoomRef.current = fitZoom;
-    const newZoom = Math.min(fitZoom * GTA_ZOOM_MULTIPLIER, MAX_ZOOM);
-
-    // Center on the frontier of exploration: the last spot the team uncovered.
-    const revealed = gameState?.revealedLocations;
-    const focus = revealed && revealed.length > 0
-      ? revealed[revealed.length - 1]
-      : { x_coord: MAP_WIDTH / 2, y_coord: MAP_HEIGHT / 2 };
-
-    const rawPan = {
-      x: rect.width / 2 - focus.x_coord * newZoom,
-      y: rect.height / 2 - focus.y_coord * newZoom,
-    };
-
-    setZoom(newZoom);
-    setPan(clampPan(rawPan, newZoom, rect));
+    const isMobile = window.innerWidth < 768;
+    setZoom(isMobile ? 0.55 : 0.85);
+    setPan(isMobile ? { x: -380, y: -65 } : { x: -425, y: -115 });
   };
 
   // Keep the frame gap-free and correctly centered if the viewport is resized.
@@ -280,6 +267,22 @@ export default function GameDashboard() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  // Move Eagle to the latest revealed location coordinates
+  useEffect(() => {
+    if (gameState && gameState.revealedLocations && gameState.revealedLocations.length > 0) {
+      const latestLoc = gameState.revealedLocations[gameState.revealedLocations.length - 1];
+      const targetX = latestLoc.x_coord;
+      const targetY = latestLoc.y_coord;
+
+      setEaglePos(prev => {
+        if (prev.x !== targetX) {
+          setEagleFacingRight(targetX > prev.x);
+        }
+        return { x: targetX, y: targetY };
+      });
+    }
+  }, [gameState?.revealedLocations?.length]);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -599,6 +602,15 @@ export default function GameDashboard() {
     <div className="hh2026-page min-h-screen bg-parchment text-foreground relative flex flex-col justify-between overflow-hidden">
       <MetaData title="Fog of War Map & Progress — Hudugata Hudakata 2026" />
       <SiteHeader />
+      <style>{`
+        @keyframes eagle-hover {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-eagle-hover {
+          animation: eagle-hover 2.2s ease-in-out infinite;
+        }
+      `}</style>
 
       {/* Main Gameplay Screen */}
       <main className="relative z-10 flex-grow flex flex-col items-center p-4 max-w-7xl w-full mx-auto pb-8">
@@ -805,6 +817,24 @@ export default function GameDashboard() {
                     </text>
                   </g>
                 ))}
+
+                {/* Layer 5: Flying Eagle (Garuda Messenger) */}
+                <g
+                  style={{
+                    transform: `translate(${eaglePos.x}px, ${eaglePos.y}px) scaleX(${eagleFacingRight ? 1 : -1})`,
+                    transition: "transform 2.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                    pointerEvents: "none"
+                  }}
+                >
+                  <image
+                    href="/hh2026/eagle.png"
+                    x="-65"
+                    y="-45"
+                    width="130"
+                    height="90"
+                    className="animate-eagle-hover"
+                  />
+                </g>
               </svg>
             </div>
           </div>
