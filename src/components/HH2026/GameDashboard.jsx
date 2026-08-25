@@ -128,6 +128,8 @@ export default function GameDashboard() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [touchStartDist, setTouchStartDist] = useState(null);
+  const [touchStartZoom, setTouchStartZoom] = useState(1);
 
   // Dev Simulation panel state
   const [selectedScanQr, setSelectedScanQr] = useState("");
@@ -227,7 +229,7 @@ export default function GameDashboard() {
   const resetMap = () => {
     const isMobile = window.innerWidth < 768;
     setZoom(isMobile ? 0.55 : 0.85);
-    setPan(isMobile ? { x: -320, y: -80 } : { x: -280, y: -40 });
+    setPan(isMobile ? { x: -380, y: -65 } : { x: -425, y: -115 });
   };
 
   // ==========================================
@@ -253,26 +255,43 @@ export default function GameDashboard() {
 
   const handleTouchStart = (e) => {
     if (e.target.closest(".no-drag")) return;
+    
     if (e.touches.length === 1) {
       setIsDragging(true);
       const touch = e.touches[0];
       setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
+      setTouchStartDist(null);
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+      setTouchStartDist(dist);
+      setTouchStartZoom(zoom);
     }
   };
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return;
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && isDragging) {
       const touch = e.touches[0];
       setPan({
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y
       });
+    } else if (e.touches.length === 2 && touchStartDist !== null) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+      const factor = dist / touchStartDist;
+      let newZoom = touchStartZoom * factor;
+      newZoom = Math.min(Math.max(newZoom, 0.45), 2.5);
+      setZoom(newZoom);
     }
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
+    setTouchStartDist(null);
   };
 
   const handleWheel = (e) => {
@@ -280,19 +299,19 @@ export default function GameDashboard() {
     const zoomFactor = 1.15;
     let newZoom = zoom;
     if (e.deltaY < 0) {
-      newZoom = Math.min(newZoom * zoomFactor, 3.5);
+      newZoom = Math.min(newZoom * zoomFactor, 2.5);
     } else {
-      newZoom = Math.max(newZoom / zoomFactor, 0.55);
+      newZoom = Math.max(newZoom / zoomFactor, 0.45);
     }
     setZoom(newZoom);
   };
 
   const zoomIn = () => {
-    setZoom(prev => Math.min(prev * 1.25, 3.5));
+    setZoom(prev => Math.min(prev * 1.25, 2.5));
   };
 
   const zoomOut = () => {
-    setZoom(prev => Math.max(prev / 1.25, 0.55));
+    setZoom(prev => Math.max(prev / 1.25, 0.45));
   };
   // ==========================================
   // Scan Simulation
@@ -550,7 +569,7 @@ export default function GameDashboard() {
             {/* Interactive MAP Display */}
             <div 
               ref={mapContainerRef}
-              className="relative w-full h-full flex-grow overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30"
+              className="relative w-full h-full overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30 touch-none"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -561,11 +580,13 @@ export default function GameDashboard() {
               onTouchEnd={handleTouchEnd}
             >
               <svg 
-                className="w-full h-full pointer-events-none"
+                width="1500"
+                height="1000"
+                className="pointer-events-none"
                 viewBox="0 0 1500 1000"
                 style={{
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: "center center",
+                  transformOrigin: "0 0",
                   transition: isDragging ? "none" : "transform 0.15s ease-out"
                 }}
               >
