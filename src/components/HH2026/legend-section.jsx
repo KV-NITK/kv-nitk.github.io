@@ -32,14 +32,14 @@ const acts = [
   {
     icon: Map,
     act: 'Round I',
-    title: 'West Campus',
-    copy: 'Every squad starts here. Crack the trail across West Campus — only the top twenty squads make it through to Round II.',
+    title: 'East Campus',
+    copy: 'Every squad starts here. Crack the trail across East Campus — only the top twenty squads make it through to Round II.',
   },
   {
     icon: KeyRound,
     act: 'Round II',
-    title: 'East Campus',
-    copy: 'The top twenty squads cross over. The vault is somewhere on East Campus — find it first to take the bounty.',
+    title: 'West Campus',
+    copy: 'The top twenty squads cross over. The vault is somewhere on West Campus — find it first to take the bounty.',
   },
 ]
 
