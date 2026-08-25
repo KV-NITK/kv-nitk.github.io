@@ -130,6 +130,8 @@ export default function GameDashboard() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [touchStartDist, setTouchStartDist] = useState(null);
   const [touchStartZoom, setTouchStartZoom] = useState(1);
+  const [touchStartPan, setTouchStartPan] = useState({ x: 0, y: 0 });
+  const [touchFocalPoint, setTouchFocalPoint] = useState({ x: 0, y: 0 });
 
   // Dev Simulation panel state
   const [selectedScanQr, setSelectedScanQr] = useState("");
@@ -261,13 +263,19 @@ export default function GameDashboard() {
       const touch = e.touches[0];
       setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
       setTouchStartDist(null);
-    } else if (e.touches.length === 2) {
+    } else if (e.touches.length === 2 && mapContainerRef.current) {
       setIsDragging(false);
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       setTouchStartDist(dist);
       setTouchStartZoom(zoom);
+      setTouchStartPan(pan);
+
+      const rect = mapContainerRef.current.getBoundingClientRect();
+      const fx = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+      const fy = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+      setTouchFocalPoint({ x: fx, y: fy });
     }
   };
 
@@ -278,14 +286,28 @@ export default function GameDashboard() {
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y
       });
-    } else if (e.touches.length === 2 && touchStartDist !== null) {
+    } else if (e.touches.length === 2 && touchStartDist !== null && mapContainerRef.current) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / touchStartDist;
+      
       let newZoom = touchStartZoom * factor;
       newZoom = Math.min(Math.max(newZoom, 0.45), 2.5);
+
+      const fx = touchFocalPoint.x;
+      const fy = touchFocalPoint.y;
+      
+      const mx = (fx - touchStartPan.x) / touchStartZoom;
+      const my = (fy - touchStartPan.y) / touchStartZoom;
+      
+      const newPan = {
+        x: fx - mx * newZoom,
+        y: fy - my * newZoom
+      };
+
       setZoom(newZoom);
+      setPan(newPan);
     }
   };
 
@@ -296,14 +318,32 @@ export default function GameDashboard() {
 
   const handleWheel = (e) => {
     e.preventDefault();
+    if (!mapContainerRef.current) return;
+
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const fx = e.clientX - rect.left;
+    const fy = e.clientY - rect.top;
+
     const zoomFactor = 1.15;
     let newZoom = zoom;
     if (e.deltaY < 0) {
-      newZoom = Math.min(newZoom * zoomFactor, 2.5);
+      newZoom = Math.min(zoom * zoomFactor, 2.5);
     } else {
-      newZoom = Math.max(newZoom / zoomFactor, 0.45);
+      newZoom = Math.max(zoom / zoomFactor, 0.45);
     }
-    setZoom(newZoom);
+
+    if (newZoom !== zoom) {
+      const mx = (fx - pan.x) / zoom;
+      const my = (fy - pan.y) / zoom;
+      
+      const newPan = {
+        x: fx - mx * newZoom,
+        y: fy - my * newZoom
+      };
+
+      setZoom(newZoom);
+      setPan(newPan);
+    }
   };
 
   const zoomIn = () => {
@@ -587,7 +627,7 @@ export default function GameDashboard() {
                 style={{
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                   transformOrigin: "0 0",
-                  transition: isDragging ? "none" : "transform 0.15s ease-out"
+                  transition: (isDragging || touchStartDist !== null) ? "none" : "transform 0.15s ease-out"
                 }}
               >
                 {/* SVG Definitions for Fog Masks */}
