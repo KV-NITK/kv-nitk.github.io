@@ -7,6 +7,16 @@ import {
   getAllRegisteredTeamsPublic,
 } from "../controllers/team.controller.js";
 
+import { requireAuth } from "../middleware/auth.middleware.js";
+
+import {
+  teamLogin,
+  getTeamMe,
+  teamLogout,
+} from "../controllers/team-auth.controller.js";
+
+import { requireTeamAuth } from "../middleware/teamAuth.middleware.js";
+
 const router = express.Router();
 
 router.get("/public-list", getAllRegisteredTeamsPublic);
