@@ -95,8 +95,8 @@ export function LegendSection() {
 
           {/* 1. TEAM ELIGIBILITY & WHATSAPP CTA BANNER */}
           <div className="grid gap-8 md:grid-cols-2">
-            {/* Eligibility Card (No outer border, deep padding so text sits inside parchment image) */}
-            <div className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+            {/* Eligibility Card */}
+            <div className="bg-pamphlet px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
                 <Users className="size-6 text-ink-accent shrink-0" />
                 <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
@@ -113,8 +113,8 @@ export function LegendSection() {
               </ul>
             </div>
 
-            {/* WhatsApp Group & Updates Banner (No outer border, deep padding inside parchment image) */}
-            <div className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col justify-between gap-4 rotate-1 hover:rotate-0 transition-transform">
+            {/* WhatsApp Group & Updates Banner */}
+            <div className="bg-pamphlet-alt px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col justify-between gap-4 rotate-1 hover:rotate-0 transition-transform">
               <div>
                 <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
                   <MessageCircle className="size-6 text-emerald-800 shrink-0" />
@@ -147,7 +147,7 @@ export function LegendSection() {
 
             <div className="grid gap-8 md:grid-cols-2">
               {/* Round 1 Card */}
-              <article className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+              <article className="bg-pamphlet px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
                 <div className="flex items-center justify-between border-b border-[#8b5a2b]/30 pb-3">
                   <span className="font-serif text-xs font-bold tracking-[0.24em] text-ink-accent uppercase">
                     Round 1
@@ -178,7 +178,7 @@ export function LegendSection() {
               </article>
 
               {/* Round 2 Card */}
-              <article className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
+              <article className="bg-pamphlet-alt px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
                 <div className="flex items-center justify-between border-b border-[#8b5a2b]/30 pb-3">
                   <span className="font-serif text-xs font-bold tracking-[0.24em] text-ink-accent uppercase">
                     Round 2
@@ -194,7 +194,7 @@ export function LegendSection() {
                   </p>
                   <div className="mt-2 border-t border-[#8b5a2b]/30 pt-3">
                     <p className="font-serif text-xl sm:text-2xl font-black text-ink-accent">
-                      Rs 8,500 Bounty!
+                      Rs 10,000 worth Bounty!
                     </p>
                     <p className="text-xs text-ink-muted mt-1">
                       Awarded to top qualifying squads to open the vault.
@@ -208,7 +208,7 @@ export function LegendSection() {
           {/* 3. GENERAL RULES & THINGS TO BRING */}
           <div className="grid gap-8 md:grid-cols-2">
             {/* General Rules */}
-            <div className="bg-pamphlet px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+            <div className="bg-pamphlet px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
                 <ShieldAlert className="size-6 text-ink-accent shrink-0" />
                 <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">
@@ -226,7 +226,7 @@ export function LegendSection() {
             </div>
 
             {/* Things to Bring */}
-            <div className="bg-pamphlet-alt px-8 sm:px-12 md:px-14 py-10 sm:py-12 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
+            <div className="bg-pamphlet-alt px-16 sm:px-24 md:px-28 lg:px-32 py-16 sm:py-22 md:py-26 shadow-xl flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center gap-3 border-b border-[#8b5a2b]/30 pb-3">
                 <PackageCheck className="size-6 text-ink-accent shrink-0" />
                 <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-accent uppercase">

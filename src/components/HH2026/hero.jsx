@@ -7,7 +7,7 @@ const facts = [
   { label: 'Date', value: '30 Aug 2026' },
   { label: 'Where', value: 'East Campus, NITK' },
   { label: 'Squad', value: '3–4 hunters' },
-  { label: 'Bounty', value: 'Rs 8,500' },
+  { label: 'Bounty', value: 'Rs 10,000 worth' },
 ]
 
 export function Hero() {
