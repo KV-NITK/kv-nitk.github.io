@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import teamRoutes from "./routes/team.routes.js";
 import { supabase } from "./config/supabase.js";
 import authRoutes from "./routes/auth.routes.js";
+import gameRoutes from "./routes/game.routes.js";
 import cookieParser from "cookie-parser";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +49,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/teams", teamRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/game", gameRoutes);
 
 // Serve frontend static build if present in container / root
 const clientBuildPath = path.join(__dirname, "../../build");
