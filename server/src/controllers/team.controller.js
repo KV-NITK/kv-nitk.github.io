@@ -14,6 +14,21 @@ import {
 
 export const getAllRegisteredTeamsPublic = async (req, res) => {
   try {
+    const providedPass =
+      req.query.pass ||
+      req.headers["x-passcode"] ||
+      req.headers["authorization"] ||
+      "";
+
+    const cleanPass = String(providedPass).trim().toLowerCase();
+
+    if (cleanPass !== "raama-raama") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid passcode. Please enter the correct event passcode to view registered teams.",
+      });
+    }
+
     const teams = await getAllTeamsPublic();
     return res.json({
       success: true,
