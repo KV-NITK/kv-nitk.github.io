@@ -220,6 +220,7 @@ export default function GameDashboard() {
   // Eagle (Garuda Messenger) state
   const [eaglePos, setEaglePos] = useState({ x: 150, y: 150 });
   const [eagleFacingRight, setEagleFacingRight] = useState(true);
+  const [eagleFlapFrame, setEagleFlapFrame] = useState(0); // 0 = downstroke, 1 = upstroke
 
   // Dev Simulation panel state
   const [selectedScanQr, setSelectedScanQr] = useState("");
@@ -352,6 +353,14 @@ export default function GameDashboard() {
     const onResize = () => resetMapRef.current();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Alternate wing poses for a simple 2-frame flap cycle, independent of patrol/idle state.
+  useEffect(() => {
+    const flapInterval = setInterval(() => {
+      setEagleFlapFrame((f) => (f === 0 ? 1 : 0));
+    }, 220);
+    return () => clearInterval(flapInterval);
   }, []);
 
   // Patrol the boundary of every revealed location combined, instead of parking on one spot.
@@ -1036,14 +1045,27 @@ export default function GameDashboard() {
                 {/* Layer 5: Flying Eagle (Garuda Messenger) — patrols the revealed boundary */}
                 <g style={{ transform: `translate(${eaglePos.x}px, ${eaglePos.y}px)`, pointerEvents: "none" }}>
                   <g style={{ transform: `scaleX(${eagleFacingRight ? 1 : -1})`, transition: "transform 0.4s ease-out" }}>
-                    <image
-                      href="/hh2026/eagle.png"
-                      x="-65"
-                      y="-45"
-                      width="130"
-                      height="90"
-                      className="animate-eagle-hover"
-                    />
+                    {eagleFlapFrame === 0 ? (
+                      <image
+                        href="/hh2026/eagle.png"
+                        x="-65"
+                        y="-45"
+                        width="130"
+                        height="90"
+                        className="animate-eagle-hover"
+                      />
+                    ) : (
+                      // eagle-2.png frames its bird with more canvas padding than eagle.png,
+                      // so it's rendered slightly larger to keep the wingspan visually matched.
+                      <image
+                        href="/eagle-2.png"
+                        x="-73"
+                        y="-50"
+                        width="146"
+                        height="100"
+                        className="animate-eagle-hover"
+                      />
+                    )}
                   </g>
                 </g>
               </svg>
