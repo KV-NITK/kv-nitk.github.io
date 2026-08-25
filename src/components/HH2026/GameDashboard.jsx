@@ -226,6 +226,10 @@ export default function GameDashboard() {
   const [scanResult, setScanResult] = useState(null); // { success: boolean, message: string }
   const [scanning, setScanning] = useState(false);
 
+  // Mythology Easter-egg reveal toast
+  const [eggToast, setEggToast] = useState(null); // { emoji, title, message }
+  const announcedEggsRef = useRef(new Set());
+
   const mapContainerRef = useRef(null);
   const fitZoomRef = useRef(1);
   const eaglePathRef = useRef(null);
@@ -381,6 +385,24 @@ export default function GameDashboard() {
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
   }, [eaglePatrolPathD]);
+
+  // Announce each mythology Easter egg the first time its reveal threshold is crossed.
+  useEffect(() => {
+    if (!gameState) return;
+    const step = gameState.currentStepNo;
+    const reveals = [
+      { id: "samudra", threshold: 1, emoji: "🌊", title: "Samudra Manthana", message: "The ocean stirs — ancient waters begin to churn." },
+      { id: "parijata", threshold: 3, emoji: "🌸", title: "Parijata Flower", message: "A celestial bloom is sighted deep in the forest." },
+      { id: "yakshagana", threshold: 5, emoji: "🎭", title: "Yakshagana Mask", message: "A silent guardian watches from the city's heart." },
+    ];
+    reveals.forEach(({ id, threshold, emoji, title, message }) => {
+      if (step >= threshold && !announcedEggsRef.current.has(id)) {
+        announcedEggsRef.current.add(id);
+        setEggToast({ emoji, title, message });
+        setTimeout(() => setEggToast(null), 5500);
+      }
+    });
+  }, [gameState?.currentStepNo]);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -696,6 +718,12 @@ export default function GameDashboard() {
     );
   }
 
+  // Mythology Easter-egg reveal pacing, spread evenly across the full hunt arc.
+  const totalSteps = gameState?.totalSteps || PATH_STEPS.length;
+  const samudraOpacity = gameState ? Math.min(0.95, Math.max(0, (gameState.currentStepNo - 1) / totalSteps)) : 0;
+  const parijataOpacity = gameState && gameState.currentStepNo >= 3 ? 0.9 : 0;
+  const yakshaganaOpacity = gameState && gameState.currentStepNo >= 5 ? 0.9 : 0;
+
   return (
     <div className="hh2026-page min-h-screen bg-parchment text-foreground relative flex flex-col justify-between overflow-hidden">
       <MetaData title="Fog of War Map & Progress — Hudugata Hudakata 2026" />
@@ -740,6 +768,19 @@ export default function GameDashboard() {
                   {scanResult.success ? "Scan Success" : "Scan Rejected"}
                 </h4>
                 <p className="text-xs font-serif leading-relaxed mt-1">{scanResult.message}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mythology Easter-egg Reveal Toast */}
+        {eggToast && (
+          <div className="absolute top-40 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-float no-drag">
+            <div className="p-4 border-2 border-amber-700 shadow-[0_15px_30px_rgba(0,0,0,0.65)] rounded-sm flex items-start gap-3 bg-[#f7eed6] text-[#4a2206]">
+              <span className="text-xl leading-none">{eggToast.emoji}</span>
+              <div>
+                <h4 className="font-serif font-bold text-sm uppercase">{eggToast.title}</h4>
+                <p className="text-xs font-serif leading-relaxed mt-1">{eggToast.message}</p>
               </div>
             </div>
           </div>
@@ -861,42 +902,60 @@ export default function GameDashboard() {
                 />
 
                 {/* Layer 2.1: Samudra Manthana (Ocean Easter Egg) */}
-                <image 
-                  href="/samudramanthana.png" 
-                  x="150" 
-                  y="620" 
-                  width="350" 
+                <ellipse
+                  cx="325" cy="745" rx="200" ry="150"
+                  fill="#0d9488"
+                  filter="url(#soft-blur)"
+                  style={{ opacity: samudraOpacity * 0.6, transition: "opacity 1.5s ease-in-out" }}
+                />
+                <image
+                  href="/samudramanthana.png"
+                  x="150"
+                  y="620"
+                  width="350"
                   height="250"
                   style={{
-                    opacity: gameState ? Math.min(0.95, (gameState.currentStepNo - 1) / 5) : 0,
+                    opacity: samudraOpacity,
                     transition: "opacity 1.5s ease-in-out",
                     pointerEvents: "none"
                   }}
                 />
 
                 {/* Layer 2.2: Parijata Flower (Forest Clue) */}
-                <image 
-                  href="/parijata.png" 
-                  x="480" 
-                  y="220" 
-                  width="130" 
+                <ellipse
+                  cx="545" cy="285" rx="90" ry="90"
+                  fill="#f97316"
+                  filter="url(#soft-blur)"
+                  style={{ opacity: parijataOpacity * 0.6, transition: "opacity 1.5s ease-in-out" }}
+                />
+                <image
+                  href="/parijata.png"
+                  x="480"
+                  y="220"
+                  width="130"
                   height="130"
                   style={{
-                    opacity: gameState && gameState.currentStepNo >= 2 ? 0.9 : 0,
+                    opacity: parijataOpacity,
                     transition: "opacity 1.5s ease-in-out",
                     pointerEvents: "none"
                   }}
                 />
 
                 {/* Layer 2.3: Yakshagana Theatre Mask (City Mystery) */}
-                <image 
-                  href="/yakshagana.png" 
-                  x="680" 
-                  y="450" 
-                  width="110" 
+                <ellipse
+                  cx="735" cy="515" rx="85" ry="85"
+                  fill="#dc2626"
+                  filter="url(#soft-blur)"
+                  style={{ opacity: yakshaganaOpacity * 0.6, transition: "opacity 1.5s ease-in-out" }}
+                />
+                <image
+                  href="/yakshagana.png"
+                  x="680"
+                  y="450"
+                  width="110"
                   height="130"
                   style={{
-                    opacity: gameState && gameState.currentStepNo >= 4 ? 0.9 : 0,
+                    opacity: yakshaganaOpacity,
                     transition: "opacity 1.5s ease-in-out",
                     pointerEvents: "none"
                   }}
@@ -949,10 +1008,10 @@ export default function GameDashboard() {
                     />
                     
                     {/* Handwritten cursive style label next to pin */}
-                    <text 
-                      x={loc.x_coord + 14} 
+                    <text
+                      x={loc.x_coord + 14}
                       y={loc.y_coord + 6}
-                      fill="#f7eed6" 
+                      fill="#f7eed6"
                       stroke="#1e0f06"
                       strokeWidth="2"
                       paintOrder="stroke"
@@ -960,6 +1019,17 @@ export default function GameDashboard() {
                     >
                       {loc.name}
                     </text>
+
+                    {/* Reward coin flourish */}
+                    <image
+                      href="/hh2026/prop-coin.png"
+                      x={loc.x_coord + 20}
+                      y={loc.y_coord - 34}
+                      width="24"
+                      height="24"
+                      className="animate-spin-slow"
+                      style={{ transformBox: "fill-box", transformOrigin: "center" }}
+                    />
                   </g>
                 ))}
 
@@ -1039,7 +1109,7 @@ export default function GameDashboard() {
               </div>
 
               {/* Developer / Scanner simulation panel */}
-              <div className="mt-6 border-t border-[#7a4823]/30 pt-4 no-drag">
+              <div className="mt-6 border-t border-[#7a4823]/30 bg-pamphlet-alt bg-cover rounded-sm shadow-inner px-3 py-3 no-drag">
                 <h4 className="font-serif text-xs font-bold tracking-wider text-[#4a2206] uppercase mb-2 flex items-center gap-1.5">
                   <QrCode className="size-4 text-[#7a4823]" /> QR Code Scanner Simulator
                 </h4>

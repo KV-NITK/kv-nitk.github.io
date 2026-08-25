@@ -1,12 +1,15 @@
 import {
   ArrowRight,
   CheckCircle2,
+  Drama,
+  Flower2,
   MapPin,
   MessageCircle,
   PackageCheck,
   ShieldAlert,
   Trophy,
   Users,
+  Waves,
 } from 'lucide-react'
 import { Plaque, Rivets } from './ornaments'
 import {
@@ -29,6 +32,36 @@ const generalRulesList = [
   'ALL ELIGIBLE ENTRIES WILL BE JUDGED AND DISREGARDING THE RULES MAY RESULT IN DISQUALIFICATION OF THE ENTIRE TEAM.',
   'BICYCLES OR ANY VEHICLES CANNOT BE USED.',
   'DECISION OF THE ORGANIZERS WILL BE FINAL.',
+]
+
+const trailSigns = [
+  {
+    id: 'samudra',
+    icon: Waves,
+    image: '/samudramanthana.png',
+    title: 'Samudra Manthana',
+    caption: 'The churning that started it all — the ocean gave up its secrets once, and it will again.',
+    variant: 'bg-pamphlet',
+    rotate: '-rotate-1 hover:rotate-0',
+  },
+  {
+    id: 'parijata',
+    icon: Flower2,
+    image: '/parijata.png',
+    title: 'The Parijata',
+    caption: 'A celestial bloom said to grant any wish to whoever carries it home — the relic worth chasing.',
+    variant: 'bg-pamphlet-alt',
+    rotate: 'rotate-1 hover:rotate-0',
+  },
+  {
+    id: 'yakshagana',
+    icon: Drama,
+    image: '/yakshagana.png',
+    title: 'The Yakshagana Mask',
+    caption: "The trail's silent guardian, watching from the shadows of every stage.",
+    variant: 'bg-pamphlet',
+    rotate: '-rotate-1 hover:rotate-0',
+  },
 ]
 
 const thingsToBring = [
@@ -73,6 +106,48 @@ export function LegendSection() {
             <p className="font-serif text-xl font-bold text-balance text-foreground text-pretty">
               Follow the clues. Find the locations. Keep the trail alive. And uncover where the treasure lies.
             </p>
+          </div>
+        </div>
+
+        {/* ---------------------------------------------------- */}
+        {/* SIGNS ALONG THE TRAIL — mythology motifs hidden in the hunt */}
+        {/* ---------------------------------------------------- */}
+        <div className="mt-20 flex flex-col gap-8">
+          <div className="text-center flex flex-col items-center gap-3 border-b-2 border-primary/20 pb-6">
+            <span className="font-serif text-xs font-bold uppercase tracking-[0.3em] text-primary">
+              Watch For These
+            </span>
+            <h2 className="font-serif text-3xl sm:text-5xl font-black uppercase text-carved tracking-tight">
+              Signs Along the Trail
+            </h2>
+            <p className="font-serif text-sm font-semibold tracking-[0.2em] text-muted-foreground uppercase max-w-2xl text-pretty">
+              Old myths hide in plain sight on the hunt&rsquo;s map. Know them now, and you&rsquo;ll recognize them when they surface.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {trailSigns.map(({ id, icon: Icon, image, title, caption, variant, rotate }) => (
+              <div
+                key={id}
+                className={`${variant} px-6 py-8 shadow-xl flex flex-col items-center gap-4 text-center ${rotate} transition-transform`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon className="size-5 text-ink-accent shrink-0" />
+                  <h3 className="font-serif text-lg font-bold text-ink-accent uppercase">
+                    {title}
+                  </h3>
+                </div>
+                <img
+                  src={image}
+                  alt={title}
+                  className="h-32 w-32 object-contain drop-shadow-lg"
+                  loading="lazy"
+                />
+                <p className="text-xs sm:text-sm font-bold leading-relaxed text-ink text-pretty">
+                  {caption}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
