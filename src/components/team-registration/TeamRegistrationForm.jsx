@@ -48,7 +48,7 @@ export function TeamRegistrationForm({
 
       {/* Rules Banner */}
       <div className="border border-[#7a4823]/30 bg-[#fffdf9]/70 p-4 text-xs sm:text-sm font-medium leading-relaxed text-[#3d1e0b] shadow-sm rounded-sm">
-        Notice: Each squad consists of 3 to 4 hunters (Leader + 2 to 3 members).
+        Notice: Roll numbers must start with <strong>26</strong>. Each squad consists of 3 to 4 hunters (Leader + 2 to 3 members).
       </div>
 
       {/* Squad Name & Password */}
