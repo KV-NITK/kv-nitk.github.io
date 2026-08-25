@@ -684,7 +684,7 @@ export default function GameDashboard() {
             {/* Interactive MAP Display */}
             <div 
               ref={mapContainerRef}
-              className="relative w-full h-[225px] sm:h-[260px] md:h-[300px] lg:h-[340px] overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30 touch-none"
+              className="relative w-full h-[450px] sm:h-[520px] md:h-[600px] lg:h-[680px] overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30 touch-none"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
