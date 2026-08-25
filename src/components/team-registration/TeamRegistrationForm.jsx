@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 import { MemberInputField } from "./MemberInputField";
+import { WhatsAppGroupBanner } from "./RegisteredSquadCard";
 
 export function TeamRegistrationForm({
   user,
@@ -135,17 +136,20 @@ export function TeamRegistrationForm({
         {loading ? "Registering Squad..." : "REGISTER SQUAD NOW"}
       </button>
 
-      {/* Message Output */}
+      {/* Message Output & WhatsApp Join Link */}
       {message && (
-        <div
-          className={cn(
-            "border-2 p-5 font-serif text-sm font-bold leading-relaxed text-center rounded-sm",
-            isSuccess
-              ? "border-emerald-700/60 bg-emerald-950/20 text-emerald-900"
-              : "border-[#8b261b] bg-[#8b261b]/15 text-[#6e1e15]"
-          )}
-        >
-          {message}
+        <div className="flex flex-col gap-4">
+          <div
+            className={cn(
+              "border-2 p-5 font-serif text-sm font-bold leading-relaxed text-center rounded-sm",
+              isSuccess
+                ? "border-emerald-700/60 bg-emerald-950/20 text-emerald-900"
+                : "border-[#8b261b] bg-[#8b261b]/15 text-[#6e1e15]"
+            )}
+          >
+            {message}
+          </div>
+          {isSuccess && <WhatsAppGroupBanner />}
         </div>
       )}
     </form>
