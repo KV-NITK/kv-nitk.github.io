@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const CRITICAL_ASSETS = [
-  '/hh2026/prop-compass.png',
+  '/hh2026/prop-compass-loader.png',
   '/hh2026/hero-img.png',
   '/hh2026/parchment-texture.png',
   '/hh2026/prop-map-scrap.png',
@@ -79,7 +79,7 @@ export function HH2026Preloader() {
         <div className="relative flex items-center justify-center">
           <div className="absolute size-28 sm:size-36 rounded-full bg-[#d4a017]/10 blur-xl animate-pulse" />
           <img
-            src="/hh2026/prop-compass.png"
+            src="/hh2026/prop-compass-loader.png"
             alt="Loading Compass"
             className="size-24 sm:size-32 animate-spin-compass drop-shadow-[0_10px_25px_rgba(212,160,23,0.35)] select-none"
           />
