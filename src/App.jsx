@@ -13,6 +13,7 @@ import Parva from './components/Parva/Parva';
 import Merch from './components/merch/merch';
 import TeamRegistration from './components/team-registration/TeamRegistration';
 import HH2026 from './components/HH2026/HH2026';
+import HH2026Stats from './components/HH2026/HH2026Stats';
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
@@ -20,7 +21,7 @@ const STANDALONE_ROUTES = ['/hh-2026', '/team-registration'];
 
 function AppRoutes() {
   const location = useLocation();
-  const isStandalone = STANDALONE_ROUTES.includes(location.pathname);
+  const isStandalone = STANDALONE_ROUTES.some((r) => location.pathname.startsWith(r));
 
   return (
     <>
@@ -33,6 +34,7 @@ function AppRoutes() {
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
+        <Route path="/hh-2026/stats" element={<HH2026Stats />} />
         <Route path="/hh-2026" element={<HH2026 />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
