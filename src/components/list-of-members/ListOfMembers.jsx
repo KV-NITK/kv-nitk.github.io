@@ -14,6 +14,13 @@ export default function ListOfMembers() {
     setError("");
     try {
       const response = await fetch(`${API_URL}/teams/public-list`);
+      const contentType = response.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/json")) {
+        setError("Server returned an invalid response. Please try again later.");
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok && data.success) {
