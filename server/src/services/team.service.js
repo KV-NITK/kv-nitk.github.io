@@ -216,6 +216,8 @@ export const createTeam = async ({
   passwordHash,
   leaderIrisId,
   leaderRollNo,
+  leaderName,
+  leaderEmail,
   members,
 }) => {
   const formattedMembers = members.map((m) => {
@@ -228,7 +230,7 @@ export const createTeam = async ({
     };
   });
 
-  const { data, error } = await supabase.rpc("register_team", {
+  const { data: teamId, error } = await supabase.rpc("register_team", {
     p_team_name: teamName,
     p_password_hash: passwordHash,
     p_leader_iris_id: leaderIrisId,
@@ -241,7 +243,26 @@ export const createTeam = async ({
     throw error;
   }
 
-  return data;
+  // Save leader details to team_members table so all squad members can view the leader name
+  if (teamId && (leaderName || leaderRollNo)) {
+    const cleanLeaderEmail = leaderEmail
+      ? leaderEmail.trim().toLowerCase()
+      : `${(leaderRollNo || "leader").toLowerCase()}@noemail.local`;
+    try {
+      await supabase.from("team_members").insert({
+        team_id: teamId,
+        name: leaderName || "Squad Leader",
+        email: cleanLeaderEmail,
+        normalized_email: cleanLeaderEmail,
+        role: "leader",
+        roll_no: (leaderRollNo || "").trim().toUpperCase(),
+      });
+    } catch (lErr) {
+      console.error("Failed to insert leader row in team_members:", lErr);
+    }
+  }
+
+  return teamId;
 };
 
 
@@ -321,17 +342,37 @@ export const getUserTeam = async (user) => {
   // 3. Fetch all squad members for this team
   const { data: members, error: membersError } = await supabase
     .from("team_members")
-    .select("id, name, roll_no, email")
+    .select("id, name, roll_no, email, role")
     .eq("team_id", team.id);
 
   if (membersError) {
     console.error("Error fetching team members:", membersError);
   }
 
-  const sanitizedMembers = (members || []).map((m) => ({
+  const leaderMember = (members || []).find(
+    (m) => m.role === "leader" || (m.roll_no && m.roll_no === team.leader_roll_no)
+  );
+
+  const squadMembers = (members || []).filter(
+    (m) => m.role !== "leader" && m.roll_no !== team.leader_roll_no
+  );
+
+  const sanitizedMembers = squadMembers.map((m) => ({
     ...m,
     email: m.email && m.email.endsWith("@noemail.local") ? "" : m.email,
   }));
+
+  const leaderName = leaderMember
+    ? leaderMember.name
+    : team.role === "leader" && user
+    ? user.name
+    : "";
+
+  const leaderEmail = leaderMember
+    ? leaderMember.email
+    : team.role === "leader" && user
+    ? user.email
+    : "";
 
   return {
     id: team.id,
@@ -339,6 +380,8 @@ export const getUserTeam = async (user) => {
     status: team.status,
     role: team.role,
     leader: {
+      name: leaderName,
+      email: leaderEmail && leaderEmail.endsWith("@noemail.local") ? "" : leaderEmail,
       irisId: team.leader_iris_id,
       rollNo: team.leader_roll_no,
     },
