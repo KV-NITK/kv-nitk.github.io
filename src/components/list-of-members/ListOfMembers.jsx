@@ -63,7 +63,7 @@ export default function ListOfMembers() {
         localStorage.setItem("hh_roster_pass", activePass);
       } else {
         setIsUnlocked(false);
-        setPassError(data.message || "Invalid passcode. Please enter 'raama-raama'.");
+        setPassError(data.message || "Invalid passcode. Please try again.");
         localStorage.removeItem("hh_roster_pass");
       }
     } catch (err) {
@@ -193,7 +193,7 @@ export default function ListOfMembers() {
                 </p>
                 <p className="text-xs text-muted-foreground font-medium">
                   {isUnlocked
-                    ? "Passcode verified ('raama-raama')"
+                    ? "Passcode verified"
                     : "Enter secret passcode to view registered squad members"}
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default function ListOfMembers() {
                     setPassInput(e.target.value);
                     if (passError) setPassError("");
                   }}
-                  placeholder="Enter passcode (e.g. raama-raama)"
+                  placeholder="Enter secret passcode"
                   required
                   className="w-full border-2 border-primary/40 bg-background pl-10 pr-4 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-inner rounded-sm"
                 />
@@ -251,10 +251,7 @@ export default function ListOfMembers() {
               Roster Access Restricted
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed">
-              Enter the passcode <strong className="text-primary font-mono font-bold">raama-raama</strong> in the input field above and click <strong>&quot;Unlock Roster&quot;</strong> to view the list of registered teams and members.
-            </p>
-            <p className="text-xs font-serif italic text-primary/80">
-              Hint: &ldquo;Rama Rama... Thusu Daksha Vrutha Jaripa!&rdquo;
+              Enter the event secret passcode in the input field above and click <strong>&quot;Unlock Roster&quot;</strong> to view the list of registered teams and members.
             </p>
           </div>
         )}
