@@ -1,4 +1,5 @@
 import MetaData from '../MetaData/MetaData'
+import { HH2026Preloader } from './preloader'
 import { TornEdgeDefs } from './roaming-assets'
 import { SiteHeader } from './site-header'
 import { Hero } from './hero'
@@ -9,7 +10,8 @@ import { SiteFooter } from './site-footer'
 
 export default function HH2026() {
   return (
-    <div className="hh2026-page min-h-screen bg-background text-foreground antialiased">
+    <div className="hh2026-page min-h-screen bg-background text-foreground antialiased relative">
+      <HH2026Preloader />
       <MetaData title="Hudugata Hudakata — Treasure Hunt by Kannada Vedike, NITK" />
       <TornEdgeDefs />
       <SiteHeader />
