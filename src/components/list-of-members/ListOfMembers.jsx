@@ -111,17 +111,27 @@ export default function ListOfMembers() {
   );
 
   // ----------------------------------------------------
-  // EXPORT TO CSV
+  // EXPORT TO CSV (EACH MEMBER IN SEPARATE COLUMN)
   // ----------------------------------------------------
   const exportToCSV = () => {
     if (!filteredTeams || filteredTeams.length === 0) return;
 
-    const headers = ["ID", "Team Name", "Leader Name", "Member Names"];
+    const headers = [
+      "ID",
+      "Team Name",
+      "Leader Name",
+      "Member 2",
+      "Member 3",
+      "Member 4",
+    ];
+
     const rows = filteredTeams.map((team) => [
       team.id,
       `"${(team.teamName || "").replace(/"/g, '""')}"`,
       `"${(team.leaderName || "").replace(/"/g, '""')}"`,
-      `"${(team.members || []).join(", ").replace(/"/g, '""')}"`,
+      `"${(team.members?.[0] || "").replace(/"/g, '""')}"`,
+      `"${(team.members?.[1] || "").replace(/"/g, '""')}"`,
+      `"${(team.members?.[2] || "").replace(/"/g, '""')}"`,
     ]);
 
     const csvContent =
@@ -141,7 +151,7 @@ export default function ListOfMembers() {
   };
 
   // ----------------------------------------------------
-  // EXPORT TO PDF (PRINTABLE DOCUMENT)
+  // EXPORT TO PDF (EACH MEMBER IN SEPARATE COLUMN)
   // ----------------------------------------------------
   const exportToPDF = () => {
     if (!filteredTeams || filteredTeams.length === 0) return;
@@ -156,10 +166,12 @@ export default function ListOfMembers() {
       .map(
         (t) => `
       <tr>
-        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold;">#${t.id}</td>
-        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${t.teamName}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">👑 ${t.leaderName}</td>
-        <td style="padding: 10px; border: 1px solid #ddd;">${(t.members || []).join(", ") || "—"}</td>
+        <td style="padding: 10px; border: 1px solid #bbb; text-align: center; font-weight: bold;">#${t.id}</td>
+        <td style="padding: 10px; border: 1px solid #bbb; font-weight: bold;">${t.teamName}</td>
+        <td style="padding: 10px; border: 1px solid #bbb;">👑 ${t.leaderName}</td>
+        <td style="padding: 10px; border: 1px solid #bbb;">${t.members?.[0] || "—"}</td>
+        <td style="padding: 10px; border: 1px solid #bbb;">${t.members?.[1] || "—"}</td>
+        <td style="padding: 10px; border: 1px solid #bbb;">${t.members?.[2] || "—"}</td>
       </tr>
     `
       )
@@ -186,10 +198,12 @@ export default function ListOfMembers() {
           <table>
             <thead>
               <tr>
-                <th style="text-align: center; width: 50px;">ID</th>
-                <th style="width: 200px;">Team Name</th>
-                <th style="width: 180px;">Leader Name</th>
-                <th>Member Names</th>
+                <th style="text-align: center; width: 45px;">ID</th>
+                <th style="width: 180px;">Team Name</th>
+                <th style="width: 160px;">Leader Name</th>
+                <th style="width: 150px;">Member 2</th>
+                <th style="width: 150px;">Member 3</th>
+                <th style="width: 150px;">Member 4</th>
               </tr>
             </thead>
             <tbody>
