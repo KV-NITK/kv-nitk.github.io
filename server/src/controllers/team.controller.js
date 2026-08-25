@@ -9,7 +9,24 @@ import {
   createTeam,
   getUserTeam,
   deleteTeamByLeader,
+  getAllTeamsPublic,
 } from "../services/team.service.js";
+
+export const getAllRegisteredTeamsPublic = async (req, res) => {
+  try {
+    const teams = await getAllTeamsPublic();
+    return res.json({
+      success: true,
+      teams,
+    });
+  } catch (error) {
+    console.error("Fetch public teams error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch registered teams list",
+    });
+  }
+};
 
 export const getMyTeam = async (req, res) => {
   try {
