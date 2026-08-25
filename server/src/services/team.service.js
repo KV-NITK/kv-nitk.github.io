@@ -218,27 +218,26 @@ export const createTeam = async ({
   leaderRollNo,
   members,
 }) => {
-  const { data, error } = await supabase.rpc(
-    "register_team",
-    {
-      p_team_name: teamName,
+  const formattedMembers = members.map((m) => {
+    const roll = (m.rollNo || "").trim().toUpperCase();
+    const cleanEmail = m.email ? m.email.trim().toLowerCase() : "";
+    return {
+      name: (m.name || "").trim(),
+      rollNo: roll,
+      email: cleanEmail.length > 0 ? cleanEmail : `${roll.toLowerCase()}@noemail.local`,
+    };
+  });
 
-      p_password_hash: passwordHash,
-
-      p_leader_iris_id: leaderIrisId,
-
-      p_leader_roll_no: leaderRollNo,
-
-      p_members: members,
-    }
-  );
+  const { data, error } = await supabase.rpc("register_team", {
+    p_team_name: teamName,
+    p_password_hash: passwordHash,
+    p_leader_iris_id: leaderIrisId,
+    p_leader_roll_no: leaderRollNo,
+    p_members: formattedMembers,
+  });
 
   if (error) {
-    console.error(
-      "Create team error:",
-      error
-    );
-
+    console.error("Create team error:", error);
     throw error;
   }
 
@@ -329,6 +328,11 @@ export const getUserTeam = async (user) => {
     console.error("Error fetching team members:", membersError);
   }
 
+  const sanitizedMembers = (members || []).map((m) => ({
+    ...m,
+    email: m.email && m.email.endsWith("@noemail.local") ? "" : m.email,
+  }));
+
   return {
     id: team.id,
     teamName: team.team_name,
@@ -338,7 +342,7 @@ export const getUserTeam = async (user) => {
       irisId: team.leader_iris_id,
       rollNo: team.leader_roll_no,
     },
-    members: members || [],
+    members: sanitizedMembers,
   };
 };
 

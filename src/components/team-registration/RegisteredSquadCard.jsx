@@ -100,7 +100,9 @@ export function RegisteredSquadCard({
                   <p className="font-serif text-base font-bold text-[#1a0a03]">
                     {member.name}
                   </p>
-                  <p className="text-xs text-[#5c3418]">{member.email}</p>
+                  {member.email && !member.email.endsWith("@noemail.local") && (
+                    <p className="text-xs text-[#5c3418]">{member.email}</p>
+                  )}
                 </div>
                 <div className="font-mono text-xs font-bold text-[#4a2206] bg-[#eedca8] px-3 py-1 rounded border border-[#7a4823]/30">
                   {member.roll_no}
