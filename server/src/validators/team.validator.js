@@ -3,11 +3,8 @@ import { z } from "zod";
 const rollNo = z
   .string()
   .trim()
-  .toUpperCase()
-  .regex(
-    /^26/,
-    "Roll number must start with 26"
-  );
+  .toUpperCase();
+  
 
 const memberSchema = z.object({
   name: z
