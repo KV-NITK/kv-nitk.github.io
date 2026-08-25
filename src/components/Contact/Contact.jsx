@@ -20,16 +20,10 @@ const Contact = () => {
                                 <div>kiranmanjappa@nitk.edu.in</div>
                             </div>
                             <div className="footer-col col-4 contact-card">
-                                <h3>Sumukh S K</h3>
+                                <h3>Yashas Gowda</h3>
                                 <div>Convenor</div>
-                                <div>+91 94812 46683</div>
-                                <div>sksumukha.211ee153@nitk.edu.in</div>
-                            </div>
-                            <div className="footer-col col-4 contact-card">
-                                <h3>Gururaj Mahadev Madanavar</h3>
-                                <div>Marketing Head</div>
-                                <div>+91 8310326367</div>
-                                <div>gururajmahadevmadannavar.211ec115@nitk.edu.in</div>
+                                <div>+91 99013 55393</div>
+                                <div>yashasgowdam0@gmail.com</div>
                             </div>
                         </div>
                     </div>
