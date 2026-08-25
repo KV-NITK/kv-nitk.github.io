@@ -17,7 +17,7 @@ export function RegisteredSquadCard({
       {/* Header / Plaque */}
       <div className="border-b-2 border-[#8b5a2b]/30 pb-4 text-center">
         <span className="inline-block rounded-full bg-[#8b261b] px-4 py-1 font-serif text-xs font-bold uppercase tracking-[0.2em] text-[#f7eed6] shadow-sm">
-          {isLeader ? "👑 Squad Leader" : "⚔️ Squad Member"}
+          {isLeader ? "Squad Leader" : "Squad Member"}
         </span>
         <h2 className="mt-3 font-serif text-2xl sm:text-4xl font-black uppercase text-[#2b1810] tracking-wide">
           {userTeam.teamName}
