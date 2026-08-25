@@ -175,6 +175,13 @@ export function RegisteredSquadCard({
         )}
 
         <Link
+          to="/list-of-members"
+          className="w-full text-center border-2 border-[#7a4823] bg-[#eedca8] text-[#4a2206] hover:bg-[#7a4823] hover:text-[#fffdf9] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center"
+        >
+          View Registered Squads 📋
+        </Link>
+
+        <Link
           to="/hh-2026"
           className="w-full text-center border-2 border-[#4a2206] bg-[#4a2206] text-[#f7eed6] hover:bg-[#2b1810] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center"
         >
