@@ -9,6 +9,7 @@ import {
   RefreshCw,
   MessageCircle,
   Lock,
+  Unlock,
   KeyRound,
 } from "lucide-react";
 
@@ -62,7 +63,7 @@ export default function ListOfMembers() {
         localStorage.setItem("hh_roster_pass", activePass);
       } else {
         setIsUnlocked(false);
-        setPassError(data.message || "Invalid passcode. Please try again.");
+        setPassError(data.message || "Invalid passcode. Please enter 'raama-raama'.");
         localStorage.removeItem("hh_roster_pass");
       }
     } catch (err) {
@@ -75,6 +76,7 @@ export default function ListOfMembers() {
 
   useEffect(() => {
     if (passcode) {
+      setPassInput(passcode);
       fetchTeams(passcode);
     }
   }, []);
@@ -168,56 +170,92 @@ export default function ListOfMembers() {
         </div>
 
         {/* ---------------------------------------------------- */}
-        {/* PASSCODE LOCKED GATE SCREEN */}
+        {/* PASSCODE INPUT BAR (ALWAYS ACCESSIBLE) */}
         {/* ---------------------------------------------------- */}
-        {!isUnlocked && (
-          <div className="mx-auto w-full max-w-md my-8">
-            <div className="border-2 border-primary/50 bg-wood p-8 shadow-2xl rounded-sm text-center flex flex-col items-center gap-6 relative">
-              <div className="size-14 rounded-full border-2 border-primary bg-background/80 flex items-center justify-center text-primary shadow-lg">
-                <Lock className="size-7" />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h2 className="font-serif text-2xl font-black uppercase text-carved tracking-wide">
-                  Restricted Access
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-relaxed">
-                  Enter the event secret passcode to view the registered squad roster.
+        <div className="border-2 border-primary/40 bg-card p-5 shadow-xl rounded-sm">
+          <form
+            onSubmit={handleUnlockSubmit}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3 shrink-0">
+              {isUnlocked ? (
+                <div className="size-10 rounded-full border border-emerald-600/40 bg-emerald-950/20 text-emerald-500 flex items-center justify-center">
+                  <Unlock className="size-5" />
+                </div>
+              ) : (
+                <div className="size-10 rounded-full border border-primary/40 bg-primary/10 text-primary flex items-center justify-center">
+                  <Lock className="size-5" />
+                </div>
+              )}
+              <div>
+                <p className="font-serif text-xs font-bold uppercase tracking-wider text-primary">
+                  {isUnlocked ? "Status: Roster Unlocked" : "Passcode Required"}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  {isUnlocked
+                    ? "Passcode verified ('raama-raama')"
+                    : "Enter secret passcode to view registered squad members"}
                 </p>
               </div>
-
-              <form onSubmit={handleUnlockSubmit} className="w-full flex flex-col gap-4">
-                <div className="relative w-full">
-                  <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
-                  <input
-                    type="password"
-                    value={passInput}
-                    onChange={(e) => setPassInput(e.target.value)}
-                    placeholder="Enter passcode (e.g. raama-raama)"
-                    required
-                    className="w-full border-2 border-primary/40 bg-background pl-10 pr-4 py-3 text-sm font-semibold text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-inner rounded-sm"
-                  />
-                </div>
-
-                {passError && (
-                  <p className="text-xs font-bold text-destructive bg-destructive/15 p-3 rounded border border-destructive/30 font-serif">
-                    {passError}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="clip-torn w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] px-6 py-3.5 font-serif text-sm font-black uppercase tracking-[0.2em] transition-all shadow-xl cursor-pointer disabled:opacity-60"
-                >
-                  {loading ? "Verifying Passcode..." : "UNLOCK ROSTER"}
-                </button>
-              </form>
-
-              <p className="text-[11px] font-serif italic text-primary/80 mt-2">
-                Hint: &ldquo;Rama Rama... Thusu Daksha Vrutha Jaripa!&rdquo;
-              </p>
             </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:max-w-md">
+              <div className="relative w-full">
+                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
+                <input
+                  type="text"
+                  value={passInput}
+                  onChange={(e) => {
+                    setPassInput(e.target.value);
+                    if (passError) setPassError("");
+                  }}
+                  placeholder="Enter passcode (e.g. raama-raama)"
+                  required
+                  className="w-full border-2 border-primary/40 bg-background pl-10 pr-4 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-inner rounded-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 border-2 border-[#4a2206] bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] px-6 py-2.5 font-serif text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer shrink-0 disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="size-4 animate-spin" />
+                    <span>Verifying...</span>
+                  </>
+                ) : isUnlocked ? (
+                  <span>Update Pass</span>
+                ) : (
+                  <span>Unlock Roster</span>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {passError && (
+            <p className="mt-3 text-xs font-bold text-destructive bg-destructive/15 p-2.5 rounded border border-destructive/30 text-center font-serif">
+              {passError}
+            </p>
+          )}
+        </div>
+
+        {/* ---------------------------------------------------- */}
+        {/* PASSCODE LOCKED NOTICE */}
+        {/* ---------------------------------------------------- */}
+        {!isUnlocked && !loading && (
+          <div className="py-16 text-center flex flex-col items-center justify-center gap-4 border border-primary/20 bg-card/60 p-8 rounded-sm shadow-md">
+            <Lock className="size-12 text-primary/60" />
+            <h3 className="font-serif text-xl font-bold uppercase text-foreground">
+              Roster Access Restricted
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed">
+              Enter the passcode <strong className="text-primary font-mono font-bold">raama-raama</strong> in the input field above and click <strong>&quot;Unlock Roster&quot;</strong> to view the list of registered teams and members.
+            </p>
+            <p className="text-xs font-serif italic text-primary/80">
+              Hint: &ldquo;Rama Rama... Thusu Daksha Vrutha Jaripa!&rdquo;
+            </p>
           </div>
         )}
 
@@ -254,9 +292,10 @@ export default function ListOfMembers() {
                     localStorage.removeItem("hh_roster_pass");
                     setIsUnlocked(false);
                     setPasscode("");
+                    setPassInput("");
                     setTeams([]);
                   }}
-                  className="border border-primary/30 bg-background px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive transition-all rounded-sm"
+                  className="border border-primary/30 bg-background px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive transition-all rounded-sm cursor-pointer"
                 >
                   Lock
                 </button>
