@@ -11,6 +11,8 @@ import {
   Lock,
   Unlock,
   KeyRound,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
 
 export default function ListOfMembers() {
@@ -108,6 +110,106 @@ export default function ListOfMembers() {
     0
   );
 
+  // ----------------------------------------------------
+  // EXPORT TO CSV
+  // ----------------------------------------------------
+  const exportToCSV = () => {
+    if (!filteredTeams || filteredTeams.length === 0) return;
+
+    const headers = ["ID", "Team Name", "Leader Name", "Member Names"];
+    const rows = filteredTeams.map((team) => [
+      team.id,
+      `"${(team.teamName || "").replace(/"/g, '""')}"`,
+      `"${(team.leaderName || "").replace(/"/g, '""')}"`,
+      `"${(team.members || []).join(", ").replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `HH2026_Registered_Squads_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // ----------------------------------------------------
+  // EXPORT TO PDF (PRINTABLE DOCUMENT)
+  // ----------------------------------------------------
+  const exportToPDF = () => {
+    if (!filteredTeams || filteredTeams.length === 0) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Please allow popups to export PDF.");
+      return;
+    }
+
+    const rowsHtml = filteredTeams
+      .map(
+        (t) => `
+      <tr>
+        <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold;">#${t.id}</td>
+        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${t.teamName}</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">👑 ${t.leaderName}</td>
+        <td style="padding: 10px; border: 1px solid #ddd;">${(t.members || []).join(", ") || "—"}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>HH2026 Registered Squads Roster</title>
+          <style>
+            body { font-family: 'Georgia', serif; padding: 24px; color: #1a0a03; background: #fffdf9; }
+            h1 { text-transform: uppercase; letter-spacing: 1px; color: #8b261b; margin-bottom: 4px; font-size: 24px; }
+            p { margin-top: 0; color: #555; font-size: 13px; font-weight: 500; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+            th { background: #eedca8; color: #4a2206; padding: 10px 12px; border: 1px solid #bbb; text-align: left; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+            tr:nth-child(even) { background: #f9f4e8; }
+            .footer { margin-top: 30px; font-size: 11px; color: #777; text-align: center; border-top: 1px solid #ddd; padding-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <h1>Hudugata Hudakata 2026</h1>
+          <p>Official Registered Squads Roster &bull; Total Squads: ${filteredTeams.length} &bull; Generated: ${new Date().toLocaleDateString()}</p>
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: center; width: 50px;">ID</th>
+                <th style="width: 200px;">Team Name</th>
+                <th style="width: 180px;">Leader Name</th>
+                <th>Member Names</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <div class="footer">
+            Kannada Vedike NITK Surathkal &bull; Official Event Roster Document
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="hh2026-page min-h-screen bg-parchment text-foreground flex flex-col justify-between selection:bg-primary selection:text-primary-foreground">
       {/* Top Banner & Header */}
@@ -170,7 +272,7 @@ export default function ListOfMembers() {
         </div>
 
         {/* ---------------------------------------------------- */}
-        {/* PASSCODE INPUT BAR (ALWAYS ACCESSIBLE) */}
+        {/* PASSCODE INPUT BAR */}
         {/* ---------------------------------------------------- */}
         <div className="border-2 border-primary/40 bg-card p-5 shadow-xl rounded-sm">
           <form
@@ -203,7 +305,7 @@ export default function ListOfMembers() {
               <div className="relative w-full">
                 <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
                 <input
-                  type="text"
+                  type="password"
                   value={passInput}
                   onChange={(e) => {
                     setPassInput(e.target.value);
@@ -225,10 +327,8 @@ export default function ListOfMembers() {
                     <RefreshCw className="size-4 animate-spin" />
                     <span>Verifying...</span>
                   </>
-                ) : isUnlocked ? (
-                  <span>Update Pass</span>
                 ) : (
-                  <span>Unlock Roster</span>
+                  <span>Submit</span>
                 )}
               </button>
             </div>
@@ -251,7 +351,7 @@ export default function ListOfMembers() {
               Roster Access Restricted
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed">
-              Enter the event secret passcode in the input field above and click <strong>&quot;Unlock Roster&quot;</strong> to view the list of registered teams and members.
+              Enter the event secret passcode in the input field above and click <strong>&quot;Submit&quot;</strong> to view the list of registered teams and members.
             </p>
           </div>
         )}
@@ -261,27 +361,50 @@ export default function ListOfMembers() {
         {/* ---------------------------------------------------- */}
         {isUnlocked && (
           <>
-            {/* Search & Refresh Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-2 border-primary/30 bg-card p-4 rounded-sm shadow-md">
-              <div className="relative w-full sm:max-w-md">
+            {/* Search, Refresh & Export Toolbar */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 border-2 border-primary/30 bg-card p-4 rounded-sm shadow-md">
+              {/* Search Bar */}
+              <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by team name, leader, or member..."
+                  placeholder="Search by team, leader, or member..."
                   className="w-full border border-primary/30 bg-background/80 pl-10 pr-4 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary rounded-sm shadow-inner"
                 />
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              {/* Action Buttons: Export CSV, Export PDF, Refresh, Lock */}
+              <div className="flex flex-wrap items-center gap-2.5 justify-end">
+                <button
+                  onClick={exportToCSV}
+                  disabled={filteredTeams.length === 0}
+                  className="inline-flex items-center gap-2 border border-emerald-700/60 bg-emerald-950/20 text-emerald-800 hover:bg-emerald-800 hover:text-white px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider transition-all rounded-sm shadow-sm cursor-pointer disabled:opacity-50"
+                  title="Export to CSV"
+                >
+                  <FileSpreadsheet className="size-4" />
+                  <span>Export CSV</span>
+                </button>
+
+                <button
+                  onClick={exportToPDF}
+                  disabled={filteredTeams.length === 0}
+                  className="inline-flex items-center gap-2 border border-[#8b261b]/60 bg-[#8b261b]/15 text-[#8b261b] hover:bg-[#8b261b] hover:text-[#f7eed6] px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider transition-all rounded-sm shadow-sm cursor-pointer disabled:opacity-50"
+                  title="Export / Print PDF"
+                >
+                  <FileText className="size-4" />
+                  <span>Export PDF</span>
+                </button>
+
                 <button
                   onClick={() => fetchTeams(passcode)}
                   disabled={loading}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-primary/40 bg-secondary px-5 py-2.5 font-serif text-xs font-bold uppercase tracking-wider text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-all rounded-sm shadow-sm cursor-pointer disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 border border-primary/40 bg-secondary px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-all rounded-sm shadow-sm cursor-pointer disabled:opacity-60"
+                  title="Refresh Roster"
                 >
                   <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
-                  <span>Refresh</span>
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
 
                 <button
@@ -293,6 +416,7 @@ export default function ListOfMembers() {
                     setTeams([]);
                   }}
                   className="border border-primary/30 bg-background px-4 py-2.5 font-serif text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive transition-all rounded-sm cursor-pointer"
+                  title="Lock Roster Session"
                 >
                   Lock
                 </button>
