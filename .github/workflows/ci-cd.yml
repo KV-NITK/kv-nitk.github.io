@@ -8,14 +8,13 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   # ----------------------------------------------------
   # Job 1: Build & Verify (Frontend & Backend)
   # ----------------------------------------------------
-  test-and-build:
-    name: Test & Syntax Check
+  test-and-verify:
+    name: Test & Verify Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -42,87 +41,12 @@ jobs:
         run: cd server && node --check src/server.js src/app.js
 
   # ----------------------------------------------------
-  # Job 2: Deploy Frontend to GitHub Pages
-  # ----------------------------------------------------
-  deploy-frontend:
-    name: Deploy Frontend (GitHub Pages)
-    needs: test-and-build
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Frontend
-        run: npm run build
-        env:
-          VITE_API_URL: https://kannadavedike.nitk.ac.in/api
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
-
-  # ----------------------------------------------------
-  # Job 3: Build & Publish Backend Docker Image (GHCR)
-  # ----------------------------------------------------
-  build-and-push-backend:
-    name: Build & Push Backend Container Image
-    needs: test-and-build
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry (GHCR)
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set lower case repository owner
-        run: |
-          echo "IMAGE_REPOSITORY=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/kv-backend" >> $GITHUB_ENV
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_REPOSITORY }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./server/Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_REPOSITORY }}:latest
-            ${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  # ----------------------------------------------------
-  # Job 4: Auto-Deploy on NITK Campus Server (10.14.0.80)
-  # Runs on self-hosted runner on 10.14.0.80 (outbound connection, works behind campus firewall/private IP)
+  # Job 2: Auto-Deploy on NITK Campus Server (10.14.0.80)
+  # Runs on self-hosted runner on 10.14.0.80
   # ----------------------------------------------------
   deploy-to-nitk-server:
     name: Auto-Deploy to NITK Campus Server
-    needs: [test-and-build, build-and-push-backend]
+    needs: test-and-verify
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     runs-on: self-hosted
     steps:
@@ -136,4 +60,3 @@ jobs:
           echo [REDACTED_PASSWORD] | sudo -S systemctl restart kv-backend
           npm run build
           echo [REDACTED_PASSWORD] | sudo -S bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
-
