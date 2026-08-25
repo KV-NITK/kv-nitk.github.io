@@ -145,6 +145,8 @@ export const registerTeam = async (req, res) => {
       passwordHash,
       leaderIrisId,
       leaderRollNo,
+      leaderName: req.user.name,
+      leaderEmail: req.user.email,
       members: data.members,
     });
 

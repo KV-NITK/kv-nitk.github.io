@@ -49,20 +49,30 @@ export function RegisteredSquadCard({
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[#2b1810]">
           <div>
             <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
+              Leader Name
+            </span>
+            <strong className="font-serif text-base font-bold text-[#1a0a03]">
+              {userTeam.leader?.name || (isLeader ? user?.name : "Squad Leader")}
+            </strong>
+          </div>
+
+          <div>
+            <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
               Roll No / IRIS ID
             </span>
             <strong className="font-mono text-base">
               {userTeam.leader?.rollNo || userTeam.leader?.irisId}
             </strong>
           </div>
-          {isLeader && (
-            <div>
+
+          {(userTeam.leader?.email || (isLeader && user?.email)) && (
+            <div className="sm:col-span-2">
               <span className="font-serif text-xs text-[#7a4823]/80 block uppercase tracking-wider">
-                Account Name & Email
+                Leader Email
               </span>
-              <strong className="font-sans text-base">
-                {user?.name} ({user?.email})
-              </strong>
+              <span className="text-xs text-[#5c3418]">
+                {userTeam.leader?.email || (isLeader ? user?.email : "")}
+              </span>
             </div>
           )}
         </div>
