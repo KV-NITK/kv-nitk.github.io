@@ -136,6 +136,70 @@ const clampPan = (pan, zoom, rect) => {
   };
 };
 
+// Builds a smooth closed loop that traces the outer edge of every revealed fog-clear
+// circle combined, so the eagle patrols the boundary of explored territory instead of
+// parking on one spot.
+const buildEaglePatrolPath = (locations) => {
+  if (!locations || locations.length === 0) return null;
+
+  const PAD = 1.2; // fly just outside each circle's rim, not along it exactly
+
+  if (locations.length === 1) {
+    const loc = locations[0];
+    const r = (loc.reveal_radius || 100) * 1.3;
+    return `M ${loc.x_coord - r} ${loc.y_coord} ` +
+      `A ${r} ${r} 0 1 0 ${loc.x_coord + r} ${loc.y_coord} ` +
+      `A ${r} ${r} 0 1 0 ${loc.x_coord - r} ${loc.y_coord} Z`;
+  }
+
+  const cx = locations.reduce((s, l) => s + l.x_coord, 0) / locations.length;
+  const cy = locations.reduce((s, l) => s + l.y_coord, 0) / locations.length;
+
+  // Push each location's point outward from the centroid, past its own circle's rim.
+  const points = locations.map((loc) => {
+    const dx = loc.x_coord - cx;
+    const dy = loc.y_coord - cy;
+    const dist = Math.hypot(dx, dy) || 1;
+    const r = (loc.reveal_radius || 100) * PAD;
+    const scale = (dist + r) / dist;
+    return { x: cx + dx * scale, y: cy + dy * scale };
+  });
+
+  // With only 2 locations, the pushed-out points sit on a single line through the
+  // centroid — add two perpendicular waypoints so the loop has real width instead
+  // of collapsing into a line the eagle would just fly back and forth on.
+  if (locations.length === 2) {
+    const [a, b] = locations;
+    const mx = (a.x_coord + b.x_coord) / 2;
+    const my = (a.y_coord + b.y_coord) / 2;
+    const dx = b.x_coord - a.x_coord;
+    const dy = b.y_coord - a.y_coord;
+    const len = Math.hypot(dx, dy) || 1;
+    const avgR = ((a.reveal_radius || 100) + (b.reveal_radius || 100)) / 2 * PAD;
+    points.push({ x: mx - (dy / len) * avgR, y: my + (dx / len) * avgR });
+    points.push({ x: mx + (dy / len) * avgR, y: my - (dx / len) * avgR });
+  }
+
+  // Order the waypoints around the centroid so the loop doesn't self-intersect.
+  points.sort((p1, p2) => Math.atan2(p1.y - cy, p1.x - cx) - Math.atan2(p2.y - cy, p2.x - cx));
+
+  // Smooth closed Catmull-Rom spline (as cubic Beziers) through the ordered waypoints.
+  const n = points.length;
+  let d = `M ${points[0].x} ${points[0].y} `;
+  for (let i = 0; i < n; i++) {
+    const p0 = points[(i - 1 + n) % n];
+    const p1 = points[i];
+    const p2 = points[(i + 1) % n];
+    const p3 = points[(i + 2) % n];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += `C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y} `;
+  }
+  return d + "Z";
+};
+
 export default function GameDashboard() {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -164,6 +228,7 @@ export default function GameDashboard() {
 
   const mapContainerRef = useRef(null);
   const fitZoomRef = useRef(1);
+  const eaglePathRef = useRef(null);
 
   // ==========================================
   // Check Auth & Fetch Game State
@@ -254,9 +319,26 @@ export default function GameDashboard() {
   }, [loadingState, !!gameState]);
 
   const resetMap = () => {
-    const isMobile = window.innerWidth < 768;
-    setZoom(isMobile ? 0.55 : 0.85);
-    setPan(isMobile ? { x: -380, y: -65 } : { x: -425, y: -115 });
+    const rect = mapContainerRef.current?.getBoundingClientRect();
+    if (!rect || !rect.width || !rect.height) return;
+
+    const fitZoom = getFitZoom(rect);
+    fitZoomRef.current = fitZoom;
+    const newZoom = Math.min(fitZoom * GTA_ZOOM_MULTIPLIER, MAX_ZOOM);
+
+    // Center on the frontier of exploration: the last spot the team uncovered.
+    const revealed = gameState?.revealedLocations;
+    const focus = revealed && revealed.length > 0
+      ? revealed[revealed.length - 1]
+      : { x_coord: MAP_WIDTH / 2, y_coord: MAP_HEIGHT / 2 };
+
+    const rawPan = {
+      x: rect.width / 2 - focus.x_coord * newZoom,
+      y: rect.height / 2 - focus.y_coord * newZoom,
+    };
+
+    setZoom(newZoom);
+    setPan(clampPan(rawPan, newZoom, rect));
   };
 
   // Keep the frame gap-free and correctly centered if the viewport is resized.
@@ -268,21 +350,37 @@ export default function GameDashboard() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Move Eagle to the latest revealed location coordinates
-  useEffect(() => {
-    if (gameState && gameState.revealedLocations && gameState.revealedLocations.length > 0) {
-      const latestLoc = gameState.revealedLocations[gameState.revealedLocations.length - 1];
-      const targetX = latestLoc.x_coord;
-      const targetY = latestLoc.y_coord;
+  // Patrol the boundary of every revealed location combined, instead of parking on one spot.
+  const eaglePatrolPathD = buildEaglePatrolPath(gameState?.revealedLocations);
+  const PATROL_LOOP_MS = 16000;
 
-      setEaglePos(prev => {
-        if (prev.x !== targetX) {
-          setEagleFacingRight(targetX > prev.x);
+  useEffect(() => {
+    if (!eaglePatrolPathD) return undefined;
+
+    let rafId;
+    let lastX = null;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const pathEl = eaglePathRef.current;
+      if (pathEl) {
+        const totalLength = pathEl.getTotalLength();
+        if (totalLength > 0) {
+          const elapsed = (now - startTime) % PATROL_LOOP_MS;
+          const point = pathEl.getPointAtLength((elapsed / PATROL_LOOP_MS) * totalLength);
+          setEaglePos({ x: point.x, y: point.y });
+          if (lastX !== null && Math.abs(point.x - lastX) > 0.05) {
+            setEagleFacingRight(point.x > lastX);
+          }
+          lastX = point.x;
         }
-        return { x: targetX, y: targetY };
-      });
-    }
-  }, [gameState?.revealedLocations?.length]);
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [eaglePatrolPathD]);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -729,6 +827,11 @@ export default function GameDashboard() {
                   </mask>
                 </defs>
 
+                {/* Invisible geometry the eagle patrols along — not rendered, only sampled */}
+                {eaglePatrolPathD && (
+                  <path ref={eaglePathRef} d={eaglePatrolPathD} fill="none" stroke="none" />
+                )}
+
                 {/* Layer 1: Base Map Image */}
                 <image 
                   href="/hh2026/prop-map-scrap.png" 
@@ -818,22 +921,18 @@ export default function GameDashboard() {
                   </g>
                 ))}
 
-                {/* Layer 5: Flying Eagle (Garuda Messenger) */}
-                <g
-                  style={{
-                    transform: `translate(${eaglePos.x}px, ${eaglePos.y}px) scaleX(${eagleFacingRight ? 1 : -1})`,
-                    transition: "transform 2.8s cubic-bezier(0.25, 1, 0.5, 1)",
-                    pointerEvents: "none"
-                  }}
-                >
-                  <image
-                    href="/hh2026/eagle.png"
-                    x="-65"
-                    y="-45"
-                    width="130"
-                    height="90"
-                    className="animate-eagle-hover"
-                  />
+                {/* Layer 5: Flying Eagle (Garuda Messenger) — patrols the revealed boundary */}
+                <g style={{ transform: `translate(${eaglePos.x}px, ${eaglePos.y}px)`, pointerEvents: "none" }}>
+                  <g style={{ transform: `scaleX(${eagleFacingRight ? 1 : -1})`, transition: "transform 0.4s ease-out" }}>
+                    <image
+                      href="/hh2026/eagle.png"
+                      x="-65"
+                      y="-45"
+                      width="130"
+                      height="90"
+                      className="animate-eagle-hover"
+                    />
+                  </g>
                 </g>
               </svg>
             </div>
