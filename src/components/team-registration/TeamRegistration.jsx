@@ -200,17 +200,26 @@ const TeamRegistration = () => {
     }
 
 
-    const invalidRollNo = members.find(
-      (member) => !/^26/.test(member.rollNo.trim().toUpperCase())
-    );
+    const leaderRollNo = (user?.rollNo || user?.irisId || "").trim().toUpperCase();
 
-    if (invalidRollNo) {
-      setMessage("Roll numbers must start with 26.");
+    if (!/^26/.test(leaderRollNo)) {
+      setMessage("Squad Leader roll number must start with 26.");
       return;
     }
 
-    const rollNumbers = members.map((member) => member.rollNo.trim().toUpperCase());
-    if (new Set(rollNumbers).size !== rollNumbers.length) {
+    const allRollNumbers = [
+      leaderRollNo,
+      ...members.map((member) => member.rollNo.trim().toUpperCase()),
+    ];
+
+    const invalidRollNo = allRollNumbers.find((roll) => !/^26/.test(roll));
+
+    if (invalidRollNo) {
+      setMessage("All squad members (including the leader) must have roll numbers starting with 26.");
+      return;
+    }
+
+    if (new Set(allRollNumbers).size !== allRollNumbers.length) {
       setMessage("Duplicate roll numbers are not allowed.");
       return;
     }
