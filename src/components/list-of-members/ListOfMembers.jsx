@@ -286,74 +286,68 @@ export default function ListOfMembers() {
         </div>
 
         {/* ---------------------------------------------------- */}
-        {/* PASSCODE INPUT BAR */}
+        {/* PASSCODE INPUT BAR (ONLY SHOWN WHEN LOCKED) */}
         {/* ---------------------------------------------------- */}
-        <div className="border-2 border-primary/40 bg-card p-5 shadow-xl rounded-sm">
-          <form
-            onSubmit={handleUnlockSubmit}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-3 shrink-0">
-              {isUnlocked ? (
-                <div className="size-10 rounded-full border border-emerald-600/40 bg-emerald-950/20 text-emerald-500 flex items-center justify-center">
-                  <Unlock className="size-5" />
-                </div>
-              ) : (
+        {!isUnlocked && (
+          <div className="border-2 border-primary/40 bg-card p-5 sm:p-6 shadow-xl rounded-sm">
+            <form
+              onSubmit={handleUnlockSubmit}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-3 shrink-0">
                 <div className="size-10 rounded-full border border-primary/40 bg-primary/10 text-primary flex items-center justify-center">
                   <Lock className="size-5" />
                 </div>
-              )}
-              <div>
-                <p className="font-serif text-xs font-bold uppercase tracking-wider text-primary">
-                  {isUnlocked ? "Status: Roster Unlocked" : "Passcode Required"}
-                </p>
-                <p className="text-xs text-muted-foreground font-medium">
-                  {isUnlocked
-                    ? "Passcode verified"
-                    : "Enter secret passcode to view registered squad members"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:max-w-md">
-              <div className="relative w-full">
-                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
-                <input
-                  type="password"
-                  value={passInput}
-                  onChange={(e) => {
-                    setPassInput(e.target.value);
-                    if (passError) setPassError("");
-                  }}
-                  placeholder="Enter secret passcode"
-                  required
-                  className="w-full border-2 border-primary/40 bg-background pl-10 pr-4 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-inner rounded-sm"
-                />
+                <div>
+                  <p className="font-serif text-xs font-bold uppercase tracking-wider text-primary">
+                    Passcode Required
+                  </p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Enter secret passcode to view registered squad members
+                  </p>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center gap-2 border-2 border-[#4a2206] bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] px-6 py-2.5 font-serif text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer shrink-0 disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    <span>Verifying...</span>
-                  </>
-                ) : (
-                  <span>Submit</span>
-                )}
-              </button>
-            </div>
-          </form>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:max-w-md">
+                <div className="relative w-full">
+                  <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
+                  <input
+                    type="password"
+                    value={passInput}
+                    onChange={(e) => {
+                      setPassInput(e.target.value);
+                      if (passError) setPassError("");
+                    }}
+                    placeholder="Enter secret passcode"
+                    required
+                    className="w-full border-2 border-primary/40 bg-background pl-10 pr-4 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-inner rounded-sm"
+                  />
+                </div>
 
-          {passError && (
-            <p className="mt-3 text-xs font-bold text-destructive bg-destructive/15 p-2.5 rounded border border-destructive/30 text-center font-serif">
-              {passError}
-            </p>
-          )}
-        </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center justify-center gap-2 border-2 border-[#4a2206] bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] px-6 py-2.5 font-serif text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer shrink-0 disabled:opacity-60"
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw className="size-4 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <span>Unlock Roster</span>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {passError && (
+              <p className="mt-3 text-xs font-bold text-destructive bg-destructive/15 p-2.5 rounded border border-destructive/30 text-center font-serif">
+                {passError}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* ---------------------------------------------------- */}
         {/* PASSCODE LOCKED NOTICE */}
