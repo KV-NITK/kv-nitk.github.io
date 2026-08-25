@@ -116,6 +116,26 @@ const MOCK_LOCATIONS = [
 
 const PATH_STEPS = ["loc-1", "loc-2", "loc-3", "loc-4", "loc-5", "loc-6"];
 
+const MAP_WIDTH = 1500;
+const MAP_HEIGHT = 1000;
+const GTA_ZOOM_MULTIPLIER = 1.55; // default zoom-in beyond "fit", for a focused, GTA-minimap feel
+const MAX_ZOOM = 2.8;
+
+// The zoom level at which the map image exactly covers the frame with no empty edges.
+const getFitZoom = (rect) => Math.max(rect.width / MAP_WIDTH, rect.height / MAP_HEIGHT);
+
+// Keeps the map image's edges from ever pulling in past the frame's edges.
+const clampPan = (pan, zoom, rect) => {
+  const scaledW = MAP_WIDTH * zoom;
+  const scaledH = MAP_HEIGHT * zoom;
+  const minX = Math.min(0, rect.width - scaledW);
+  const minY = Math.min(0, rect.height - scaledH);
+  return {
+    x: Math.min(0, Math.max(minX, pan.x)),
+    y: Math.min(0, Math.max(minY, pan.y)),
+  };
+};
+
 export default function GameDashboard() {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -139,6 +159,7 @@ export default function GameDashboard() {
   const [scanning, setScanning] = useState(false);
 
   const mapContainerRef = useRef(null);
+  const fitZoomRef = useRef(1);
 
   // ==========================================
   // Check Auth & Fetch Game State
@@ -229,10 +250,36 @@ export default function GameDashboard() {
   }, [loadingState, !!gameState]);
 
   const resetMap = () => {
-    const isMobile = window.innerWidth < 768;
-    setZoom(isMobile ? 0.55 : 0.85);
-    setPan(isMobile ? { x: -380, y: -65 } : { x: -425, y: -115 });
+    const rect = mapContainerRef.current?.getBoundingClientRect();
+    if (!rect || !rect.width || !rect.height) return;
+
+    const fitZoom = getFitZoom(rect);
+    fitZoomRef.current = fitZoom;
+    const newZoom = Math.min(fitZoom * GTA_ZOOM_MULTIPLIER, MAX_ZOOM);
+
+    // Center on the frontier of exploration: the last spot the team uncovered.
+    const revealed = gameState?.revealedLocations;
+    const focus = revealed && revealed.length > 0
+      ? revealed[revealed.length - 1]
+      : { x_coord: MAP_WIDTH / 2, y_coord: MAP_HEIGHT / 2 };
+
+    const rawPan = {
+      x: rect.width / 2 - focus.x_coord * newZoom,
+      y: rect.height / 2 - focus.y_coord * newZoom,
+    };
+
+    setZoom(newZoom);
+    setPan(clampPan(rawPan, newZoom, rect));
   };
+
+  // Keep the frame gap-free and correctly centered if the viewport is resized.
+  const resetMapRef = useRef(resetMap);
+  resetMapRef.current = resetMap;
+  useEffect(() => {
+    const onResize = () => resetMapRef.current();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -245,10 +292,9 @@ export default function GameDashboard() {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
+    const rect = mapContainerRef.current?.getBoundingClientRect();
+    const rawPan = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
+    setPan(rect ? clampPan(rawPan, zoom, rect) : rawPan);
   };
 
   const handleMouseUp = () => {
@@ -282,32 +328,33 @@ export default function GameDashboard() {
   const handleTouchMove = (e) => {
     if (e.touches.length === 1 && isDragging) {
       const touch = e.touches[0];
-      setPan({
-        x: touch.clientX - dragStart.x,
-        y: touch.clientY - dragStart.y
-      });
+      const rect = mapContainerRef.current?.getBoundingClientRect();
+      const rawPan = { x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y };
+      setPan(rect ? clampPan(rawPan, zoom, rect) : rawPan);
     } else if (e.touches.length === 2 && touchStartDist !== null && mapContainerRef.current) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / touchStartDist;
-      
+      const rect = mapContainerRef.current.getBoundingClientRect();
+      const floor = fitZoomRef.current || 0.45;
+
       let newZoom = touchStartZoom * factor;
-      newZoom = Math.min(Math.max(newZoom, 0.45), 2.5);
+      newZoom = Math.min(Math.max(newZoom, floor), MAX_ZOOM);
 
       const fx = touchFocalPoint.x;
       const fy = touchFocalPoint.y;
-      
+
       const mx = (fx - touchStartPan.x) / touchStartZoom;
       const my = (fy - touchStartPan.y) / touchStartZoom;
-      
-      const newPan = {
+
+      const rawPan = {
         x: fx - mx * newZoom,
         y: fy - my * newZoom
       };
 
       setZoom(newZoom);
-      setPan(newPan);
+      setPan(clampPan(rawPan, newZoom, rect));
     }
   };
 
@@ -324,35 +371,51 @@ export default function GameDashboard() {
     const fx = e.clientX - rect.left;
     const fy = e.clientY - rect.top;
 
+    const floor = fitZoomRef.current || 0.45;
     const zoomFactor = 1.15;
     let newZoom = zoom;
     if (e.deltaY < 0) {
-      newZoom = Math.min(zoom * zoomFactor, 2.5);
+      newZoom = Math.min(zoom * zoomFactor, MAX_ZOOM);
     } else {
-      newZoom = Math.max(zoom / zoomFactor, 0.45);
+      newZoom = Math.max(zoom / zoomFactor, floor);
     }
 
     if (newZoom !== zoom) {
       const mx = (fx - pan.x) / zoom;
       const my = (fy - pan.y) / zoom;
-      
-      const newPan = {
+
+      const rawPan = {
         x: fx - mx * newZoom,
         y: fy - my * newZoom
       };
 
       setZoom(newZoom);
-      setPan(newPan);
+      setPan(clampPan(rawPan, newZoom, rect));
     }
   };
 
-  const zoomIn = () => {
-    setZoom(prev => Math.min(prev * 1.25, 2.5));
+  // Zooms in/out around the frame's visual center, clamped so no gap ever opens up.
+  const zoomAroundCenter = (factor) => {
+    const rect = mapContainerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const floor = fitZoomRef.current || 0.45;
+
+    setZoom(prevZoom => {
+      const newZoom = Math.min(Math.max(prevZoom * factor, floor), MAX_ZOOM);
+      setPan(prevPan => {
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const mx = (cx - prevPan.x) / prevZoom;
+        const my = (cy - prevPan.y) / prevZoom;
+        const rawPan = { x: cx - mx * newZoom, y: cy - my * newZoom };
+        return clampPan(rawPan, newZoom, rect);
+      });
+      return newZoom;
+    });
   };
 
-  const zoomOut = () => {
-    setZoom(prev => Math.max(prev / 1.25, 0.45));
-  };
+  const zoomIn = () => zoomAroundCenter(1.25);
+  const zoomOut = () => zoomAroundCenter(1 / 1.25);
   // ==========================================
   // Scan Simulation
   // ==========================================
@@ -576,7 +639,7 @@ export default function GameDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow items-stretch">
           
           {/* LEFT 8 COLS: INTERACTIVE MAP CONTAINER */}
-          <div className="lg:col-span-8 flex flex-col relative border-2 border-primary/50 bg-wood p-2 shadow-2xl rounded-sm min-h-[450px] md:min-h-[550px] select-none">
+          <div className="lg:col-span-8 flex flex-col relative self-start border-2 border-primary/50 bg-wood p-2 shadow-2xl rounded-sm select-none">
             <div className="absolute top-4 left-4 z-20 flex gap-2 no-drag">
               <button 
                 onClick={zoomIn} 
@@ -609,7 +672,7 @@ export default function GameDashboard() {
             {/* Interactive MAP Display */}
             <div 
               ref={mapContainerRef}
-              className="relative w-full h-full overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30 touch-none"
+              className="relative w-full h-[225px] sm:h-[260px] md:h-[300px] lg:h-[340px] overflow-hidden bg-[#18110b] rounded-sm cursor-grab active:cursor-grabbing border border-[#8b5a2b]/30 touch-none"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -661,25 +724,23 @@ export default function GameDashboard() {
                   height="1000" 
                 />
 
-                {/* Layer 2: Fog Overlay (Masked) */}
+                {/* Layer 2: Fog Overlay (Masked Image) */}
+                <image 
+                  href="/hh2026/fog-overlay.png" 
+                  width="1500" 
+                  height="1000" 
+                  opacity="0.94" 
+                  mask="url(#cloud-mask)" 
+                />
+                
+                {/* Ambient Fog wisps on top of overlay for dynamic breathing effect */}
                 <rect 
                   x="0" 
                   y="0" 
                   width="1500" 
                   height="1000" 
                   fill="#1a1412" 
-                  opacity="0.88" 
-                  mask="url(#cloud-mask)" 
-                />
-                
-                {/* Ambient Fog wisps on top of overlay for aesthetic */}
-                <rect 
-                  x="0" 
-                  y="0" 
-                  width="1500" 
-                  height="1000" 
-                  fill="#2c2421" 
-                  opacity="0.22" 
+                  opacity="0.16" 
                   mask="url(#cloud-mask)" 
                   className="animate-flicker"
                 />
