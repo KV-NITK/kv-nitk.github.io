@@ -1,58 +1,49 @@
 import {
   ArrowRight,
-  Gem,
-  KeyRound,
-  Map,
+  CheckCircle2,
   MapPin,
-  Puzzle,
-  Search,
+  MessageCircle,
+  PackageCheck,
+  ShieldAlert,
   Trophy,
+  Users,
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
 import { Plaque, Rivets } from './ornaments'
 import {
   FootprintTrail,
-  Key,
-  Revolver,
   Roam,
   Rope,
-  TreasureChest,
   TreasureMap,
 } from './roaming-assets'
 
-const steps = [
-  { icon: Map, label: 'Get a clue' },
-  { icon: Search, label: 'Solve it' },
-  { icon: MapPin, label: 'Find the location' },
-  { icon: Puzzle, label: 'Next clue' },
-  { icon: Gem, label: 'Reach the treasure' },
+const eligibilityRules = [
+  'TEAM SIZE: MIN 3 & MAX 4 MEMBERS',
+  'WHO CAN READ AND UNDERSTAND KANNADA IS A MUST. (MOST OF THE CLUES ARE RELATED TO KANNADA)',
+  'EACH TEAM MUST HAVE AT LEAST ONE NON-KANNADIGA.',
 ]
 
-const acts = [
-  {
-    icon: Map,
-    act: 'Round I',
-    title: 'East Campus',
-    copy: 'Every squad starts here. Crack the trail across East Campus — only the top twenty squads make it through to Round II.',
-  },
-  {
-    icon: KeyRound,
-    act: 'Round II',
-    title: 'West Campus',
-    copy: 'The top twenty squads cross over. The vault is somewhere on West Campus — find it first to take the bounty.',
-  },
+const generalRulesList = [
+  'BE THERE ON TIME, SO THAT YOU CAN HAVE FUN FINDING THE TREASURE.',
+  'THE CLUES ARE TO BE FOUND IN PARTICULAR ORDER AS PROVIDED.',
+  'NO CLUE CAN BE SKIPPED.',
+  'ENTIRE TEAM MUST STAY TOGETHER THROUGHOUT THE GAME TO GET THE NEXT CLUE AT EVERY LOCATION.',
+  'ALL ELIGIBLE ENTRIES WILL BE JUDGED AND DISREGARDING THE RULES MAY RESULT IN DISQUALIFICATION OF THE ENTIRE TEAM.',
+  'BICYCLES OR ANY VEHICLES CANNOT BE USED.',
+  'DECISION OF THE ORGANIZERS WILL BE FINAL.',
 ]
 
-const rules = [
-  'Squads of 3 to 4 — minimum 1 Kannadiga & 2 Non-Kannadigas per squad, mix your branches.',
-  'Phones allowed, but stolen answers are disqualification.',
-  'No damaging property, no climbing where you should not.',
-  'Volunteers in khaki are the referees. Their word is final.',
+const thingsToBring = [
+  'FULLY CHARGED MOBILE PHONES',
+  'WATER BOTTLES',
+  'POWER BANK',
+  'UMBRELLA',
+  'GET A PEN ALONG WITH YOU (MIGHT HELP TO DECODE THE CLUE).',
+  'ENTHUSIASM TO HAVE FUN AND WIN TREASURE!',
 ]
 
 export function LegendSection() {
   return (
-    <section id="about" className="relative border-b border-primary/15">
+    <section id="about" className="relative border-b border-primary/15 bg-parchment py-16 lg:py-24">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 -top-4 h-8 overflow-hidden opacity-70"
@@ -60,7 +51,8 @@ export function LegendSection() {
         <FootprintTrail className="animate-drift" />
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-5 py-20">
+      <div className="mx-auto w-full max-w-6xl px-5">
+        {/* Intro Legend */}
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
           <div className="flex flex-col gap-8">
             <Plaque eyebrow="The Legend" title="A treasure was buried. Then it was forgotten." />
@@ -71,128 +63,194 @@ export function LegendSection() {
               </div>
             </Roam>
           </div>
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 justify-center">
             <p className="font-serif text-xl text-primary/90 italic text-pretty">
               &ldquo;Rama Rama&hellip; Thusu Daksha Vrutha Jaripa!&rdquo;
             </p>
             <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
-              The hunt begins with a single clue. Solve it, and it leads you
-              to a location — and waiting there is the next one. Every
-              answer takes you deeper into a trail of riddles, secrets, and
-              surprises, inspired by the adventurous spirit of{' '}
-              <span className="text-primary">Avane Srimannarayana</span>.
+              The hunt begins with a single clue. Solve it, and it leads you to a location — and waiting there is the next one. Every answer takes you deeper into a trail of riddles, secrets, and surprises, inspired by the adventurous spirit of{' '}
+              <span className="text-primary font-bold">Avane Srimannarayana</span>.
             </p>
             <p className="font-serif text-xl font-bold text-balance text-foreground text-pretty">
-              Follow the clues. Find the locations. Keep the trail alive.
-              And uncover where the treasure lies.
+              Follow the clues. Find the locations. Keep the trail alive. And uncover where the treasure lies.
             </p>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-2 gap-y-6 border-y border-primary/15 py-7">
-          {steps.map((step, i) => (
-            <div key={step.label} className="flex items-center gap-2">
-              <div className="flex flex-col items-center gap-2 px-3 text-center">
-                <step.icon className="size-5 text-primary" strokeWidth={1.5} aria-hidden="true" />
-                <span className="font-serif text-[0.62rem] tracking-[0.16em] text-muted-foreground uppercase">
-                  {step.label}
-                </span>
-              </div>
-              {i < steps.length - 1 ? (
-                <ArrowRight className="size-4 shrink-0 text-primary/35" aria-hidden="true" />
-              ) : null}
-            </div>
-          ))}
-        </div>
-
-        <div id="hunt" className="relative mt-20 flex flex-col gap-8">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-primary/20 pb-4">
-            <h3 className="font-serif text-2xl font-bold tracking-[0.06em] uppercase">
-              How the hunt runs
-            </h3>
-            <p className="font-serif text-xs tracking-[0.2em] text-muted-foreground uppercase">
-              14:00 → 19:00 · one day only
+        {/* ---------------------------------------------------- */}
+        {/* OFFICIAL RULEBOOK & EVENT STRUCTURE SECTION */}
+        {/* ---------------------------------------------------- */}
+        <div id="hunt" className="relative mt-20 flex flex-col gap-12">
+          {/* Section Plaque Header */}
+          <div className="text-center flex flex-col items-center gap-3 border-b-2 border-primary/20 pb-6">
+            <span className="font-serif text-xs font-bold uppercase tracking-[0.3em] text-primary">
+              Official Regulations & Guidelines
+            </span>
+            <h2 className="font-serif text-3xl sm:text-5xl font-black uppercase text-carved tracking-tight">
+              Event Rulebook
+            </h2>
+            <p className="font-serif text-sm font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+              Think &bull; Decipher &bull; Explore &bull; Together
             </p>
           </div>
 
+          {/* 1. TEAM ELIGIBILITY & WHATSAPP CTA BANNER */}
           <div className="grid gap-6 md:grid-cols-2">
-            {acts.map((act, i) => (
-              <article
-                key={act.act}
-                className={cn(
-                  'flex flex-col gap-4 px-18 py-12 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]',
-                  i % 2 === 0 ? 'bg-pamphlet -rotate-1' : 'bg-pamphlet-alt rotate-1',
-                )}
-              >
-                <act.icon className="text-ink-accent size-6" strokeWidth={2} aria-hidden="true" />
-                <div className="flex flex-col gap-1">
-                  <span className="text-ink-accent font-serif text-[0.65rem] font-bold tracking-[0.24em] uppercase">
-                    {act.act}
-                  </span>
-                  <h4 className="text-ink font-serif text-xl font-bold">{act.title}</h4>
-                </div>
-                <p className="text-ink font-medium leading-relaxed">{act.copy}</p>
-              </article>
-            ))}
-          </div>
-
-          <div className="relative hidden h-0 sm:block">
-            <Roam
-              className="w-64 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:w-80"
-              motion="float"
-              duration="8s"
-              delay="0.5s"
-            >
-              <Revolver className="rotate-[8deg] opacity-95 drop-shadow-[0_16px_14px_oklch(0_0_0/55%)]" />
-            </Roam>
-          </div>
-
-          <div className="relative grid gap-8 border border-primary/25 bg-secondary/30 p-7 pt-12 md:grid-cols-2">
-            <Rope className="absolute -top-6 right-6 left-6 h-9 animate-sway" />
-            <div className="flex flex-col gap-4">
-              <h4 className="font-serif text-lg font-bold tracking-[0.16em] uppercase">
-                Hunter&apos;s code
-              </h4>
+            {/* Eligibility Card */}
+            <div className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
+              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
+                <Users className="size-6 text-primary shrink-0" />
+                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+                  Team Eligibility
+                </h3>
+              </div>
               <ul className="flex flex-col gap-3">
-                {rules.map((rule) => (
-                  <li key={rule} className="flex items-start gap-3 leading-relaxed text-muted-foreground">
-                    <span
-                      aria-hidden="true"
-                      className="relative mt-2 size-2 shrink-0 rounded-full bg-black/70 shadow-[0_0_0_2px_oklch(0.79_0.135_79/35%)]"
-                    />
-                    {rule}
+                {eligibilityRules.map((rule, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-sm font-semibold leading-relaxed text-ink">
+                    <CheckCircle2 className="size-4 text-primary shrink-0 mt-1" />
+                    <span>{rule}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="relative flex flex-col gap-3 border-t border-primary/20 pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-8">
-              <Roam
-                className="hidden -top-4 right-0 w-28 -rotate-12 md:block"
-                motion="sway"
-                duration="6.5s"
+
+            {/* WhatsApp Group & Updates Banner */}
+            <div className="border-2 border-emerald-700/60 bg-emerald-950/20 p-6 sm:p-8 rounded-sm shadow-md flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 border-b border-emerald-800/30 pb-3">
+                  <MessageCircle className="size-6 text-emerald-700 shrink-0" />
+                  <h3 className="font-serif text-xl font-bold text-emerald-950 uppercase">
+                    Official WhatsApp Group
+                  </h3>
+                </div>
+                <p className="mt-4 text-sm font-semibold text-emerald-950 leading-relaxed uppercase">
+                  Stay updated on our social media & the WhatsApp group of the event!
+                </p>
+              </div>
+
+              <a
+                href="https://chat.whatsapp.com/EqzxIHeU7Ol9AYZcfbFSUW?s=sw&p=a&ilr=1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center justify-center gap-3 bg-emerald-700 hover:bg-emerald-800 text-white font-serif text-xs sm:text-sm font-bold tracking-wider uppercase px-6 py-3.5 rounded shadow-lg transition-all transform hover:scale-105"
               >
-                <Key />
-              </Roam>
-              <Trophy
-                className="size-6 text-primary"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-              <p className="font-serif text-3xl font-black text-primary">
-                Rs 8,500
-              </p>
-              <p className="leading-relaxed text-muted-foreground">
-                Split across the first three squads to open the vault
-              </p>
-              <Roam
-                className="hidden -right-4 -bottom-6 w-20 rotate-6 opacity-90 md:block"
-                motion="float"
-                duration="7.5s"
-                delay="0.3s"
-              >
-                <TreasureChest className="drop-shadow-[0_10px_10px_oklch(0_0_0/50%)]" />
-              </Roam>
+                <span>Join Event WhatsApp Group</span>
+                <ArrowRight className="size-4" />
+              </a>
             </div>
+          </div>
+
+          {/* 2. EVENT STRUCTURE (ROUND 1 & ROUND 2) */}
+          <div className="flex flex-col gap-6">
+            <h3 className="font-serif text-2xl font-bold tracking-[0.08em] text-carved uppercase border-b border-primary/20 pb-2">
+              Event Structure
+            </h3>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Round 1 Card */}
+              <article className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4 -rotate-1 hover:rotate-0 transition-transform">
+                <div className="flex items-center justify-between border-b border-primary/20 pb-3">
+                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-primary uppercase">
+                    Round 1
+                  </span>
+                  <MapPin className="size-5 text-primary" />
+                </div>
+                <h4 className="font-serif text-2xl font-bold text-carved">East Campus Trail</h4>
+                <ul className="flex flex-col gap-2.5 text-sm text-ink font-semibold leading-relaxed">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">&bull;</span>
+                    <span>EVERY REGISTERED TEAM MEETING ELIGIBILITY CRITERIA IS ELIGIBLE FOR ROUND 1.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">&bull;</span>
+                    <span>EACH CLUE REFERS TO A PLACE IN NITK EAST CAMPUS.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-bold">&bull;</span>
+                    <span>PARTICIPANTS SHOULD DECIPHER THE CLUES TO SOLVE THE QUESTION TO FIND THE LOCATION TO THE NEXT CLUE.</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-primary font-bold">
+                    <span className="text-primary font-bold">&bull;</span>
+                    <span>TOP 10 TEAMS WILL BE SELECTED TO ROUND 2.</span>
+                  </li>
+                </ul>
+              </article>
+
+              {/* Round 2 Card */}
+              <article className="border-2 border-primary/40 bg-pamphlet-alt p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4 rotate-1 hover:rotate-0 transition-transform">
+                <div className="flex items-center justify-between border-b border-primary/20 pb-3">
+                  <span className="font-serif text-xs font-bold tracking-[0.24em] text-primary uppercase">
+                    Round 2
+                  </span>
+                  <Trophy className="size-5 text-primary" />
+                </div>
+                <h4 className="font-serif text-2xl font-bold text-carved">The Final Bounty</h4>
+                <div className="flex flex-col gap-3 text-sm text-ink font-semibold leading-relaxed">
+                  <p>
+                    FURTHER INSTRUCTIONS WILL BE PROVIDED AFTER YOU QUALIFY ROUND 1.
+                  </p>
+                  <div className="mt-2 border-t border-primary/20 pt-3">
+                    <p className="font-serif text-2xl font-black text-primary">
+                      Rs 8,500 Bounty!
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Awarded to the top qualifying squads to open the vault.
+                    </p>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          {/* 3. GENERAL RULES & THINGS TO BRING */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* General Rules */}
+            <div className="border-2 border-primary/40 bg-pamphlet p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
+              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
+                <ShieldAlert className="size-6 text-primary shrink-0" />
+                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+                  General Rules
+                </h3>
+              </div>
+              <ul className="flex flex-col gap-3">
+                {generalRulesList.map((rule, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-sm font-semibold leading-relaxed text-ink">
+                    <span className="text-primary font-bold mt-0.5">&bull;</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Things to Bring */}
+            <div className="border-2 border-primary/40 bg-pamphlet-alt p-6 sm:p-8 rounded-sm shadow-md flex flex-col gap-4">
+              <div className="flex items-center gap-3 border-b border-primary/20 pb-3">
+                <PackageCheck className="size-6 text-primary shrink-0" />
+                <h3 className="font-serif text-xl font-bold text-carved uppercase">
+                  Things to Bring – Be Prepared, Be Awesome!
+                </h3>
+              </div>
+              <ul className="flex flex-col gap-3">
+                {thingsToBring.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-sm font-semibold leading-relaxed text-ink">
+                    <CheckCircle2 className="size-4 text-emerald-700 shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Motto Banner */}
+          <div className="relative border-2 border-primary/50 bg-wood p-6 shadow-xl text-center rounded-sm">
+            <Rope className="absolute -top-6 right-6 left-6 h-9 animate-sway" />
+            <Rivets count={9} className="px-1 pb-3" />
+            <p className="font-serif text-xl sm:text-2xl font-black uppercase text-[#f7eed6] tracking-[0.2em] drop-shadow-md">
+              THINK &bull; DECIPHER &bull; EXPLORE &bull; TOGETHER
+            </p>
+            <p className="mt-2 font-serif text-lg font-bold text-primary tracking-widest uppercase">
+              FIND THE TREASURE!
+            </p>
           </div>
         </div>
       </div>
