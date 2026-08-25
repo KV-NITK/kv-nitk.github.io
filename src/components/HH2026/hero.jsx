@@ -5,7 +5,7 @@ import { Coin, CompassRose, Revolver, Roam } from './roaming-assets'
 
 const facts = [
   { label: 'Date', value: '30 Aug 2026' },
-  { label: 'Where', value: 'West Campus, NITK' },
+  { label: 'Where', value: 'East Campus, NITK' },
   { label: 'Squad', value: '3–4 hunters' },
   { label: 'Bounty', value: 'Rs 8,500' },
 ]

@@ -83,7 +83,7 @@ export function SiteFooter() {
           </p>
           <p className="font-serif text-2xl font-bold text-foreground">30 Aug</p>
           <p className="leading-relaxed text-muted-foreground">
-            14:00 IST at West Campus. Reach fifteen minutes early — the first
+            14:00 IST at East Campus. Reach fifteen minutes early — the first
             clue will not wait.
           </p>
         </div>
