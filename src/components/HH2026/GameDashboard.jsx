@@ -860,6 +860,48 @@ export default function GameDashboard() {
                   className="animate-flicker"
                 />
 
+                {/* Layer 2.1: Samudra Manthana (Ocean Easter Egg) */}
+                <image 
+                  href="/samudramanthana.png" 
+                  x="150" 
+                  y="620" 
+                  width="350" 
+                  height="250"
+                  style={{
+                    opacity: gameState ? Math.min(0.95, (gameState.currentStepNo - 1) / 5) : 0,
+                    transition: "opacity 1.5s ease-in-out",
+                    pointerEvents: "none"
+                  }}
+                />
+
+                {/* Layer 2.2: Parijata Flower (Forest Clue) */}
+                <image 
+                  href="/parijata.png" 
+                  x="480" 
+                  y="220" 
+                  width="130" 
+                  height="130"
+                  style={{
+                    opacity: gameState && gameState.currentStepNo >= 2 ? 0.9 : 0,
+                    transition: "opacity 1.5s ease-in-out",
+                    pointerEvents: "none"
+                  }}
+                />
+
+                {/* Layer 2.3: Yakshagana Theatre Mask (City Mystery) */}
+                <image 
+                  href="/yakshagana.png" 
+                  x="680" 
+                  y="450" 
+                  width="110" 
+                  height="130"
+                  style={{
+                    opacity: gameState && gameState.currentStepNo >= 4 ? 0.9 : 0,
+                    transition: "opacity 1.5s ease-in-out",
+                    pointerEvents: "none"
+                  }}
+                />
+
                 {/* Layer 3: Failed (Red) Attempt Smudges */}
                 <g filter="url(#soft-blur)">
                   {gameState?.incorrectAttempts.map((attempt, index) => (
