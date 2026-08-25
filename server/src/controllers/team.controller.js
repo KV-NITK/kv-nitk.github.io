@@ -148,7 +148,7 @@ export const registerTeam = async (req, res) => {
     if (teamExists) {
       return res.status(409).json({
         success: false,
-        message: "Team name is already registered",
+        message: "Team name already exists. Use some other name",
       });
     }
 
