@@ -5,6 +5,7 @@ import aboutImg1 from '../../images/aboutImg1.jpg';
 import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
 import { DiamondBand } from '../HH2026/ornaments';
+import { TeamSection } from './TeamSection.jsx';
 
 const Home = () => {
 
@@ -195,6 +196,9 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* --- Our Team Section --- */}
+      <TeamSection />
 
       {/* --- Past Events Section --- */}
       <div id="past-events" className="relative py-16 md:py-24 px-4">
