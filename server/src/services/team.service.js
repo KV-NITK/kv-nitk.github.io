@@ -473,3 +473,41 @@ export const deleteTeamByLeader = async (user) => {
     message: `Squad "${team.team_name}" deleted successfully`,
   };
 };
+
+
+// ==========================================
+// Get All Teams Public (Names Only)
+// ==========================================
+
+export const getAllTeamsPublic = async () => {
+  const { data: teams, error } = await supabase
+    .from("teams")
+    .select(`
+      id,
+      team_name,
+      created_at,
+      team_members (
+        id,
+        name,
+        role
+      )
+    `)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching public teams list:", error);
+    throw new Error("Failed to fetch teams list");
+  }
+
+  return (teams || []).map((t, idx) => {
+    const leaderMember = (t.team_members || []).find((m) => m.role === "leader");
+    const squadMembers = (t.team_members || []).filter((m) => m.role !== "leader");
+
+    return {
+      id: idx + 1,
+      teamName: t.team_name,
+      leaderName: leaderMember ? leaderMember.name : "Squad Leader",
+      members: squadMembers.map((m) => m.name),
+    };
+  });
+};
