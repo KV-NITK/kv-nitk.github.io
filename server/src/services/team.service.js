@@ -94,6 +94,15 @@ export const validateMemberDetails = (
   members,
   leaderRollNo = null
 ) => {
+  const leaderRoll = leaderRollNo ? leaderRollNo.trim().toUpperCase() : "";
+
+  if (leaderRoll && !/^26/.test(leaderRoll)) {
+    return {
+      valid: false,
+      message: "Squad leader roll number must start with 26",
+    };
+  }
+
   const emails = members
     .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
     .filter((e) => e.length > 0);
@@ -101,6 +110,15 @@ export const validateMemberDetails = (
   const rollNumbers = members.map((member) =>
     member.rollNo ? member.rollNo.trim().toUpperCase() : ""
   );
+
+  const invalidRoll = rollNumbers.find((roll) => !/^26/.test(roll));
+
+  if (invalidRoll) {
+    return {
+      valid: false,
+      message: "All member roll numbers must start with 26",
+    };
+  }
 
   // ----------------------------------------
   // Leader roll number cannot be a member
@@ -454,4 +472,42 @@ export const deleteTeamByLeader = async (user) => {
     success: true,
     message: `Squad "${team.team_name}" deleted successfully`,
   };
+};
+
+
+// ==========================================
+// Get All Teams Public (Names Only)
+// ==========================================
+
+export const getAllTeamsPublic = async () => {
+  const { data: teams, error } = await supabase
+    .from("teams")
+    .select(`
+      id,
+      team_name,
+      created_at,
+      team_members (
+        id,
+        name,
+        role
+      )
+    `)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching public teams list:", error);
+    throw new Error("Failed to fetch teams list");
+  }
+
+  return (teams || []).map((t, idx) => {
+    const leaderMember = (t.team_members || []).find((m) => m.role === "leader");
+    const squadMembers = (t.team_members || []).filter((m) => m.role !== "leader");
+
+    return {
+      id: idx + 1,
+      teamName: t.team_name,
+      leaderName: leaderMember ? leaderMember.name : "Squad Leader",
+      members: squadMembers.map((m) => m.name),
+    };
+  });
 };

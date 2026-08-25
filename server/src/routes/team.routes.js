@@ -4,8 +4,8 @@ import {
   registerTeam,
   getMyTeam,
   deleteMyTeam,
+  getAllRegisteredTeamsPublic,
 } from "../controllers/team.controller.js";
-
 
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -18,6 +18,9 @@ import {
 import { requireTeamAuth } from "../middleware/teamAuth.middleware.js";
 
 const router = express.Router();
+
+router.get("/public-list", getAllRegisteredTeamsPublic);
+router.get("/list-of-members", getAllRegisteredTeamsPublic);
 
 router.get("/my-team", requireAuth, getMyTeam);
 router.delete("/my-team", requireAuth, deleteMyTeam);
