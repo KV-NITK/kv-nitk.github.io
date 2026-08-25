@@ -199,14 +199,6 @@ const TeamRegistration = () => {
       return;
     }
 
-    const invalidRollNo = members.find(
-      (member) => !/^26/.test(member.rollNo.trim().toUpperCase())
-    );
-
-    if (invalidRollNo) {
-      setMessage("Roll numbers must start with 26.");
-      return;
-    }
 
     const rollNumbers = members.map((member) => member.rollNo.trim().toUpperCase());
     if (new Set(rollNumbers).size !== rollNumbers.length) {
