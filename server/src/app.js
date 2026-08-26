@@ -8,6 +8,8 @@ import { supabase } from "./config/supabase.js";
 import authRoutes from "./routes/auth.routes.js";
 import gameRoutes from "./routes/game.routes.js";
 import cookieParser from "cookie-parser";
+import scanRoutes from "./routes/scan.routes.js";
+import coordinatorRoutes from "./routes/coordinator.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +52,8 @@ app.get("/api/health", (req, res) => {
 app.use("/api/teams", teamRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/game", gameRoutes);
+app.use("/api/scan", scanRoutes);
+app.use("/api/coordinator", coordinatorRoutes);
 
 // Serve frontend static build if present in container / root
 const clientBuildPath = path.join(__dirname, "../../build");
