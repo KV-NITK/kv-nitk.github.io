@@ -1,0 +1,28 @@
+import express from "express";
+
+import {
+  reviewScan,
+  applyProgress,
+} from "../controllers/coordinator.controller.js";
+
+import {
+  requireCoordinatorAuth,
+} from "../middleware/coordinatorAuth.middleware.js";
+
+const router = express.Router();
+
+// Step 2
+router.patch(
+  "/scans/:scanId",
+  requireCoordinatorAuth,
+  reviewScan
+);
+
+// Step 3
+router.post(
+  "/scans/:scanId/apply-progress",
+  requireCoordinatorAuth,
+  applyProgress
+);
+
+export default router;
