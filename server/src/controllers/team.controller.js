@@ -190,6 +190,28 @@ export const registerTeam = async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error);
 
+    if (error && error.code === '23505') {
+      const details = error.details || error.message || "";
+      if (details.includes('team_name') || details.includes('unique_team_name')) {
+        return res.status(409).json({
+          success: false,
+          message: "Team name already exists. Use some other name",
+        });
+      }
+      if (details.includes('email')) {
+        return res.status(409).json({
+          success: false,
+          message: "One of the member emails is already registered with another team",
+        });
+      }
+      if (details.includes('roll_no') || details.includes('roll_number') || details.includes('id')) {
+        return res.status(409).json({
+          success: false,
+          message: "One of the member roll numbers is already registered with another team",
+        });
+      }
+    }
+
     return res.status(500).json({
       success: false,
       message: "Failed to register team",
