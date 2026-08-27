@@ -3,6 +3,7 @@ import express from "express";
 import {
   reviewScan,
   applyProgress,
+  assignTeamPath,
 } from "../controllers/coordinator.controller.js";
 
 import {
@@ -26,3 +27,11 @@ router.post(
 );
 
 export default router;
+
+// Step 5
+router.patch(
+  "/teams/:teamId/path",
+  requireCoordinatorAuth,
+  assignTeamPath
+);
+
