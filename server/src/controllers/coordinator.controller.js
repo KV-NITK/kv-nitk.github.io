@@ -1,6 +1,7 @@
 import {
   reviewScanAttempt,
   applyScanProgress,
+  assignPathToTeam,
 } from "../services/coordinator.service.js";
 
 // ==================================================
@@ -123,3 +124,47 @@ export const applyProgress = async (
     });
   }
 };
+
+
+// ==================================================
+// STEP 5 — Assign Path
+// ==================================================
+
+export const assignTeamPath = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { pathId } = req.body;
+
+    if (!teamId) {
+      return res.status(400).json({
+        success: false,
+        message: "Team ID is required",
+      });
+    }
+
+    if (!pathId) {
+      return res.status(400).json({
+        success: false,
+        message: "Path ID is required",
+      });
+    }
+
+    const result = await assignPathToTeam(teamId, pathId);
+
+    if (!result.success) {
+      if (result.code === "TEAM_NOT_FOUND" || result.code === "PATH_NOT_FOUND") {
+        return res.status(404).json(result);
+      }
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Assign team path error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to assign team path",
+    });
+  }
+};
+

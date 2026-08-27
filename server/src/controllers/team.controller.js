@@ -10,7 +10,22 @@ import {
   getUserTeam,
   deleteTeamByLeader,
   getAllTeamsPublic,
+  fetchTeamGameState,
 } from "../services/team.service.js";
+
+export const getTeamGameStateController = async (req, res) => {
+  try {
+    const teamId = req.team.id;
+    const gameState = await fetchTeamGameState(teamId);
+    return res.json(gameState);
+  } catch (error) {
+    console.error("Get game state error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to retrieve game state."
+    });
+  }
+};
 
 export const getAllRegisteredTeamsPublic = async (req, res) => {
   try {
