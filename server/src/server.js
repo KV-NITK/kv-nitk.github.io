@@ -12,6 +12,7 @@ if (isProd) {
   app.listen(PORT, () => {
     console.log(`Server running in production HTTP mode on port ${PORT}`);
   });
+} else {
   const certKeyPath = "./certs/dev-key.pem";
   const certFilePath = "./certs/dev-cert.pem";
   let useHttps = true;
