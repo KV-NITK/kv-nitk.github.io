@@ -5,6 +5,7 @@ import { SiteHeader } from "./site-header";
 import { Plaque, DiamondBand, Rivets } from "./ornaments";
 import { CompassRose, Rope } from "./roaming-assets";
 import API_URL from "../../api/api";
+import { Html5Qrcode } from "html5-qrcode";
 import { 
   Trophy, 
   MapPin, 
@@ -17,7 +18,8 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  User
+  User,
+  Camera
 } from "lucide-react";
 
 const MOCK_LOCATIONS = [
@@ -227,6 +229,10 @@ export default function GameDashboard() {
   const [scanResult, setScanResult] = useState(null); // { success: boolean, message: string }
   const [scanning, setScanning] = useState(false);
 
+  // Real QR camera scanner state
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const html5QrCodeRef = useRef(null);
+
   // Mythology Easter-egg reveal toast
   const [eggToast, setEggToast] = useState(null); // { emoji, title, message }
   const announcedEggsRef = useRef(new Set());
@@ -315,6 +321,15 @@ export default function GameDashboard() {
 
     verifyUser();
   }, []);
+
+  // Polling game state every 8 seconds to fetch coordinator approvals in real-time
+  useEffect(() => {
+    if (isLocalFallback) return;
+    const intervalId = setInterval(() => {
+      fetchGameState();
+    }, 8000);
+    return () => clearInterval(intervalId);
+  }, [isLocalFallback]);
 
   // Initialize Map Centering
   useEffect(() => {
@@ -551,137 +566,194 @@ export default function GameDashboard() {
   // ==========================================
   // Scan Simulation
   // ==========================================
-  const handleSimulateScan = async () => {
-    if (!selectedScanQr) return;
+  // ==========================================
+  // QR Scan Handling (Real Camera + Simulation)
+  // ==========================================
+  const processScanResult = async (scannedText) => {
+    const cleanQr = String(scannedText).trim();
+    if (!cleanQr) return;
+    
     setScanning(true);
     setScanResult(null);
 
     if (isLocalFallback) {
       // Local progression logic mock
-      setTimeout(() => {
-        const cleanQr = String(selectedScanQr).trim();
+      if (gameState.completed) {
+        setScanResult({
+          success: false,
+          message: "You have already completed the hunt!"
+        });
+        setScanning(false);
+        return;
+      }
+
+      const nextLocIndex = gameState.currentStepNo;
+      if (nextLocIndex >= PATH_STEPS.length) {
+        setScanResult({
+          success: false,
+          message: "Invalid game state. Already at final step."
+        });
+        setScanning(false);
+        return;
+      }
+
+      const expectedLocId = PATH_STEPS[nextLocIndex];
+      const expectedLoc = MOCK_LOCATIONS.find(l => l.id === expectedLocId);
+
+      let newState = { ...gameState };
+
+      // 1. Correct Scan
+      if (expectedLoc && cleanQr === expectedLoc.qrCode) {
+        newState.currentStepNo += 1;
         
-        if (gameState.completed) {
-          setScanResult({
-            success: false,
-            message: "You have already completed the hunt!"
+        if (!newState.revealedLocations.some(l => l.id === expectedLocId)) {
+          newState.revealedLocations.push({
+            id: expectedLoc.id,
+            name: expectedLoc.name,
+            x_coord: expectedLoc.x_coord,
+            y_coord: expectedLoc.y_coord,
+            reveal_radius: expectedLoc.reveal_radius
           });
-          setScanning(false);
-          return;
+        }
+        newState.score += 20;
+
+        if (newState.currentStepNo === PATH_STEPS.length) {
+          newState.completed = true;
+          newState.currentClueText = "Congratulations! You have completed the treasure hunt!";
+        } else {
+          const nextNextLocId = PATH_STEPS[newState.currentStepNo];
+          const nextNextLoc = MOCK_LOCATIONS.find(l => l.id === nextNextLocId);
+          newState.currentClueText = nextNextLoc ? nextNextLoc.clue : "";
         }
 
-        const nextLocIndex = gameState.currentStepNo;
-        if (nextLocIndex >= PATH_STEPS.length) {
-          setScanResult({
-            success: false,
-            message: "Invalid game state. Already at final step."
-          });
-          setScanning(false);
-          return;
-        }
-
-        const expectedLocId = PATH_STEPS[nextLocIndex];
-        const expectedLoc = MOCK_LOCATIONS.find(l => l.id === expectedLocId);
-
-        let newState = { ...gameState };
-
-        // 1. Correct Scan
-        if (expectedLoc && cleanQr === expectedLoc.qrCode) {
-          newState.currentStepNo += 1;
-          
-          if (!newState.revealedLocations.some(l => l.id === expectedLocId)) {
-            newState.revealedLocations.push({
-              id: expectedLoc.id,
-              name: expectedLoc.name,
-              x_coord: expectedLoc.x_coord,
-              y_coord: expectedLoc.y_coord,
-              reveal_radius: expectedLoc.reveal_radius
-            });
-          }
-          newState.score += 20;
-
-          if (newState.currentStepNo === PATH_STEPS.length) {
-            newState.completed = true;
-            newState.currentClueText = "Congratulations! You have completed the treasure hunt!";
-          } else {
-            const nextNextLocId = PATH_STEPS[newState.currentStepNo];
-            const nextNextLoc = MOCK_LOCATIONS.find(l => l.id === nextNextLocId);
-            newState.currentClueText = nextNextLoc ? nextNextLoc.clue : "";
-          }
-
+        setGameState(newState);
+        setScanResult({
+          success: true,
+          message: `Excellent! You successfully found: ${expectedLoc.name}!`
+        });
+      } 
+      // 2. Incorrect Scan
+      else {
+        const scannedLoc = MOCK_LOCATIONS.find(l => cleanQr === l.qrCode);
+        if (scannedLoc) {
+          newState.score = Math.max(0, newState.score - 10);
+          newState.incorrectAttempts = [
+            ...newState.incorrectAttempts,
+            {
+              x: scannedLoc.x_coord,
+              y: scannedLoc.y_coord,
+              name: scannedLoc.name,
+              timestamp: new Date().toISOString()
+            }
+          ];
           setGameState(newState);
           setScanResult({
-            success: true,
-            message: `Excellent! You successfully found: ${expectedLoc.name}!`
+            success: false,
+            message: `Incorrect location scanned: "${scannedLoc.name}". Penalty applied!`
           });
-        } 
-        // 2. Incorrect Scan
-        else {
-          const scannedLoc = MOCK_LOCATIONS.find(l => cleanQr === l.qrCode);
-          if (scannedLoc) {
-            newState.score = Math.max(0, newState.score - 10);
-            newState.incorrectAttempts = [
-              ...newState.incorrectAttempts,
-              {
-                x: scannedLoc.x_coord,
-                y: scannedLoc.y_coord,
-                name: scannedLoc.name,
-                timestamp: new Date().toISOString()
-              }
-            ];
-            setGameState(newState);
-            setScanResult({
-              success: false,
-              message: `Incorrect location scanned: "${scannedLoc.name}". Penalty applied!`
-            });
-          } else {
-            newState.score = Math.max(0, newState.score - 5);
-            setGameState(newState);
-            setScanResult({
-              success: false,
-              message: "Invalid QR code. This code is not part of the hunt. Penalty applied!"
-            });
-          }
+        } else {
+          newState.score = Math.max(0, newState.score - 5);
+          setGameState(newState);
+          setScanResult({
+            success: false,
+            message: "Invalid QR code. This code is not part of the hunt. Penalty applied!"
+          });
         }
-        setScanning(false);
-        setTimeout(() => setScanResult(null), 5500);
-      }, 500);
+      }
+      setScanning(false);
+      setTimeout(() => setScanResult(null), 5500);
       return;
     }
 
+    // Live mode: call /api/scan
     try {
-      const response = await fetch(`${API_URL}/game/scan`, {
+      const response = await fetch(`${API_URL}/scan`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ qrCode: selectedScanQr }),
+        body: JSON.stringify({ qrCode: cleanQr }),
       });
 
       const data = await response.json();
-      setScanResult({
-        success: data.success,
-        message: data.message
-      });
 
-      if (data.success || data.gameState) {
-        setGameState(data.gameState);
+      if (response.ok && data.success) {
+        if (data.scan.isCorrect) {
+          setScanResult({
+            success: true,
+            message: `Scan logged! Verified: ${data.scan.scannedLocation?.name || data.scan.expectedLocation.name}. Waiting for coordinator approval.`
+          });
+        } else {
+          setScanResult({
+            success: false,
+            message: `Incorrect location scanned: "${data.scan.scannedLocation?.name || 'Unknown Location'}". Penalty might be applied after review.`
+          });
+        }
+      } else {
+        setScanResult({
+          success: false,
+          message: data.message || "Failed to submit QR scan."
+        });
       }
     } catch (err) {
-      console.error("Scan simulation failed:", err);
+      console.error("QR scan submission failed:", err);
       setScanResult({
         success: false,
         message: "Failed to connect to the server."
       });
     } finally {
       setScanning(false);
-      // Auto clear result toast after 5 seconds
-      setTimeout(() => {
-        setScanResult(null);
-      }, 5500);
+      setTimeout(() => setScanResult(null), 5500);
     }
   };
+
+  const handleSimulateScan = async () => {
+    if (!selectedScanQr) return;
+    await processScanResult(selectedScanQr);
+  };
+
+  // Start/Stop QR camera scanner when modal opens/closes
+  useEffect(() => {
+    if (scannerOpen) {
+      const html5QrCode = new Html5Qrcode("qr-reader-el");
+      html5QrCodeRef.current = html5QrCode;
+
+      const startScanner = async () => {
+        try {
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: (width, height) => {
+                const min = Math.min(width, height);
+                return { width: min * 0.7, height: min * 0.7 };
+              }
+            },
+            (decodedText) => {
+              processScanResult(decodedText);
+              setScannerOpen(false);
+            },
+            () => {
+              // Ignore failure details during active video scanning
+            }
+          );
+        } catch (err) {
+          console.error("Camera startup failed:", err);
+          alert("Could not start camera scanner. Make sure camera permissions are enabled.");
+          setScannerOpen(false);
+        }
+      };
+
+      const timeoutId = setTimeout(startScanner, 250);
+      return () => {
+        clearTimeout(timeoutId);
+        if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+          html5QrCodeRef.current.stop().catch(err => console.error("Error stopping scanner:", err));
+        }
+      };
+    }
+  }, [scannerOpen]);
 
   // ==========================================
   // Render Helpers
@@ -1114,18 +1186,30 @@ export default function GameDashboard() {
                 {/* Clue card */}
                 <div className="relative p-4 border border-[#c1ad87] bg-pamphlet bg-cover text-ink rounded-sm shadow-inner min-h-[160px] flex flex-col justify-between">
                   <div>
-                    <h4 className="font-serif text-xs font-bold tracking-widest text-[#4a2206] uppercase border-b border-[#7a4823]/20 pb-1 mb-2">
-                      Current Clue
+                    <h4 className="font-serif text-xs font-bold tracking-widest text-[#4a2206] uppercase border-b border-[#7a4823]/20 pb-1 mb-2 flex justify-between items-center">
+                      <span>Current Clue</span>
+                      {gameState?.clueVariant && (
+                        <span className="text-[9px] bg-[#8b261b] text-[#f7eed6] px-1.5 py-0.5 rounded-sm font-sans tracking-normal font-bold">
+                          Variant {gameState.clueVariant}
+                        </span>
+                      )}
                     </h4>
                     <p className="font-serif italic text-xs leading-relaxed text-ink-muted font-medium text-pretty">
                       "{gameState?.currentClueText}"
                     </p>
                   </div>
                   
-                  {gameState?.completed && (
+                  {gameState?.completed ? (
                     <div className="mt-4 bg-emerald-100 border border-emerald-400 p-2 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase">
                       🎉 Challenge Cleared!
                     </div>
+                  ) : (
+                    <button
+                      onClick={() => setScannerOpen(true)}
+                      className="mt-4 w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] py-3.5 px-4 font-serif text-[11px] font-bold uppercase tracking-[0.2em] shadow-md flex items-center justify-center gap-2 rounded-sm cursor-pointer transition-all active:scale-[0.98] no-drag"
+                    >
+                      <Camera className="size-3.5" /> Scan QR Code
+                    </button>
                   )}
                 </div>
               </div>
@@ -1166,6 +1250,59 @@ export default function GameDashboard() {
           </div>
 
         </div>
+
+        {/* Camera QR Scanner Modal */}
+        {scannerOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 no-drag animate-fadeIn">
+            <style>{`
+              @keyframes scan-laser {
+                0% { top: 0%; }
+                50% { top: 100%; }
+                100% { top: 0%; }
+              }
+            `}</style>
+            <div className="relative w-full max-w-md border-2 border-primary/50 bg-wood p-3 sm:p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] rounded-sm">
+              <div className="relative border-2 border-[#8b5a2b]/40 bg-[#f7eed6] p-5 shadow-inner text-[#2b1810]">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-[#7a4823]/30 pb-2 mb-4">
+                  <h4 className="font-serif text-sm font-bold uppercase tracking-wider text-[#4a2206] flex items-center gap-1.5">
+                    <Camera className="size-4 text-[#8b261b]" /> Point at Location QR
+                  </h4>
+                  <button
+                    onClick={() => setScannerOpen(false)}
+                    className="text-[#8b261b] hover:text-black font-bold text-2xl px-1.5 cursor-pointer leading-none"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                {/* Viewport container */}
+                <div className="relative w-full aspect-square bg-black border-2 border-[#7a4823]/40 rounded-sm overflow-hidden mb-4 shadow-inner">
+                  <div id="qr-reader-el" className="w-full h-full"></div>
+                  
+                  {/* Glowing camera frame effect overlay */}
+                  <div className="absolute inset-0 pointer-events-none border-[30px] border-black/45 flex items-center justify-center">
+                    <div className="w-[75%] h-[75%] border-2 border-dashed border-[#8b261b] relative">
+                      {/* Laser scanning line */}
+                      <div className="absolute left-0 right-0 h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" style={{
+                        animation: "scan-laser 2s linear infinite",
+                      }} />
+                      {/* Corner marks */}
+                      <div className="absolute -top-1.5 -left-1.5 w-4.5 h-4.5 border-t-4 border-l-4 border-amber-600"></div>
+                      <div className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 border-t-4 border-r-4 border-amber-600"></div>
+                      <div className="absolute -bottom-1.5 -left-1.5 w-4.5 h-4.5 border-b-4 border-l-4 border-amber-600"></div>
+                      <div className="absolute -bottom-1.5 -right-1.5 w-4.5 h-4.5 border-b-4 border-r-4 border-amber-600"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-center text-ink-muted font-serif leading-relaxed px-2">
+                  Position the check-point QR code inside the targeting square to scan automatically.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>
