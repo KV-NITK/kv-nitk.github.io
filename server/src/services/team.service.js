@@ -6,10 +6,12 @@ import { supabase } from "../config/supabase.js";
 // ==========================================
 
 export const checkTeamNameExists = async (teamName) => {
+  const trimmed = teamName.trim();
+  const escaped = trimmed.replace(/[%_]/g, '\\$&');
   const { data, error } = await supabase
     .from("teams")
     .select("id")
-    .eq("team_name", teamName)
+    .ilike("team_name", escaped)
     .maybeSingle();
 
   if (error) {
