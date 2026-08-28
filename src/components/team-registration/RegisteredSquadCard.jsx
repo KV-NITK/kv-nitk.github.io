@@ -181,6 +181,14 @@ export function RegisteredSquadCard({
           View Registered Squads 📋
         </Link>
 
+        {/* TODO: Comment out before live event launch if game dashboard button should be hidden initially */}
+        <Link
+          to="/hh-2026/dashboard"
+          className="w-full text-center border-2 border-emerald-800 bg-emerald-700 text-white hover:bg-emerald-800 px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>Enter Game Dashboard 🏴‍☠️</span>
+        </Link>
+
         <Link
           to="/hh-2026"
           className="w-full text-center border-2 border-[#4a2206] bg-[#4a2206] text-[#f7eed6] hover:bg-[#2b1810] px-6 py-3 font-serif text-xs sm:text-sm font-bold tracking-[0.16em] uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center"
