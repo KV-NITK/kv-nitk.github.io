@@ -5,11 +5,11 @@ import { TornEdgeDefs } from './roaming-assets'
 import './hh2026.css'
 
 const hardcodedTeams = [
-  { teamName: "The Trailblazers", leaderName: "Rahul Sharma", locationsVisited: 6, points: 60, timestamp: "2026-08-26T11:20:00" },
-  { teamName: "Seekers of Nitk", leaderName: "Anjali Gowda", locationsVisited: 5, points: 50, timestamp: "2026-08-26T10:45:00" },
-  { teamName: "Coastal Pirates", leaderName: "Vikram Singh", locationsVisited: 5, points: 50, timestamp: "2026-08-26T10:30:00" },
-  { teamName: "Neon Ninjas", leaderName: "Priya Rao", locationsVisited: 4, points: 40, timestamp: "2026-08-26T09:15:00" },
-  { teamName: "Lantern Bearers", leaderName: "Karthik N", locationsVisited: 2, points: 20, timestamp: "2026-08-26T08:00:00" }
+  { teamName: "The Trailblazers", leaderName: "Rahul Sharma", locationsVisited: 6, points: 60, timestamp: "2026-08-26T11:20:00", status: "Active" },
+  { teamName: "Seekers of Nitk", leaderName: "Anjali Gowda", locationsVisited: 5, points: 50, timestamp: "2026-08-26T10:45:00", status: "Completed" },
+  { teamName: "Coastal Pirates", leaderName: "Vikram Singh", locationsVisited: 5, points: 50, timestamp: "2026-08-26T10:30:00", status: "Active" },
+  { teamName: "Neon Ninjas", leaderName: "Priya Rao", locationsVisited: 4, points: 40, timestamp: "2026-08-26T09:15:00", status: "Active" },
+  { teamName: "Lantern Bearers", leaderName: "Karthik N", locationsVisited: 2, points: 20, timestamp: "2026-08-26T08:00:00", status: "Disqualified" }
 ];
 
 // Sort logic: points descending, then timestamp ascending
@@ -46,6 +46,7 @@ export default function HH2026Leaderboard() {
                     <th className="py-4 px-4 font-extrabold text-ink-accent tracking-wider uppercase text-xl">Leader</th>
                     <th className="py-4 px-4 font-extrabold text-ink-accent tracking-wider uppercase text-xl text-center">Locations</th>
                     <th className="py-4 px-4 font-extrabold text-ink-accent tracking-wider uppercase text-xl text-center">Points</th>
+                    <th className="py-4 px-4 font-extrabold text-ink-accent tracking-wider uppercase text-xl text-center">Status</th>
                     <th className="py-4 px-4 font-extrabold text-ink-accent tracking-wider uppercase text-xl text-right">Timestamp</th>
                   </tr>
                 </thead>
@@ -57,6 +58,15 @@ export default function HH2026Leaderboard() {
                       <td className="py-5 px-4">{team.leaderName}</td>
                       <td className="py-5 px-4 text-center text-lg">{team.locationsVisited}</td>
                       <td className="py-5 px-4 text-center font-bold text-xl text-ink-accent">{team.points}</td>
+                      <td className="py-5 px-4 text-center">
+                        <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${
+                          team.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                          team.status === 'Completed' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                          'bg-red-100 text-red-800 border border-red-200'
+                        }`}>
+                          {team.status}
+                        </span>
+                      </td>
                       <td className="py-5 px-4 text-right text-sm text-ink-muted">
                         {new Date(team.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
