@@ -221,6 +221,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
         scanned_location_id: scannedLocation ? scannedLocation.location_id : null,
         expected_location_id: expectedLocation.location_id,
         is_correct: isCorrect,
+        points: 0,
         path_step_id: pathStep.path_step_id,
         status: "scanned",
         progress_applied: false,
