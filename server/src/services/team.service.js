@@ -98,7 +98,13 @@ export const validateMemberDetails = (
 ) => {
   const leaderRoll = leaderRollNo ? leaderRollNo.trim().toUpperCase() : "";
 
-  // Roll number start checks bypassed
+  const emails = members
+    .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
+    .filter((e) => e.length > 0);
+
+  const rollNumbers = members.map((member) =>
+    member.rollNo ? member.rollNo.trim().toUpperCase() : ""
+  );
 
 
   // ----------------------------------------
