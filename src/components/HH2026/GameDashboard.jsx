@@ -155,7 +155,7 @@ export default function GameDashboard() {
   // score, and progression.
   const fetchGameState = async () => {
     try {
-      const response = await fetch(`${API_URL}/team/game-state`, {
+      const response = await fetch(`${API_URL}/teams/game-state`, {
         method: "GET",
         credentials: "include",
       });
