@@ -753,12 +753,14 @@ export default function GameDashboard() {
                         }
                       </button>
 
-                      <button
-                        onClick={() => setPendingApproval(null)}
-                        className="bg-stone-300 hover:bg-stone-400 text-stone-900 py-3 px-4 font-serif text-xs font-bold uppercase tracking-wider rounded-sm cursor-pointer"
-                      >
-                        Cancel
-                      </button>
+                      {pendingApproval.isCorrect && (
+                        <button
+                          onClick={() => setPendingApproval(null)}
+                          className="bg-stone-300 hover:bg-stone-400 text-stone-900 py-3 px-4 font-serif text-xs font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
