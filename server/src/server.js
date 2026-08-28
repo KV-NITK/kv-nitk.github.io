@@ -15,23 +15,35 @@ if (isProd) {
 } else {
   const certKeyPath = "./certs/dev-key.pem";
   const certFilePath = "./certs/dev-cert.pem";
+  let useHttps = true;
 
   // Auto-generate self-signed dev certs if missing
   if (!fs.existsSync(certKeyPath) || !fs.existsSync(certFilePath)) {
     console.log("Generating self-signed dev SSL certificate for kannadavedike.dev.local...");
     fs.mkdirSync("./certs", { recursive: true });
-    execSync(
-      'openssl req -x509 -newkey rsa:2048 -keyout ./certs/dev-key.pem -out ./certs/dev-cert.pem -days 365 -nodes -subj "/CN=kannadavedike.dev.local" -addext "subjectAltName=DNS:kannadavedike.dev.local,DNS:localhost,IP:127.0.0.1"',
-      { stdio: "inherit" }
-    );
+    try {
+      execSync(
+        'openssl req -x509 -newkey rsa:2048 -keyout ./certs/dev-key.pem -out ./certs/dev-cert.pem -days 365 -nodes -subj "/CN=kannadavedike.dev.local" -addext "subjectAltName=DNS:kannadavedike.dev.local,DNS:localhost,IP:127.0.0.1"',
+        { stdio: "ignore" }
+      );
+    } catch (e) {
+      console.warn("Failed to generate SSL certs (openssl might not be installed). Falling back to HTTP mode.");
+      useHttps = false;
+    }
   }
 
-  const httpsOptions = {
-    key: fs.readFileSync(certKeyPath),
-    cert: fs.readFileSync(certFilePath),
-  };
+  if (useHttps && fs.existsSync(certKeyPath) && fs.existsSync(certFilePath)) {
+    const httpsOptions = {
+      key: fs.readFileSync(certKeyPath),
+      cert: fs.readFileSync(certFilePath),
+    };
 
-  https.createServer(httpsOptions, app).listen(PORT, () => {
-    console.log(`Server running at https://kannadavedike.dev.local:${PORT}`);
-  });
+    https.createServer(httpsOptions, app).listen(PORT, () => {
+      console.log(`Server running at https://kannadavedike.dev.local:${PORT}`);
+    });
+  } else {
+    app.listen(PORT, () => {
+      console.log(`Server running in HTTP fallback mode on port ${PORT}`);
+    });
+  }
 }

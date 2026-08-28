@@ -513,3 +513,107 @@ export const getAllTeamsPublic = async () => {
     };
   });
 };
+
+// ==========================================
+// Get Team Game State
+// ==========================================
+
+export const fetchTeamGameState = async (teamId) => {
+  const { data: team, error: teamError } = await supabase
+    .from("teams")
+    .select("id, team_name, score, current_step_no, path_id, status")
+    .eq("id", teamId)
+    .maybeSingle();
+
+  if (teamError) {
+    console.error("Fetch team error:", teamError);
+    throw new Error("Failed to fetch team");
+  }
+
+  if (!team) {
+    throw new Error("Team not found");
+  }
+
+  if (!team.path_id) {
+    return {
+      success: true,
+      gameStarted: false,
+      message: "Path has not been assigned yet"
+    };
+  }
+
+  if (team.current_step_no === null || team.current_step_no === undefined) {
+    throw new Error("Team current step is not configured");
+  }
+
+  const { data: pathStep, error: pathStepError } = await supabase
+    .from("path_steps")
+    .select("step_no, clue_id")
+    .eq("path_id", team.path_id)
+    .eq("step_no", team.current_step_no)
+    .maybeSingle();
+
+  if (pathStepError) {
+    console.error("Fetch path step error:", pathStepError);
+    throw new Error("Failed to fetch current path step");
+  }
+
+  if (!pathStep) {
+    throw new Error("Current path step not found");
+  }
+
+  const { data: clue, error: clueError } = await supabase
+    .from("clues")
+    .select("clue_id, clue, variant, location_id")
+    .eq("clue_id", pathStep.clue_id)
+    .maybeSingle();
+
+  if (clueError) {
+    console.error("Fetch clue error:", clueError);
+    throw new Error("Failed to fetch current clue");
+  }
+
+  if (!clue) {
+    throw new Error("Current clue not found");
+  }
+
+  const { data: location, error: locationError } = await supabase
+    .from("locations")
+    .select("location_id, name")
+    .eq("location_id", clue.location_id)
+    .maybeSingle();
+
+  if (locationError) {
+    console.error("Fetch location error:", locationError);
+    throw new Error("Failed to fetch expected location");
+  }
+
+  if (!location) {
+    throw new Error("Expected location not found");
+  }
+
+  return {
+    success: true,
+    team: {
+      id: team.id,
+      teamName: team.team_name,
+      score: team.score,
+      currentStep: team.current_step_no,
+      pathId: team.path_id,
+      status: team.status
+    },
+    currentStep: {
+      stepNo: pathStep.step_no,
+      clue: {
+        id: clue.clue_id,
+        text: clue.clue,
+        variant: clue.variant
+      },
+      location: {
+        id: location.location_id,
+        name: location.name
+      }
+    }
+  };
+};
+
