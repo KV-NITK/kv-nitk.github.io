@@ -58,7 +58,8 @@ jobs:
         run: |
           cd /home/kannadavedike/kv-nitk.github.io
           git pull origin master
-          sudo systemctl restart kv-backend
+          /usr/bin/sudo systemctl restart kv-backend
           npm run build
-          sudo bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
+          /usr/bin/sudo bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
+
 
