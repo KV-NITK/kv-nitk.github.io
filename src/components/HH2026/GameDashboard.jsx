@@ -692,15 +692,10 @@ export default function GameDashboard() {
                 <div className="relative p-4 border-2 border-[#8b5a2b]/40 bg-[#fefbf3] text-ink rounded-sm shadow-md flex flex-col justify-between">
                   <div>
                     <h4 className="font-serif text-sm font-bold tracking-widest text-[#8b261b] uppercase border-b border-[#7a4823]/20 pb-1.5 mb-3 flex justify-between items-center">
-                      <span>🎯 LATEST CLUE — STEP {currentStepNumber}</span>
-                      {currentClue?.variant && (
-                        <span className="text-[10px] bg-[#8b261b] text-[#f7eed6] px-2 py-0.5 rounded-sm font-sans font-bold">
-                          Variant {currentClue.variant}
-                        </span>
-                      )}
+                      <span>LATEST CLUE — STEP {currentStepNumber}</span>
                     </h4>
                     
-                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-3">
+                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-1">
                       {currentClue?.imageUrl ? (
                         <div className="relative rounded-sm overflow-hidden p-0.5">
                           <img
@@ -715,20 +710,11 @@ export default function GameDashboard() {
                         </p>
                       )}
                     </div>
-
-                    <div className="mt-3 bg-[#2b1810]/5 p-2.5 rounded-sm border border-[#7a4823]/20">
-                      <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted block mb-0.5">
-                        Target Area
-                      </span>
-                      <p className="font-serif font-bold text-sm text-[#4a2206]">
-                        {currentLocation?.name || "Search the campus for matching clues!"}
-                      </p>
-                    </div>
                   </div>
                   
                   {isCompleted ? (
-                    <div className="mt-4 bg-emerald-100 border border-emerald-400 p-3 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm">
-                      🎉 Challenge Cleared! All Clues Decoded!
+                    <div className="mt-4 bg-emerald-100 border border-emerald-400 p-3 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
+                      <CheckCircle className="size-4 text-emerald-800" /> Challenge Cleared! All Clues Decoded!
                     </div>
                   ) : (
                     <button
@@ -769,17 +755,18 @@ export default function GameDashboard() {
                           </div>
                         )}
                         <div>
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="bg-emerald-800 text-[#f7eed6] text-[10px] font-bold font-serif px-2 py-0.5 rounded-sm uppercase tracking-wider">
-                              Step {solved.stepNo} — Solved ✅
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="bg-emerald-800 text-[#f7eed6] text-[10px] font-bold font-serif px-2 py-0.5 rounded-sm uppercase tracking-wider flex items-center gap-1">
+                              <CheckCircle className="size-3 text-emerald-200" /> Step {solved.stepNo} — Solved
                             </span>
                           </div>
-                          <h5 className="font-serif font-bold text-sm text-[#2b1810]">
-                            📍 {solved.locationName || `Location ${solved.stepNo}`}
+                          <h5 className="font-serif font-bold text-sm text-[#2b1810] flex items-center gap-1.5">
+                            <MapPin className="size-3.5 text-emerald-800 shrink-0" />
+                            {solved.locationName || `Location ${solved.stepNo}`}
                           </h5>
                           {solved.scannedAt && (
-                            <p className="text-[11px] font-serif text-emerald-900/80 font-medium mt-0.5">
-                              ⏱️ Scanned at {new Date(solved.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <p className="text-[11px] font-serif text-emerald-900/80 font-medium mt-0.5 flex items-center gap-1">
+                              <span className="opacity-75">Scanned at:</span> {new Date(solved.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
                         </div>
@@ -787,7 +774,7 @@ export default function GameDashboard() {
 
                       <div className="text-right self-end sm:self-center">
                         <span className="text-xs font-serif font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-sm border border-emerald-300 inline-block">
-                          + Points Earned
+                          Completed
                         </span>
                       </div>
                     </div>
