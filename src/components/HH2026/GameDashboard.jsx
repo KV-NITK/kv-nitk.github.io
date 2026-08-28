@@ -149,7 +149,7 @@ export default function GameDashboard() {
   const revealedLocations = Array.isArray(gameState?.revealedLocations)
     ? gameState.revealedLocations
     : [];
-  const isCompleted = isCompleted || team?.status === "completed";
+  const isCompleted = gameState?.completed || team?.status === "completed";
 
   // The backend is the source of truth for team identity, clue assignment,
   // score, and progression.
@@ -982,8 +982,16 @@ export default function GameDashboard() {
                       )}
                     </h4>
                     <p className="font-serif italic text-xs leading-relaxed text-ink-muted font-medium text-pretty">
-"{currentClue?.text || "Clue unavailable."}"
+                      "{currentClue?.text || "Clue unavailable."}"
                     </p>
+                    <div className="mt-3">
+                      <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted">
+                        Destination
+                      </span>
+                      <p className="font-serif font-bold text-sm text-[#4a2206]">
+                        {currentLocation?.name || "Unknown location"}
+                      </p>
+                    </div>
                   </div>
                   
                   {isCompleted ? (
