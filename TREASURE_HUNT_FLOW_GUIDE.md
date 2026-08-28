@@ -93,7 +93,7 @@ This guide details the complete end-to-end flow of the **Hudugata Hudakata 2026 
        "stepNo": 1,
        "clue": {
          "id": 101,
-         "text": "Where future engineers attend daily lectures near the green lawn.",
+         "imageUrl": "https://example.com/clue-images/clue-1.png",
          "variant": 1
        },
        "location": {

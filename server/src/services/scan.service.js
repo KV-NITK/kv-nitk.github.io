@@ -81,7 +81,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
 
   const { data: clue, error: clueError } = await supabase
     .from("clues")
-    .select("clue_id, clue, location_id, variant")
+    .select("clue_id, clue_image_url, location_id, variant")
     .eq("clue_id", pathStep.clue_id)
     .maybeSingle();
 
@@ -229,7 +229,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
 
       clue: {
         id: clue.clue_id,
-        clue: clue.clue,
+        imageUrl: clue.clue_image_url || null,
         variant: clue.variant,
       },
 

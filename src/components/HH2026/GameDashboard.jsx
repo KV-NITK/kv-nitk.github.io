@@ -981,7 +981,7 @@ export default function GameDashboard() {
                         </span>
                       )}
                     </h4>
-                    <p className="font-serif italic text-xs leading-relaxed text-ink-muted font-medium text-pretty">
+                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium">
                       {currentClue?.imageUrl ? (
                         <img
                           src={currentClue.imageUrl}
@@ -989,9 +989,9 @@ export default function GameDashboard() {
                           className="w-full max-h-48 object-contain rounded-sm border border-[#c1ad87] shadow-sm my-1"
                         />
                       ) : (
-                        <>"{currentClue?.text || "Clue unavailable."}"</>
+                        <p className="italic text-pretty">"Clue image unavailable."</p>
                       )}
-                    </p>
+                    </div>
                     <div className="mt-3">
                       <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted">
                         Destination

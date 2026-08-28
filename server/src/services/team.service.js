@@ -564,7 +564,7 @@ export const fetchTeamGameState = async (teamId) => {
 
   const { data: clue, error: clueError } = await supabase
     .from("clues")
-    .select("clue_id, clue, clue_image_url, variant, location_id")
+    .select("clue_id, clue_image_url, variant, location_id")
     .eq("clue_id", pathStep.clue_id)
     .maybeSingle();
 
@@ -606,7 +606,6 @@ export const fetchTeamGameState = async (teamId) => {
       stepNo: pathStep.step_no,
       clue: {
         id: clue.clue_id,
-        text: clue.clue,
         imageUrl: clue.clue_image_url || null,
         variant: clue.variant
       },
