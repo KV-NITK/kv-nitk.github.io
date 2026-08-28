@@ -143,6 +143,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
     .from("locations")
     .select("location_id, name, qr_code")
     .eq("qr_code", cleanQrCode)
+    .limit(1)
     .maybeSingle();
 
   if (scannedLocationError) {
@@ -173,6 +174,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
     `)
     .eq("team_id", team.id)
     .eq("step_no", team.current_step_no)
+    .limit(1)
     .maybeSingle();
 
   let scanAttempt;
