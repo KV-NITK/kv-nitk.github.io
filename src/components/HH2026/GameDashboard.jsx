@@ -141,9 +141,8 @@ export default function GameDashboard() {
   const revealedLocations = Array.isArray(gameState?.revealedLocations)
     ? gameState.revealedLocations
     : [];
-  const isCompleted = gameState?.completed || team?.status === "completed";
-
   const TOTAL_LOCATIONS = 9;
+  const isCompleted = gameState?.completed || team?.status === "completed" || currentStepNumber > TOTAL_LOCATIONS;
   const solvedCount = isCompleted 
     ? TOTAL_LOCATIONS 
     : (gameState?.solvedSteps?.length ?? Math.max(0, (currentStepNumber || 1) - 1));
