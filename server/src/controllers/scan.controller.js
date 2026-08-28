@@ -33,13 +33,15 @@ export const scanQrCode = async (req, res) => {
 
 export const advanceStep = async (req, res) => {
   try {
-    const teamId = req.team.id;
+    const teamId = req.team?.id;
     const { scanAttemptId } = req.body;
+    console.log(`[ADVANCE_STEP] Advancing step for teamId: ${teamId}, scanAttemptId: ${scanAttemptId}`);
 
     const result = await advanceTeamStep(teamId, scanAttemptId);
+    console.log(`[ADVANCE_STEP] Successfully advanced step for teamId: ${teamId}`);
     return res.status(200).json(result);
   } catch (error) {
-    console.error("Advance step error:", error);
+    console.error("[ADVANCE_STEP] Error:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to advance team step",

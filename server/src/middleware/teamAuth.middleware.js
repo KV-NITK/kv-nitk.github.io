@@ -1,4 +1,4 @@
-import { getSession } from "../services/session.service.js";
+import { getSession, createSession } from "../services/session.service.js";
 import { getUserTeam } from "../services/team.service.js";
 
 export const requireTeamAuth = async (req, res, next) => {
