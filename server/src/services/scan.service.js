@@ -221,7 +221,6 @@ export const verifyScan = async (teamId, scannedQrCode) => {
         scanned_location_id: scannedLocation ? scannedLocation.location_id : null,
         expected_location_id: expectedLocation.location_id,
         is_correct: isCorrect,
-        points: 1000,
         path_step_id: pathStep.path_step_id,
         status: "scanned",
         progress_applied: false,
@@ -319,7 +318,22 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
 
   const currentStep = Math.max(1, team.current_step_no || 1);
   const newStep = currentStep + 1;
-  const newScore = (team.score || 0) + 1000;
+
+  // Look up the scan attempt to determine correct (+100) vs wrong (-50) scoring
+  let pointsDelta = 100; // default to correct
+  if (scanAttemptId) {
+    const { data: scanAttempt } = await supabase
+      .from("scan_attempts")
+      .select('"scan-attempts_id", is_correct, points')
+      .eq('"scan-attempts_id"', scanAttemptId)
+      .maybeSingle();
+
+    if (scanAttempt) {
+      pointsDelta = scanAttempt.is_correct ? 100 : -50;
+    }
+  }
+
+  const newScore = (team.score || 0) + pointsDelta;
 
   // 2. Update team progression
   const { data: updatedTeam, error: updateError } = await supabase
@@ -343,9 +357,9 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
     await supabase
       .from("scan_attempts")
       .update({
-        is_correct: true,
         status: "approved",
-        progress_applied: true
+        progress_applied: true,
+        points: pointsDelta
       })
       .eq("team_id", teamId)
       .eq("step_no", currentStep);
