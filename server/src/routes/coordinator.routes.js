@@ -26,12 +26,12 @@ router.post(
   applyProgress
 );
 
-export default router;
-
 // Step 5
 router.patch(
   "/teams/:teamId/path",
   requireCoordinatorAuth,
   assignTeamPath
 );
+
+export default router;
 
