@@ -330,7 +330,7 @@ export const getUserTeam = async (user) => {
   if (!team && (rollNo || email)) {
     const memberConditions = [];
     if (rollNo) memberConditions.push(`roll_no.eq.${rollNo}`);
-    if (email) memberConditions.push(`normalized_email.eq.${email}`);
+    if (email) memberConditions.push(`normalized_email.eq.${email},email.eq.${email}`);
 
     if (memberConditions.length > 0) {
       const { data: memberMatches } = await supabase
