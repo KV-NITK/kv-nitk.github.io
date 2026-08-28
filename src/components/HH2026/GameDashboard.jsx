@@ -669,15 +669,20 @@ export default function GameDashboard() {
           {/* CLUE, SCORE, PROGRESS, & QR SCANNER PANEL */}
           <div className="w-full flex flex-col justify-between gap-6">
             
-            {/* Game Stats & Current Clue */}
+            {/* LATEST ACTIVE CLUE (TOP) */}
             <div className="relative border-2 border-[#8b5a2b]/40 bg-[#f7eed6] p-5 shadow-lg text-ink flex-grow flex flex-col justify-between">
               
               <div>
-                <h3 className="font-serif text-lg font-bold text-[#4a2206] uppercase tracking-wide border-b border-[#7a4823]/30 pb-2 mb-4 flex items-center gap-2">
-                  <Compass className="size-5 animate-spin-slow text-[#7a4823]" /> Game Progress
+                <h3 className="font-serif text-lg font-bold text-[#4a2206] uppercase tracking-wide border-b border-[#7a4823]/30 pb-2 mb-4 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Compass className="size-5 animate-spin-slow text-[#7a4823]" /> Active Hunt Progress
+                  </span>
+                  <span className="text-xs bg-[#7a4823] text-[#fffdf9] px-2 py-0.5 rounded-sm">
+                    STEP {currentStepNumber} {totalSteps ? `/ ${totalSteps}` : ""}
+                  </span>
                 </h3>
 
-                {/* Step progressions */}
+                {/* Step progress bar */}
                 <div className="mb-6 bg-wood/10 p-3 border border-[#7a4823]/15 rounded-sm">
                   <div className="flex justify-between items-center text-xs font-serif font-bold text-[#4a2206] tracking-wider mb-2">
                     <span>PROGRESS</span>
@@ -700,59 +705,118 @@ export default function GameDashboard() {
                   </div>
                   <div className="bg-[#2b1810]/5 border border-[#7a4823]/20 p-3 text-center rounded-sm">
                     <Navigation className="size-5 mx-auto mb-1 text-emerald-600" />
-                    <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Revealed</span>
-                    <span className="font-serif text-lg font-bold text-[#4a2206]">{revealedLocations.length} areas</span>
+                    <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Solved Stops</span>
+                    <span className="font-serif text-lg font-bold text-[#4a2206]">{gameState?.solvedSteps?.length || 0} stops</span>
                   </div>
                 </div>
 
-                {/* Clue card */}
-                <div className="relative p-4 border border-[#c1ad87] bg-pamphlet bg-cover text-ink rounded-sm shadow-inner min-h-[160px] flex flex-col justify-between">
+                {/* Latest Clue Card */}
+                <div className="relative p-4 border-2 border-[#8b5a2b]/50 bg-pamphlet bg-cover text-ink rounded-sm shadow-md flex flex-col justify-between">
                   <div>
-                    <h4 className="font-serif text-xs font-bold tracking-widest text-[#4a2206] uppercase border-b border-[#7a4823]/20 pb-1 mb-2 flex justify-between items-center">
-                      <span>Current Clue</span>
-  {currentClue?.variant && (
-                        <span className="text-[9px] bg-[#8b261b] text-[#f7eed6] px-1.5 py-0.5 rounded-sm font-sans tracking-normal font-bold">
+                    <h4 className="font-serif text-sm font-bold tracking-widest text-[#8b261b] uppercase border-b border-[#7a4823]/20 pb-1.5 mb-3 flex justify-between items-center">
+                      <span>🎯 LATEST CLUE — STEP {currentStepNumber}</span>
+                      {currentClue?.variant && (
+                        <span className="text-[10px] bg-[#8b261b] text-[#f7eed6] px-2 py-0.5 rounded-sm font-sans font-bold">
                           Variant {currentClue.variant}
                         </span>
                       )}
                     </h4>
-                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium">
+                    
+                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-3">
                       {currentClue?.imageUrl ? (
-                        <img
-                          src={currentClue.imageUrl}
-                          alt="Clue"
-                          className="w-full max-h-48 object-contain rounded-sm border border-[#c1ad87] shadow-sm my-1"
-                        />
+                        <div className="relative border-2 border-[#7a4823]/40 rounded-sm overflow-hidden bg-black/5 p-1 shadow-inner">
+                          <img
+                            src={currentClue.imageUrl}
+                            alt={`Current Clue Step ${currentStepNumber}`}
+                            className="w-full max-h-72 object-contain rounded-sm shadow-sm"
+                          />
+                        </div>
                       ) : (
-                        <p className="italic text-pretty">"Clue image unavailable."</p>
+                        <p className="italic text-center py-6 text-amber-900/70 border border-dashed border-amber-900/30 rounded-sm">
+                          "Clue image for Step {currentStepNumber} is being prepared..."
+                        </p>
                       )}
                     </div>
-                    <div className="mt-3">
-                      <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted">
-                        Destination
+
+                    <div className="mt-3 bg-[#2b1810]/5 p-2.5 rounded-sm border border-[#7a4823]/20">
+                      <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted block mb-0.5">
+                        Target Area
                       </span>
                       <p className="font-serif font-bold text-sm text-[#4a2206]">
-                        {currentLocation?.name || "Unknown location"}
+                        {currentLocation?.name || "Search the campus for matching clues!"}
                       </p>
                     </div>
                   </div>
                   
                   {isCompleted ? (
-                    <div className="mt-4 bg-emerald-100 border border-emerald-400 p-2 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase">
-                      🎉 Challenge Cleared!
+                    <div className="mt-4 bg-emerald-100 border border-emerald-400 p-3 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm">
+                      🎉 Challenge Cleared! All Clues Decoded!
                     </div>
                   ) : (
                     <button
                       onClick={() => setScannerOpen(true)}
-                      className="mt-4 w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] py-3.5 px-4 font-serif text-[11px] font-bold uppercase tracking-[0.2em] shadow-md flex items-center justify-center gap-2 rounded-sm cursor-pointer transition-all active:scale-[0.98] no-drag"
+                      className="mt-4 w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-[0.2em] shadow-md flex items-center justify-center gap-2 rounded-sm cursor-pointer transition-all active:scale-[0.98] no-drag"
                     >
-                      <Camera className="size-3.5" /> Scan QR Code
+                      <Camera className="size-4" /> Scan Location QR Code
                     </button>
                   )}
                 </div>
               </div>
 
             </div>
+
+            {/* SOLVED CLUES & TIMELINE (BOTTOM) */}
+            {gameState?.solvedSteps && gameState.solvedSteps.length > 0 && (
+              <div className="border-2 border-[#8b5a2b]/40 bg-[#f7eed6] p-5 shadow-lg text-ink">
+                <h3 className="font-serif text-base font-bold text-[#4a2206] uppercase tracking-wide border-b border-[#7a4823]/30 pb-2 mb-4 flex items-center gap-2">
+                  <Trophy className="size-5 text-amber-600" /> Solved Clues & History ({gameState.solvedSteps.length})
+                </h3>
+
+                <div className="flex flex-col gap-3">
+                  {[...gameState.solvedSteps].reverse().map((solved) => (
+                    <div 
+                      key={solved.stepNo}
+                      className="border border-emerald-800/30 bg-emerald-950/5 p-3.5 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm hover:border-emerald-700/50 transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        {solved.imageUrl ? (
+                          <img 
+                            src={solved.imageUrl} 
+                            alt={`Solved Step ${solved.stepNo}`} 
+                            className="size-14 object-cover rounded-sm border border-emerald-800/40 shadow-sm shrink-0"
+                          />
+                        ) : (
+                          <div className="size-14 bg-emerald-800/10 border border-emerald-800/30 rounded-sm flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0">
+                            Step {solved.stepNo}
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="bg-emerald-800 text-[#f7eed6] text-[10px] font-bold font-serif px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                              Step {solved.stepNo} — Solved ✅
+                            </span>
+                          </div>
+                          <h5 className="font-serif font-bold text-sm text-[#2b1810]">
+                            📍 {solved.locationName || `Location ${solved.stepNo}`}
+                          </h5>
+                          {solved.scannedAt && (
+                            <p className="text-[11px] font-serif text-emerald-900/80 font-medium mt-0.5">
+                              ⏱️ Scanned at {new Date(solved.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right self-end sm:self-center">
+                        <span className="text-xs font-serif font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-sm border border-emerald-300 inline-block">
+                          + Points Earned
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 

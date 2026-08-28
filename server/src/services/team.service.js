@@ -573,6 +573,55 @@ export const fetchTeamGameState = async (teamId) => {
     locationData = location;
   }
 
+  // Fetch past solved steps (from Step 1 to Step stepNo - 1)
+  const solvedSteps = [];
+  if (team.path_id && stepNo > 1) {
+    for (let k = 1; k < stepNo; k++) {
+      const { data: pStep } = await supabase
+        .from("path_steps")
+        .select("step_no, clue_id")
+        .eq("path_id", team.path_id)
+        .eq("step_no", k)
+        .maybeSingle();
+
+      if (pStep) {
+        const { data: pClue } = await supabase
+          .from("clues")
+          .select("clue_id, clue_image_url, variant, location_id")
+          .eq("clue_id", pStep.clue_id)
+          .maybeSingle();
+
+        let locName = `Location ${k}`;
+        if (pClue && pClue.location_id) {
+          const { data: pLoc } = await supabase
+            .from("locations")
+            .select("name")
+            .eq("location_id", pClue.location_id)
+            .maybeSingle();
+          if (pLoc) locName = pLoc.name;
+        }
+
+        const { data: pScan } = await supabase
+          .from("scan_attempts")
+          .select("scanned_at")
+          .eq("team_id", team.id)
+          .eq("step_no", k)
+          .eq("is_correct", true)
+          .order("scanned_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        solvedSteps.push({
+          stepNo: k,
+          locationName: locName,
+          scannedAt: pScan?.scanned_at || null,
+          imageUrl: pClue?.clue_image_url || null,
+          variant: pClue?.variant || null
+        });
+      }
+    }
+  }
+
   return {
     success: true,
     gameStarted: true,
@@ -595,7 +644,8 @@ export const fetchTeamGameState = async (teamId) => {
         id: locationData.location_id,
         name: locationData.name
       } : null
-    }
+    },
+    solvedSteps
   };
 };
 
