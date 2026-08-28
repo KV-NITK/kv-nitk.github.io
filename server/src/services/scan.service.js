@@ -313,16 +313,24 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
 
   // 2. Look up the scan attempt to check correct vs wrong
   let isCorrect = true;
-  const { data: scanAttempt } = await supabase
+  const { data: scanAttempt, error: scanLookupError } = await supabase
     .from("scan_attempts")
-    .select('"scan-attempts_id", is_correct')
+    .select("is_correct")
     .eq("team_id", teamId)
     .eq("step_no", currentStep)
     .maybeSingle();
 
+  if (scanLookupError) {
+    console.error("Scan attempt lookup error:", scanLookupError);
+  }
+
   if (scanAttempt) {
     isCorrect = scanAttempt.is_correct;
+  } else {
+    console.warn(`No scan attempt found for team ${teamId} step ${currentStep}, defaulting to correct`);
   }
+  
+  console.log(`[ADVANCE] team=${teamId} step=${currentStep} isCorrect=${isCorrect} scanAttempt=`, scanAttempt);
 
   // 3. Determine score delta and whether to advance
   //    Correct: +100, advance step
