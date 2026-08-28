@@ -6,14 +6,49 @@ import { Html5Qrcode } from "html5-qrcode";
 import { QrCode, RotateCcw } from "lucide-react";
 import { Rivets } from "./ornaments";
 import { Rope } from "./roaming-assets";
+import API_URL from "../../api/api";
 
 export default function HH2026QrScanner() {
-  const [scannedLink, setScannedLink] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
   const scannerState = useRef({ isStarting: false, html5QrCode: null });
 
+  const submitScan = async (decodedText) => {
+    const qrCode = String(decodedText || "").trim();
+    if (!qrCode) return;
+
+    try {
+      const response = await fetch(`${API_URL}/scan`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qrCode }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setScanResult({
+          success: false,
+          message: data.message || "Unable to submit the scan.",
+        });
+        return;
+      }
+
+      setScanResult({
+        success: true,
+        message: "Your scan has been submitted. Waiting for coordinator confirmation.",
+      });
+    } catch (error) {
+      console.error("QR scan submission failed:", error);
+      setScanResult({
+        success: false,
+        message: "Unable to submit the scan. Please try again.",
+      });
+    }
+  };
+
   useEffect(() => {
-    // We only want to start the scanner if there is no scanned link
-    if (scannedLink) {
+    // Start the scanner only when no submission result is being shown.
+    if (scanResult) {
        if (scannerState.current.html5QrCode && scannerState.current.html5QrCode.isScanning) {
           scannerState.current.html5QrCode.stop().catch(console.error);
        }
@@ -38,7 +73,7 @@ export default function HH2026QrScanner() {
         }
       },
       (decodedText) => {
-        setScannedLink(decodedText);
+        void submitScan(decodedText);
         if (html5QrCode.isScanning) {
           html5QrCode.stop().catch(console.error);
         }
@@ -58,10 +93,10 @@ export default function HH2026QrScanner() {
         scannerState.current.html5QrCode.stop().catch(console.error);
       }
     };
-  }, [scannedLink]);
+  }, [scanResult]);
 
   const handleReset = () => {
-    setScannedLink(null);
+    setScanResult(null);
   };
 
   return (
@@ -83,13 +118,15 @@ export default function HH2026QrScanner() {
                 Aim your device camera at the clue location's QR code.
               </p>
               
-              {!scannedLink ? (
+              {!scanResult ? (
                 <div id="reader" className="w-full rounded-sm overflow-hidden border border-primary/30 mx-auto bg-black" style={{ minHeight: '300px' }}></div>
               ) : (
                 <div className="mt-4">
-                  <p className="font-serif text-xs font-bold tracking-[0.2em] text-primary uppercase mb-2">Scanned Result</p>
-                  <div className="p-4 border-2 border-dashed border-primary/40 bg-white/50 rounded break-all font-mono text-sm text-ink font-semibold">
-                     {scannedLink}
+                  <p className={`font-serif text-xs font-bold tracking-[0.2em] uppercase mb-2 ${scanResult.success ? "text-emerald-700" : "text-red-700"}`}>
+                    {scanResult.success ? "Scan Recorded" : "Scan Not Recorded"}
+                  </p>
+                  <div className="p-4 border-2 border-dashed border-primary/40 bg-white/50 rounded text-sm text-ink font-semibold">
+                    {scanResult.message}
                   </div>
                   <button 
                     onClick={handleReset}

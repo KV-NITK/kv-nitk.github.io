@@ -22,102 +22,6 @@ import {
   Camera
 } from "lucide-react";
 
-const MOCK_LOCATIONS = [
-  {
-    id: "loc-1",
-    name: "LHC (Lecture Hall Complex)",
-    x_coord: 900,
-    y_coord: 350,
-    reveal_radius: 120,
-    clue: "Find the place where the future engineers listen to daily lectures, near the green lawn.",
-    qrCode: "qr-lhc"
-  },
-  {
-    id: "loc-2",
-    name: "Main Pavilion",
-    x_coord: 1100,
-    y_coord: 450,
-    reveal_radius: 100,
-    clue: "Where sports stars rest and crowds cheer, overlooking the running tracks.",
-    qrCode: "qr-pavilion"
-  },
-  {
-    id: "loc-3",
-    name: "Srinivas Library",
-    x_coord: 850,
-    y_coord: 550,
-    reveal_radius: 110,
-    clue: "A treasury of knowledge, silences must be kept, books of past giants are piled high.",
-    qrCode: "qr-library"
-  },
-  {
-    id: "loc-4",
-    name: "Mega Hostel Complex",
-    x_coord: 1300,
-    y_coord: 250,
-    reveal_radius: 130,
-    clue: "The towering blocks where nights are sleepless and friendships are forged over instant noodles.",
-    qrCode: "qr-mega"
-  },
-  {
-    id: "loc-5",
-    name: "ATB (Applied Mechanics Block)",
-    x_coord: 950,
-    y_coord: 650,
-    reveal_radius: 100,
-    clue: "Where forces are analyzed and fluid dynamics are simulated, next to the heritage gate.",
-    qrCode: "qr-atb"
-  },
-  {
-    id: "loc-6",
-    name: "Main Lawn",
-    x_coord: 1050,
-    y_coord: 550,
-    reveal_radius: 110,
-    clue: "The green heart of East Campus where students gather to bask in the sun and click pictures.",
-    qrCode: "qr-lawn"
-  },
-  // Dummy locations
-  {
-    id: "dummy-1",
-    name: "Mechanical Dept Seminar Hall",
-    x_coord: 820,
-    y_coord: 250,
-    reveal_radius: 90,
-    clue: "",
-    qrCode: "qr-mech"
-  },
-  {
-    id: "dummy-2",
-    name: "Chemical Dept Block",
-    x_coord: 1200,
-    y_coord: 600,
-    reveal_radius: 100,
-    clue: "",
-    qrCode: "qr-chem"
-  },
-  {
-    id: "dummy-3",
-    name: "NTB (New Technology Block)",
-    x_coord: 1000,
-    y_coord: 200,
-    reveal_radius: 100,
-    clue: "",
-    qrCode: "qr-ntb"
-  },
-  {
-    id: "dummy-4",
-    name: "Silver Jubilee Auditorium",
-    x_coord: 1250,
-    y_coord: 400,
-    reveal_radius: 120,
-    clue: "",
-    qrCode: "qr-sja"
-  }
-];
-
-const PATH_STEPS = ["loc-1", "loc-2", "loc-3", "loc-4", "loc-5", "loc-6"];
-
 const MAP_WIDTH = 1500;
 const MAP_HEIGHT = 1000;
 const GTA_ZOOM_MULTIPLIER = 1.55; // default zoom-in beyond "fit", for a focused, GTA-minimap feel
@@ -207,7 +111,6 @@ export default function GameDashboard() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [gameState, setGameState] = useState(null);
   const [loadingState, setLoadingState] = useState(true);
-  const [isLocalFallback, setIsLocalFallback] = useState(false);
 
   // Map Navigation state
   const [zoom, setZoom] = useState(1);
@@ -224,8 +127,6 @@ export default function GameDashboard() {
   const [eagleFacingRight, setEagleFacingRight] = useState(true);
   const [eagleFlapFrame, setEagleFlapFrame] = useState(0); // 0 = downstroke, 1 = upstroke
 
-  // Dev Simulation panel state
-  const [selectedScanQr, setSelectedScanQr] = useState("");
   const [scanResult, setScanResult] = useState(null); // { success: boolean, message: string }
   const [scanning, setScanning] = useState(false);
 
@@ -240,16 +141,25 @@ export default function GameDashboard() {
   const mapContainerRef = useRef(null);
   const fitZoomRef = useRef(1);
   const eaglePathRef = useRef(null);
+  const team = gameState?.team;
+  const currentStep = gameState?.currentStep;
+  const currentClue = currentStep?.clue;
+  const currentLocation = currentStep?.location;
+  const currentStepNumber = team?.currentStep ?? currentStep?.stepNo ?? 0;
+  const revealedLocations = Array.isArray(gameState?.revealedLocations)
+    ? gameState.revealedLocations
+    : [];
+  const isCompleted = gameState?.completed || team?.status === "completed";
 
-  // ==========================================
-  // Check Auth & Fetch Game State
-  // ==========================================
+  // The backend is the source of truth for team identity, clue assignment,
+  // score, and progression.
   const fetchGameState = async () => {
     try {
-      const response = await fetch(`${API_URL}/game/state`, {
+      const response = await fetch(`${API_URL}/teams/game-state`, {
         method: "GET",
         credentials: "include",
       });
+      const data = await response.json();
 
       if (response.status === 401) {
         setUser(null);
@@ -257,79 +167,51 @@ export default function GameDashboard() {
         return false;
       }
 
-      const data = await response.json();
-      if (data.success) {
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch game state");
+      }
+
+      if (data.success || data.gameStarted === false) {
         setGameState(data);
+        setUser({
+          name: data.team?.teamName || data.team?.name || "Team",
+        });
         return true;
       }
-    } catch (err) {
-      console.error("Failed to fetch game state:", err);
+
+      throw new Error(data.message || "Invalid game state");
+    } catch (error) {
+      console.error("Failed to fetch game state:", error);
+      return false;
     }
-    return false;
   };
 
   useEffect(() => {
-    const verifyUser = async () => {
+    const initializeGame = async () => {
+      setCheckingAuth(true);
+      setLoadingState(true);
+
       try {
-        const response = await fetch(`${API_URL}/auth/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            setUser(data.user);
-            const fetched = await fetchGameState();
-            if (fetched) {
-              setCheckingAuth(false);
-              setLoadingState(false);
-              return;
-            }
-          }
+        const success = await fetchGameState();
+        if (!success) {
+          setUser(null);
+          setGameState(null);
         }
-      } catch (err) {
-        console.error("Auth verification failed:", err);
+      } finally {
+        setCheckingAuth(false);
+        setLoadingState(false);
       }
-
-      // Fallback to local testing state
-      console.log("Using client-side mock state for local testing");
-      setIsLocalFallback(true);
-      setUser({ name: "Mock Leader (Local)", email: "mock@nitk.edu.in" });
-      setGameState({
-        success: true,
-        score: 100,
-        currentStepNo: 1,
-        totalSteps: PATH_STEPS.length,
-        currentClueText: "Where sports stars rest and crowds cheer, overlooking the running tracks.",
-        revealedLocations: [
-          {
-            id: "loc-1",
-            name: "LHC (Lecture Hall Complex)",
-            x_coord: 900,
-            y_coord: 350,
-            reveal_radius: 120
-          }
-        ],
-        incorrectAttempts: [],
-        completed: false,
-        locationsList: MOCK_LOCATIONS.map(l => ({ id: l.id, name: l.name, qrCode: l.qrCode }))
-      });
-      setCheckingAuth(false);
-      setLoadingState(false);
     };
 
-    verifyUser();
+    initializeGame();
   }, []);
 
-  // Polling game state every 8 seconds to fetch coordinator approvals in real-time
+  // Coordinator approval changes progression on the backend. Poll for the
+  // authoritative state rather than changing it in the browser.
   useEffect(() => {
-    if (isLocalFallback) return;
-    const intervalId = setInterval(() => {
-      fetchGameState();
-    }, 8000);
+    const intervalId = setInterval(fetchGameState, 8000);
     return () => clearInterval(intervalId);
-  }, [isLocalFallback]);
+  }, []);
 
   // Initialize Map Centering
   useEffect(() => {
@@ -347,7 +229,7 @@ export default function GameDashboard() {
     const newZoom = Math.min(fitZoom * GTA_ZOOM_MULTIPLIER, MAX_ZOOM);
 
     // Center on the frontier of exploration: the last spot the team uncovered.
-    const revealed = gameState?.revealedLocations;
+    const revealed = revealedLocations;
     const focus = revealed && revealed.length > 0
       ? revealed[revealed.length - 1]
       : { x_coord: MAP_WIDTH / 2, y_coord: MAP_HEIGHT / 2 };
@@ -379,7 +261,7 @@ export default function GameDashboard() {
   }, []);
 
   // Patrol the boundary of every revealed location combined, instead of parking on one spot.
-  const eaglePatrolPathD = buildEaglePatrolPath(gameState?.revealedLocations);
+  const eaglePatrolPathD = buildEaglePatrolPath(revealedLocations);
   const PATROL_LOOP_MS = 16000;
 
   useEffect(() => {
@@ -413,7 +295,7 @@ export default function GameDashboard() {
   // Announce each mythology Easter egg the first time its reveal threshold is crossed.
   useEffect(() => {
     if (!gameState) return;
-    const step = gameState.currentStepNo;
+    const step = currentStepNumber;
     const reveals = [
       { id: "samudra", threshold: 1, emoji: "🌊", title: "Samudra Manthana", message: "The ocean stirs — ancient waters begin to churn." },
       { id: "parijata", threshold: 3, emoji: "🌸", title: "Parijata Flower", message: "A celestial bloom is sighted deep in the forest." },
@@ -426,7 +308,7 @@ export default function GameDashboard() {
         setTimeout(() => setEggToast(null), 5500);
       }
     });
-  }, [gameState?.currentStepNo]);
+  }, [currentStepNumber]);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -563,109 +445,15 @@ export default function GameDashboard() {
 
   const zoomIn = () => zoomAroundCenter(1.25);
   const zoomOut = () => zoomAroundCenter(1 / 1.25);
-  // ==========================================
-  // Scan Simulation
-  // ==========================================
-  // ==========================================
-  // QR Scan Handling (Real Camera + Simulation)
-  // ==========================================
+  // Submit the physical QR text to the backend. It verifies and records the
+  // attempt; score and progression change only after coordinator review.
   const processScanResult = async (scannedText) => {
-    const cleanQr = String(scannedText).trim();
-    if (!cleanQr) return;
-    
+    const cleanQr = String(scannedText || "").trim();
+    if (!cleanQr || scanning) return;
+
     setScanning(true);
     setScanResult(null);
 
-    if (isLocalFallback) {
-      // Local progression logic mock
-      if (gameState.completed) {
-        setScanResult({
-          success: false,
-          message: "You have already completed the hunt!"
-        });
-        setScanning(false);
-        return;
-      }
-
-      const nextLocIndex = gameState.currentStepNo;
-      if (nextLocIndex >= PATH_STEPS.length) {
-        setScanResult({
-          success: false,
-          message: "Invalid game state. Already at final step."
-        });
-        setScanning(false);
-        return;
-      }
-
-      const expectedLocId = PATH_STEPS[nextLocIndex];
-      const expectedLoc = MOCK_LOCATIONS.find(l => l.id === expectedLocId);
-
-      let newState = { ...gameState };
-
-      // 1. Correct Scan
-      if (expectedLoc && cleanQr === expectedLoc.qrCode) {
-        newState.currentStepNo += 1;
-        
-        if (!newState.revealedLocations.some(l => l.id === expectedLocId)) {
-          newState.revealedLocations.push({
-            id: expectedLoc.id,
-            name: expectedLoc.name,
-            x_coord: expectedLoc.x_coord,
-            y_coord: expectedLoc.y_coord,
-            reveal_radius: expectedLoc.reveal_radius
-          });
-        }
-        newState.score += 20;
-
-        if (newState.currentStepNo === PATH_STEPS.length) {
-          newState.completed = true;
-          newState.currentClueText = "Congratulations! You have completed the treasure hunt!";
-        } else {
-          const nextNextLocId = PATH_STEPS[newState.currentStepNo];
-          const nextNextLoc = MOCK_LOCATIONS.find(l => l.id === nextNextLocId);
-          newState.currentClueText = nextNextLoc ? nextNextLoc.clue : "";
-        }
-
-        setGameState(newState);
-        setScanResult({
-          success: true,
-          message: `Excellent! You successfully found: ${expectedLoc.name}!`
-        });
-      } 
-      // 2. Incorrect Scan
-      else {
-        const scannedLoc = MOCK_LOCATIONS.find(l => cleanQr === l.qrCode);
-        if (scannedLoc) {
-          newState.score = Math.max(0, newState.score - 10);
-          newState.incorrectAttempts = [
-            ...newState.incorrectAttempts,
-            {
-              x: scannedLoc.x_coord,
-              y: scannedLoc.y_coord,
-              name: scannedLoc.name,
-              timestamp: new Date().toISOString()
-            }
-          ];
-          setGameState(newState);
-          setScanResult({
-            success: false,
-            message: `Incorrect location scanned: "${scannedLoc.name}". Penalty applied!`
-          });
-        } else {
-          newState.score = Math.max(0, newState.score - 5);
-          setGameState(newState);
-          setScanResult({
-            success: false,
-            message: "Invalid QR code. This code is not part of the hunt. Penalty applied!"
-          });
-        }
-      }
-      setScanning(false);
-      setTimeout(() => setScanResult(null), 5500);
-      return;
-    }
-
-    // Live mode: call /api/scan
     try {
       const response = await fetch(`${API_URL}/scan`, {
         method: "POST",
@@ -675,42 +463,40 @@ export default function GameDashboard() {
         },
         body: JSON.stringify({ qrCode: cleanQr }),
       });
-
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        if (data.scan.isCorrect) {
-          setScanResult({
-            success: true,
-            message: `Scan logged! Verified: ${data.scan.scannedLocation?.name || data.scan.expectedLocation.name}. Waiting for coordinator approval.`
-          });
-        } else {
-          setScanResult({
-            success: false,
-            message: `Incorrect location scanned: "${data.scan.scannedLocation?.name || 'Unknown Location'}". Penalty might be applied after review.`
-          });
-        }
-      } else {
+      if (response.status === 401) {
         setScanResult({
           success: false,
-          message: data.message || "Failed to submit QR scan."
+          message: "Your team session has expired. Please log in again.",
         });
+        setUser(null);
+        setGameState(null);
+        return;
       }
-    } catch (err) {
-      console.error("QR scan submission failed:", err);
+
+      if (!response.ok) {
+        setScanResult({
+          success: false,
+          message: data.message || "Failed to process QR scan.",
+        });
+        return;
+      }
+
+      setScanResult({
+        success: true,
+        message: "Your scan has been submitted. Waiting for coordinator confirmation.",
+      });
+    } catch (error) {
+      console.error("QR scan request failed:", error);
       setScanResult({
         success: false,
-        message: "Failed to connect to the server."
+        message: "Unable to submit the scan. Please try again.",
       });
     } finally {
       setScanning(false);
       setTimeout(() => setScanResult(null), 5500);
     }
-  };
-
-  const handleSimulateScan = async () => {
-    if (!selectedScanQr) return;
-    await processScanResult(selectedScanQr);
   };
 
   // Start/Stop QR camera scanner when modal opens/closes
@@ -800,10 +586,11 @@ export default function GameDashboard() {
   }
 
   // Mythology Easter-egg reveal pacing, spread evenly across the full hunt arc.
-  const totalSteps = gameState?.totalSteps || PATH_STEPS.length;
-  const samudraOpacity = gameState ? Math.min(0.95, Math.max(0, (gameState.currentStepNo - 1) / totalSteps)) : 0;
-  const parijataOpacity = gameState && gameState.currentStepNo >= 3 ? 0.9 : 0;
-  const yakshaganaOpacity = gameState && gameState.currentStepNo >= 5 ? 0.9 : 0;
+  const totalSteps = Number.isFinite(gameState?.totalSteps) ? gameState.totalSteps : null;
+  const progressRatio = totalSteps ? Math.min(100, (currentStepNumber / totalSteps) * 100) : 0;
+  const samudraOpacity = totalSteps ? Math.min(0.95, Math.max(0, (currentStepNumber - 1) / totalSteps)) : 0;
+  const parijataOpacity = gameState && currentStepNumber >= 3 ? 0.9 : 0;
+  const yakshaganaOpacity = gameState && currentStepNumber >= 5 ? 0.9 : 0;
 
   return (
     <div className="hh2026-page min-h-screen bg-parchment text-foreground relative flex flex-col justify-between overflow-hidden">
@@ -825,7 +612,7 @@ export default function GameDashboard() {
         {/* Plaque / Title header */}
         <div className="text-center w-full max-w-3xl mb-4">
           <Plaque
-            eyebrow={`Team: ${gameState?.teamName || user.name}`}
+            eyebrow={`Team: ${team?.teamName || user?.name || "Team"}`}
             title="CAMPUS FOG OF WAR"
             className="items-center text-center scale-90"
           />
@@ -846,7 +633,7 @@ export default function GameDashboard() {
               )}
               <div>
                 <h4 className="font-serif font-bold text-sm uppercase">
-                  {scanResult.success ? "Scan Success" : "Scan Rejected"}
+{scanResult.success ? "Scan Recorded" : "Scan Not Recorded"}
                 </h4>
                 <p className="text-xs font-serif leading-relaxed mt-1">{scanResult.message}</p>
               </div>
@@ -936,7 +723,7 @@ export default function GameDashboard() {
                     
                     {/* Punch transparent circles for correctly scanned locations */}
                     <g filter="url(#soft-blur)">
-                      {gameState?.revealedLocations.map(loc => (
+                      {revealedLocations.map(loc => (
                         <circle 
                           key={loc.id}
                           cx={loc.x_coord}
@@ -1065,7 +852,7 @@ export default function GameDashboard() {
                 ))}
 
                 {/* Layer 4: Correct Green Pins & Labels */}
-                {gameState?.revealedLocations.map((loc, idx) => (
+                {revealedLocations.map((loc, idx) => (
                   <g key={`pin-${loc.id}`}>
                     {/* Glowing pulse effect under the pin */}
                     <circle 
@@ -1159,12 +946,12 @@ export default function GameDashboard() {
                 <div className="mb-6 bg-wood/10 p-3 border border-[#7a4823]/15 rounded-sm">
                   <div className="flex justify-between items-center text-xs font-serif font-bold text-[#4a2206] tracking-wider mb-2">
                     <span>PROGRESS</span>
-                    <span>STEP {gameState?.currentStepNo} / {gameState?.totalSteps}</span>
+                    <span>{totalSteps ? `STEP ${currentStepNumber} / ${totalSteps}` : `STEP ${currentStepNumber}`}</span>
                   </div>
                   <div className="w-full h-3.5 bg-[#2b1810]/20 rounded-full overflow-hidden p-0.5 border border-[#8b5a2b]/30">
                     <div 
                       className="h-full bg-gradient-to-r from-amber-700 to-[#7a4823] rounded-full transition-all duration-500 shadow-inner"
-                      style={{ width: `${(gameState?.currentStepNo / gameState?.totalSteps) * 100}%` }}
+                      style={{ width: `${progressRatio}%` }}
                     />
                   </div>
                 </div>
@@ -1174,12 +961,12 @@ export default function GameDashboard() {
                   <div className="bg-[#2b1810]/5 border border-[#7a4823]/20 p-3 text-center rounded-sm">
                     <Trophy className="size-5 mx-auto mb-1 text-amber-600 animate-pulse" />
                     <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Score</span>
-                    <span className="font-serif text-lg font-bold text-[#4a2206]">{gameState?.score} pts</span>
+                    <span className="font-serif text-lg font-bold text-[#4a2206]">{team?.score ?? 0} pts</span>
                   </div>
                   <div className="bg-[#2b1810]/5 border border-[#7a4823]/20 p-3 text-center rounded-sm">
                     <Navigation className="size-5 mx-auto mb-1 text-emerald-600" />
                     <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Revealed</span>
-                    <span className="font-serif text-lg font-bold text-[#4a2206]">{gameState?.revealedLocations.length} areas</span>
+                    <span className="font-serif text-lg font-bold text-[#4a2206]">{revealedLocations.length} areas</span>
                   </div>
                 </div>
 
@@ -1188,18 +975,26 @@ export default function GameDashboard() {
                   <div>
                     <h4 className="font-serif text-xs font-bold tracking-widest text-[#4a2206] uppercase border-b border-[#7a4823]/20 pb-1 mb-2 flex justify-between items-center">
                       <span>Current Clue</span>
-                      {gameState?.clueVariant && (
+  {currentClue?.variant && (
                         <span className="text-[9px] bg-[#8b261b] text-[#f7eed6] px-1.5 py-0.5 rounded-sm font-sans tracking-normal font-bold">
-                          Variant {gameState.clueVariant}
+                          Variant {currentClue.variant}
                         </span>
                       )}
                     </h4>
                     <p className="font-serif italic text-xs leading-relaxed text-ink-muted font-medium text-pretty">
-                      "{gameState?.currentClueText}"
+                      "{currentClue?.text || "Clue unavailable."}"
                     </p>
+                    <div className="mt-3">
+                      <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted">
+                        Destination
+                      </span>
+                      <p className="font-serif font-bold text-sm text-[#4a2206]">
+                        {currentLocation?.name || "Unknown location"}
+                      </p>
+                    </div>
                   </div>
                   
-                  {gameState?.completed ? (
+                  {isCompleted ? (
                     <div className="mt-4 bg-emerald-100 border border-emerald-400 p-2 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase">
                       🎉 Challenge Cleared!
                     </div>
@@ -1211,37 +1006,6 @@ export default function GameDashboard() {
                       <Camera className="size-3.5" /> Scan QR Code
                     </button>
                   )}
-                </div>
-              </div>
-
-              {/* Developer / Scanner simulation panel */}
-              <div className="mt-6 border-t border-[#7a4823]/30 bg-pamphlet-alt bg-cover rounded-sm shadow-inner px-3 py-3 no-drag">
-                <h4 className="font-serif text-xs font-bold tracking-wider text-[#4a2206] uppercase mb-2 flex items-center gap-1.5">
-                  <QrCode className="size-4 text-[#7a4823]" /> QR Code Scanner Simulator
-                </h4>
-                <p className="text-[10px] text-ink-muted font-serif mb-3 leading-relaxed">
-                  Select a location below to simulate scanning a physical QR code found at that spot.
-                </p>
-                <div className="flex gap-2">
-                  <select
-                    value={selectedScanQr}
-                    onChange={(e) => setSelectedScanQr(e.target.value)}
-                    className="flex-grow bg-[#2b1810]/5 border border-[#7a4823]/40 px-2 py-1.5 text-xs text-ink font-serif focus:ring-1 focus:ring-[#7a4823] focus:outline-none rounded-sm"
-                  >
-                    <option value="">-- Choose Location QR --</option>
-                    {gameState?.locationsList?.map(l => (
-                      <option key={l.id} value={l.qrCode}>
-                        {l.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleSimulateScan}
-                    disabled={scanning || !selectedScanQr}
-                    className="bg-[#7a4823] hover:bg-[#5c3519] disabled:bg-[#7a4823]/40 text-[#f7eed6] px-3 py-1.5 text-xs font-serif font-bold uppercase transition-all shadow-md flex items-center gap-1 shrink-0 rounded-sm"
-                  >
-                    {scanning ? "..." : <Play className="size-3" />} Scan
-                  </button>
                 </div>
               </div>
 
