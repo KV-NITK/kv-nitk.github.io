@@ -297,7 +297,7 @@ export const verifyScan = async (teamId, scannedQrCode) => {
         currentStep: team.current_step_no,
       },
 
-      message: "Wrong QR code! −50 penalty applied.",
+      message: "Wrong QR code! -50 penalty applied.",
     };
   }
 

@@ -514,13 +514,13 @@ export default function GameDashboard() {
           });
           setScanResult({
             success: true,
-            message: "✅ Correct Location! Coordinator, please click 'Approve & Advance'. (+100 pts)"
+            message: "Correct Location! Coordinator, please click 'Approve & Advance'. (+100 pts)"
           });
         } else if (data.scan && !data.scan.isCorrect) {
           // Wrong scan → penalty already applied by backend, just show message
           setScanResult({
             success: false,
-            message: `⚠️ Wrong Location! −50 penalty applied. Score: ${data.scan.currentScore ?? '—'}`
+            message: `Wrong Location! -50 penalty applied. Score: ${data.scan.currentScore ?? 0}`
           });
           // Refresh game state to reflect updated score
           await fetchGameState();
