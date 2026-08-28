@@ -5,7 +5,7 @@ import { TornEdgeDefs } from './roaming-assets'
 import './hh2026.css'
 
 import { useState, useEffect } from 'react'
-import config from '../../config'
+import API_URL from '../../api/api'
 
 export default function HH2026Leaderboard() {
   const [passcode, setPasscode] = useState("");
@@ -16,7 +16,7 @@ export default function HH2026Leaderboard() {
   
   const fetchLeaderboard = async (currentPasscode) => {
     try {
-      const res = await fetch(`${config.API_URL}/api/teams/leaderboard`, {
+      const res = await fetch(`${API_URL}/teams/leaderboard`, {
         headers: {
           "x-passcode": currentPasscode,
         },
