@@ -5,6 +5,7 @@ import {
   getMyTeam,
   deleteMyTeam,
   getAllRegisteredTeamsPublic,
+  getTeamGameStateController,
 } from "../controllers/team.controller.js";
 
 import { requireAuth } from "../middleware/auth.middleware.js";
@@ -30,6 +31,7 @@ router.post("/register", requireAuth, registerTeam);
 router.post("/login", teamLogin);
 
 router.get("/me", requireTeamAuth, getTeamMe);
+router.get("/game-state", requireTeamAuth, getTeamGameStateController);
 
 router.post("/logout", requireTeamAuth, teamLogout);
 

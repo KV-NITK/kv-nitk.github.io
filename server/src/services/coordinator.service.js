@@ -307,3 +307,66 @@ export const applyScanProgress = async (
       : "Wrong scan accepted. 50 points deducted. Team remains on the same step.",
   };
 };
+
+// ==================================================
+// STEP 5 — Assign Path to Team
+// ==================================================
+
+export const assignPathToTeam = async (teamId, pathId) => {
+  // Validate team exists
+  const { data: team, error: teamError } = await supabase
+    .from("teams")
+    .select("id")
+    .eq("id", teamId)
+    .maybeSingle();
+
+  if (teamError) {
+    console.error("Fetch team error:", teamError);
+    throw new Error("Failed to fetch team");
+  }
+
+  if (!team) {
+    return {
+      success: false,
+      code: "TEAM_NOT_FOUND",
+      message: "Team not found",
+    };
+  }
+
+  // Validate path exists
+  const { data: path, error: pathError } = await supabase
+    .from("paths")
+    .select("path_id")
+    .eq("path_id", pathId)
+    .maybeSingle();
+
+  if (pathError) {
+    console.error("Fetch path error:", pathError);
+    throw new Error("Failed to fetch path");
+  }
+
+  if (!path) {
+    return {
+      success: false,
+      code: "PATH_NOT_FOUND",
+      message: "Path not found",
+    };
+  }
+
+  // Update team
+  const { error: updateError } = await supabase
+    .from("teams")
+    .update({ path_id: pathId })
+    .eq("id", teamId);
+
+  if (updateError) {
+    console.error("Update team path error:", updateError);
+    throw new Error("Failed to assign path");
+  }
+
+  return {
+    success: true,
+    message: "Path assigned successfully",
+  };
+};
+
