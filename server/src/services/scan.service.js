@@ -246,3 +246,64 @@ export const verifyScan = async (teamId, scannedQrCode) => {
       : "Wrong QR code",
   };
 };
+
+/*
+ * Step 2:
+ * Coordinator explicitly approves and advances the team step.
+ * Updates team.current_step_no and team.score.
+ */
+export const advanceTeamStep = async (teamId, scanAttemptId) => {
+  if (!teamId) {
+    throw new Error("Team ID is required");
+  }
+
+  // 1. Fetch team's current state
+  const { data: team, error: teamError } = await supabase
+    .from("teams")
+    .select("id, current_step_no, score, status")
+    .eq("id", teamId)
+    .single();
+
+  if (teamError || !team) {
+    throw new Error("Team not found");
+  }
+
+  const currentStep = Math.max(1, team.current_step_no || 1);
+  const newStep = currentStep + 1;
+  const newScore = (team.score || 0) + 1000;
+
+  // 2. Update team progression
+  const { data: updatedTeam, error: updateError } = await supabase
+    .from("teams")
+    .update({
+      current_step_no: newStep,
+      score: newScore,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", teamId)
+    .select("id, current_step_no, score")
+    .single();
+
+  if (updateError) {
+    console.error("Advance team step error:", updateError);
+    throw new Error("Failed to advance team step");
+  }
+
+  // 3. Mark scan attempt as approved if scanAttemptId provided
+  if (scanAttemptId) {
+    await supabase
+      .from("scan_attempts")
+      .update({ status: "approved" })
+      .eq("scan-attempts_id", scanAttemptId);
+  }
+
+  return {
+    success: true,
+    team: {
+      id: updatedTeam.id,
+      currentStep: updatedTeam.current_step_no,
+      score: updatedTeam.score
+    },
+    message: `Team successfully advanced to Step ${updatedTeam.current_step_no}!`
+  };
+};

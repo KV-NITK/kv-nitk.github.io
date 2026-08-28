@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import MetaData from "../MetaData/MetaData.jsx";
 import { SiteHeader } from "./site-header";
-import { Plaque, DiamondBand, Rivets } from "./ornaments";
-import { CompassRose, Rope } from "./roaming-assets";
+import { Plaque } from "./ornaments";
 import API_URL from "../../api/api";
 import { Html5Qrcode } from "html5-qrcode";
 import { 
@@ -129,6 +128,8 @@ export default function GameDashboard() {
 
   const [scanResult, setScanResult] = useState(null); // { success: boolean, message: string }
   const [scanning, setScanning] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(null); // { scanId, locationName }
+  const [advancing, setAdvancing] = useState(false);
 
   // Real QR camera scanner state
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -425,8 +426,46 @@ export default function GameDashboard() {
 
   const zoomIn = () => zoomAroundCenter(1.25);
   const zoomOut = () => zoomAroundCenter(1 / 1.25);
-  // Submit the physical QR text to the backend. It verifies and records the
-  // attempt; score and progression change only after coordinator review.
+
+  const handleCoordinatorAdvance = async () => {
+    if (!pendingApproval || advancing) return;
+    setAdvancing(true);
+
+    try {
+      const response = await fetch(`${API_URL}/scan/advance`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanAttemptId: pendingApproval.scanId })
+      });
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setScanResult({
+          success: true,
+          message: data.message || `Team successfully advanced to Step ${currentStepNumber + 1}!`
+        });
+        setPendingApproval(null);
+        await fetchGameState();
+      } else {
+        setScanResult({
+          success: false,
+          message: data.message || "Failed to advance team step."
+        });
+      }
+    } catch (err) {
+      console.error("Advance step error:", err);
+      setScanResult({
+        success: false,
+        message: "Failed to connect to server."
+      });
+    } finally {
+      setAdvancing(false);
+      setTimeout(() => setScanResult(null), 5000);
+    }
+  };
+
+  // Submit the physical QR text to the backend. It verifies and records the attempt.
   const processScanResult = async (scannedText) => {
     const cleanQr = String(scannedText || "").trim();
     if (!cleanQr || scanning) return;
@@ -455,18 +494,28 @@ export default function GameDashboard() {
         return;
       }
 
-      if (!response.ok) {
+      if (response.ok && data.success) {
+        if (data.scan && data.scan.isCorrect) {
+          setPendingApproval({
+            scanId: data.scan.id,
+            locationName: data.scan.expectedLocation?.name || `Location ${currentStepNumber}`
+          });
+          setScanResult({
+            success: true,
+            message: "Location QR Verified! Coordinator, please click 'Approve & Advance'."
+          });
+        } else {
+          setScanResult({
+            success: false,
+            message: "Incorrect QR code scanned for this step. Please scan the QR code at the correct location."
+          });
+        }
+      } else {
         setScanResult({
           success: false,
           message: data.message || "Failed to process QR scan.",
         });
-        return;
       }
-
-      setScanResult({
-        success: true,
-        message: "Your scan has been submitted. Waiting for coordinator confirmation.",
-      });
     } catch (error) {
       console.error("QR scan request failed:", error);
       setScanResult({
@@ -646,6 +695,41 @@ export default function GameDashboard() {
                     STEP {currentStepNumber} {totalSteps ? `/ ${totalSteps}` : ""}
                   </span>
                 </h3>
+
+                {/* Coordinator Approval & Advance Confirmation Card */}
+                {pendingApproval && (
+                  <div className="border-2 border-emerald-700 bg-emerald-950/10 p-4 rounded-sm shadow-xl border-dashed mb-6 animate-fadeIn">
+                    <div className="flex items-center gap-2 text-emerald-900 border-b border-emerald-800/30 pb-2 mb-2">
+                      <CheckCircle className="size-5 text-emerald-700 shrink-0" />
+                      <h4 className="font-serif font-bold text-sm uppercase tracking-wide">
+                        Coordinator Approval Required
+                      </h4>
+                    </div>
+                    
+                    <p className="font-serif text-xs text-[#2b1810] mb-3 leading-relaxed">
+                      Location QR Code for <strong className="text-emerald-950 font-bold">{pendingApproval.locationName}</strong> verified! 
+                      Coordinator, please confirm to advance team.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleCoordinatorAdvance}
+                        disabled={advancing}
+                        className="flex-grow bg-emerald-800 hover:bg-emerald-900 text-[#f7eed6] py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-wider shadow-md rounded-sm cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                      >
+                        <Play className="size-4 fill-current" />
+                        {advancing ? "Advancing Team..." : `Approve & Advance to Step ${currentStepNumber + 1}`}
+                      </button>
+
+                      <button
+                        onClick={() => setPendingApproval(null)}
+                        className="bg-stone-300 hover:bg-stone-400 text-stone-900 py-3 px-4 font-serif text-xs font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Step progress bar */}
                 <div className="mb-6 bg-wood/10 p-3 border border-[#7a4823]/15 rounded-sm">
