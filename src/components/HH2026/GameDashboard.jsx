@@ -607,14 +607,24 @@ export default function GameDashboard() {
                 Squad Identity Required
               </h2>
               <p className="text-sm font-serif mb-6 text-ink-muted leading-relaxed">
-                Only registered squads participating in the Hudugata Hudakata 2026 hunt may view this tracking device. Log in to claim your compass.
+                Only registered squads participating in the Hudugata Hudakata 2026 hunt may view this tracking device. Log in with IRIS to claim your compass.
               </p>
-              <Link
-                to="/team-registration"
-                className="inline-flex items-center gap-2 border border-[#7a4823]/60 bg-[#7a4823] px-6 py-2.5 font-serif text-sm font-bold tracking-wider text-[#f7eed6] shadow-md transition-all hover:bg-[#5c3519] uppercase"
-              >
-                <QrCode className="size-4" /> Go to Registration
-              </Link>
+              
+              <div className="flex flex-col gap-3 max-w-[250px] mx-auto">
+                <button
+                  onClick={() => window.location.href = `${API_URL}/auth/iris`}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#8b261b] hover:bg-[#6e1e15] px-6 py-3 font-serif text-sm font-bold tracking-wider text-[#f7eed6] shadow-md transition-all uppercase"
+                >
+                  Log in with IRIS
+                </button>
+                
+                <Link
+                  to="/team-registration"
+                  className="w-full inline-flex items-center justify-center gap-2 border border-[#7a4823]/60 bg-[#7a4823] px-6 py-3 font-serif text-sm font-bold tracking-wider text-[#f7eed6] shadow-md transition-all hover:bg-[#5c3519] uppercase"
+                >
+                  <QrCode className="size-4" /> Register a Team
+                </Link>
+              </div>
             </div>
           </div>
         </main>
