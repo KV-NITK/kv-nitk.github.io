@@ -594,53 +594,6 @@ export const fetchTeamGameState = async (teamId) => {
     };
   }
 
-  const { data: pathStep, error: pathStepError } = await supabase
-    .from("path_steps")
-    .select("step_no, clue_id")
-    .eq("path_id", team.path_id)
-    .eq("step_no", stepNo)
-    .maybeSingle();
-
-  if (pathStepError || !pathStep) {
-    console.error("Fetch path step error or missing step:", pathStepError, "stepNo:", stepNo, "path_id:", team.path_id);
-    return {
-      success: true,
-      gameStarted: true,
-      team: {
-        id: team.id,
-        teamName: team.team_name,
-        score: team.score || 0,
-        currentStep: stepNo,
-        pathId: team.path_id,
-        status: team.status
-      },
-      currentStep: {
-        stepNo: stepNo,
-        clue: null,
-        location: null
-      },
-      message: "Path step details are currently being updated."
-    };
-  }
-
-  const { data: clue } = await supabase
-    .from("clues")
-    .select("clue_id, clue_image_url, variant, location_id")
-    .eq("clue_id", pathStep.clue_id)
-    .maybeSingle();
-
-  const clueData = clue || null;
-
-  let locationData = null;
-  if (clueData && clueData.location_id) {
-    const { data: location } = await supabase
-      .from("locations")
-      .select("location_id, name")
-      .eq("location_id", clueData.location_id)
-      .maybeSingle();
-    locationData = location;
-  }
-
   // Fetch past solved steps (from Step 1 to Step stepNo - 1)
   const solvedSteps = [];
   if (team.path_id && stepNo > 1) {
@@ -689,6 +642,58 @@ export const fetchTeamGameState = async (teamId) => {
       }
     }
   }
+
+  const { data: pathStep, error: pathStepError } = await supabase
+    .from("path_steps")
+    .select("step_no, clue_id")
+    .eq("path_id", team.path_id)
+    .eq("step_no", stepNo)
+    .maybeSingle();
+
+  if (pathStepError || !pathStep) {
+    if (stepNo <= 9) {
+      console.error("Fetch path step error or missing step:", pathStepError, "stepNo:", stepNo, "path_id:", team.path_id);
+    }
+    return {
+      success: true,
+      gameStarted: true,
+      team: {
+        id: team.id,
+        teamName: team.team_name,
+        score: team.score || 0,
+        currentStep: stepNo,
+        pathId: team.path_id,
+        status: team.status
+      },
+      currentStep: {
+        stepNo: stepNo,
+        clue: null,
+        location: null
+      },
+      solvedSteps,
+      message: stepNo > 9 ? "All locations completed." : "Path step details are currently being updated."
+    };
+  }
+
+  const { data: clue } = await supabase
+    .from("clues")
+    .select("clue_id, clue_image_url, variant, location_id")
+    .eq("clue_id", pathStep.clue_id)
+    .maybeSingle();
+
+  const clueData = clue || null;
+
+  let locationData = null;
+  if (clueData && clueData.location_id) {
+    const { data: location } = await supabase
+      .from("locations")
+      .select("location_id, name")
+      .eq("location_id", clueData.location_id)
+      .maybeSingle();
+    locationData = location;
+  }
+
+
 
   return {
     success: true,
