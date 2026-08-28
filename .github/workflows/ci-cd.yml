@@ -53,6 +53,7 @@ jobs:
     steps:
       - name: Deploy via deploy.sh
         run: |
-          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+          hash -r
           cd /home/kannadavedike/kv-nitk.github.io
           bash deploy.sh
