@@ -105,7 +105,6 @@ export default function HH2026Leaderboard() {
                       <th className="py-4 px-4 font-extrabold text-white tracking-wider uppercase text-xl">Leader</th>
                       <th className="py-4 px-4 font-extrabold text-white tracking-wider uppercase text-xl text-center">Locations</th>
                       <th className="py-4 px-4 font-extrabold text-white tracking-wider uppercase text-xl text-center">Points</th>
-                      <th className="py-4 px-4 font-extrabold text-white tracking-wider uppercase text-xl text-center">Status</th>
                       <th className="py-4 px-4 font-extrabold text-white tracking-wider uppercase text-xl text-right">Timestamp</th>
                     </tr>
                   </thead>
@@ -119,15 +118,6 @@ export default function HH2026Leaderboard() {
                         <td className="py-5 px-4">{team.leaderName}</td>
                         <td className="py-5 px-4 text-center text-lg">{team.locationsVisited}</td>
                         <td className="py-5 px-4 text-center font-bold text-xl text-white">{team.points}</td>
-                        <td className="py-5 px-4 text-center">
-                          <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${
-                            team.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                            team.status === 'Completed' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                            'bg-red-500/20 text-red-300 border border-red-500/30'
-                          }`}>
-                            {team.status}
-                          </span>
-                        </td>
                         <td className="py-5 px-4 text-right text-sm text-white/70">
                           {team.timestamp ? new Date(team.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
                         </td>
@@ -135,7 +125,7 @@ export default function HH2026Leaderboard() {
                     ))}
                     {teams.length === 0 && (
                       <tr>
-                        <td colSpan="7" className="py-10 text-center text-white/70 font-serif">
+                        <td colSpan="6" className="py-10 text-center text-white/70 font-serif">
                           No teams found or game hasn't started yet.
                         </td>
                       </tr>
