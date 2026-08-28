@@ -438,6 +438,17 @@ export default function GameDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scanAttemptId: pendingApproval.scanId })
       });
+
+      if (response.status === 401) {
+        setScanResult({
+          success: false,
+          message: "Your team session has expired. Please log in again.",
+        });
+        setUser(null);
+        setGameState(null);
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -457,7 +468,7 @@ export default function GameDashboard() {
       console.error("Advance step error:", err);
       setScanResult({
         success: false,
-        message: "Failed to connect to server."
+        message: "Failed to process request. Please try again."
       });
     } finally {
       setAdvancing(false);

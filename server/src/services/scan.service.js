@@ -177,6 +177,8 @@ export const verifyScan = async (teamId, scannedQrCode) => {
       is_correct: isCorrect,
       points: 1000,
       path_step_id: pathStep.path_step_id,
+      status: "scanned",
+      progress_applied: false,
     })
     .select(`
       "scan-attempts_id",
@@ -188,7 +190,9 @@ export const verifyScan = async (teamId, scannedQrCode) => {
       is_correct,
       points,
       scanned_at,
-      path_step_id
+      path_step_id,
+      status,
+      progress_applied
     `)
     .single();
 
@@ -265,6 +269,7 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
     .single();
 
   if (teamError || !team) {
+    console.error("Fetch team error in advanceTeamStep:", teamError);
     throw new Error("Team not found");
   }
 
@@ -286,19 +291,22 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
 
   if (updateError) {
     console.error("Advance team step error:", updateError);
-    throw new Error("Failed to advance team step");
+    throw new Error("Failed to advance team step: " + (updateError.message || "Database update failed"));
   }
 
-  // 3. Ensure scan attempt is marked as correct
-  if (scanAttemptId) {
-    try {
-      await supabase
-        .from("scan_attempts")
-        .update({ is_correct: true })
-        .eq("scan-attempts_id", scanAttemptId);
-    } catch (attemptErr) {
-      console.warn("Scan attempt update warning (non-fatal):", attemptErr);
-    }
+  // 3. Update scan attempt status to 'approved' and progress_applied to true
+  try {
+    await supabase
+      .from("scan_attempts")
+      .update({
+        is_correct: true,
+        status: "approved",
+        progress_applied: true
+      })
+      .eq("team_id", teamId)
+      .eq("step_no", currentStep);
+  } catch (attemptErr) {
+    console.warn("Scan attempt update warning (non-fatal):", attemptErr);
   }
 
   return {
