@@ -280,64 +280,53 @@ export const getUserTeam = async (user) => {
 
   const rollNo = user.rollNo ? user.rollNo.trim().toUpperCase() : null;
   const email = user.email ? user.email.trim().toLowerCase() : null;
-  const irisId = user.irisId ? String(user.irisId) : null;
+  const irisId = user.irisId ? String(user.irisId).trim() : null;
 
   let team = null;
 
-  // 1. Check if user is a Leader
-  if (irisId || rollNo) {
-    let query = supabase
+  // 1. Check if user is a Leader (by leader_iris_id OR leader_roll_no)
+  const leaderConditions = [];
+  if (irisId) leaderConditions.push(`leader_iris_id.eq.${irisId}`);
+  if (rollNo) leaderConditions.push(`leader_roll_no.eq.${rollNo}`);
+
+  if (leaderConditions.length > 0) {
+    const { data: leaderTeams, error } = await supabase
       .from("teams")
-      .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at");
-
-    if (irisId) {
-      query = query.eq("leader_iris_id", irisId);
-    } else {
-      query = query.eq("leader_roll_no", rollNo);
-    }
-
-    const { data: leaderTeam, error } = await query.maybeSingle();
+      .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at")
+      .or(leaderConditions.join(","));
 
     if (error) {
       console.error("Error finding leader team:", error);
-    } else if (leaderTeam) {
-      team = { ...leaderTeam, role: "leader" };
+    } else if (leaderTeams && leaderTeams.length > 0) {
+      team = { ...leaderTeams[0], role: "leader" };
     }
   }
 
-  // 2. If not a leader, check if user is a Member
+  // 2. If not found by leader fields, check if user is in team_members (by roll_no OR email)
   if (!team && (rollNo || email)) {
-    let memberMatch = null;
+    const memberConditions = [];
+    if (rollNo) memberConditions.push(`roll_no.eq.${rollNo}`);
+    if (email) memberConditions.push(`normalized_email.eq.${email}`);
 
-    if (rollNo) {
-      const { data } = await supabase
+    if (memberConditions.length > 0) {
+      const { data: memberMatches } = await supabase
         .from("team_members")
-        .select("team_id")
-        .eq("roll_no", rollNo)
-        .maybeSingle();
-      memberMatch = data;
-    }
+        .select("team_id, role")
+        .or(memberConditions.join(","));
 
-    if (!memberMatch && email) {
-      const { data } = await supabase
-        .from("team_members")
-        .select("team_id")
-        .eq("normalized_email", email)
-        .maybeSingle();
-      memberMatch = data;
-    }
+      if (memberMatches && memberMatches.length > 0) {
+        const memberMatch = memberMatches[0];
+        const { data: memberTeam, error } = await supabase
+          .from("teams")
+          .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at")
+          .eq("id", memberMatch.team_id)
+          .maybeSingle();
 
-    if (memberMatch) {
-      const { data: memberTeam, error } = await supabase
-        .from("teams")
-        .select("id, team_name, leader_iris_id, leader_roll_no, status, created_at")
-        .eq("id", memberMatch.team_id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error finding member team:", error);
-      } else if (memberTeam) {
-        team = { ...memberTeam, role: "member" };
+        if (error) {
+          console.error("Error finding member team:", error);
+        } else if (memberTeam) {
+          team = { ...memberTeam, role: memberMatch.role || "member" };
+        }
       }
     }
   }

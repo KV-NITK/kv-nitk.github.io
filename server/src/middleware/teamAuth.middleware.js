@@ -50,6 +50,20 @@ export const requireTeamAuth = async (req, res, next) => {
           req.team = {
             id: userTeam.id,
           };
+
+          // Issue team_session_id cookie so subsequent calls hit team session directly
+          try {
+            const { sessionId: newTeamSessionId } = await createSession(userTeam.id, "team");
+            res.cookie("team_session_id", newTeamSessionId, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: 24 * 60 * 60 * 1000,
+            });
+          } catch (e) {
+            console.error("Failed to create team session cookie during fallback:", e);
+          }
+
           return next();
         }
       }
