@@ -133,6 +133,9 @@ export default function GameDashboard() {
   const currentStep = gameState?.currentStep;
   const currentClue = currentStep?.clue;
   const currentStepNumber = team?.currentStep ?? currentStep?.stepNo ?? 0;
+  const revealedLocations = Array.isArray(gameState?.revealedLocations)
+    ? gameState.revealedLocations
+    : [];
   const isCompleted = gameState?.completed || team?.status === "completed";
 
   const TOTAL_LOCATIONS = 8;
