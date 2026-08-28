@@ -134,10 +134,6 @@ export default function GameDashboard() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const html5QrCodeRef = useRef(null);
 
-  // Mythology Easter-egg reveal toast
-  const [eggToast, setEggToast] = useState(null); // { emoji, title, message }
-  const announcedEggsRef = useRef(new Set());
-
   const mapContainerRef = useRef(null);
   const fitZoomRef = useRef(1);
   const eaglePathRef = useRef(null);
@@ -293,24 +289,6 @@ export default function GameDashboard() {
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
   }, [eaglePatrolPathD]);
-
-  // Announce each mythology Easter egg the first time its reveal threshold is crossed.
-  useEffect(() => {
-    if (!gameState) return;
-    const step = currentStepNumber;
-    const reveals = [
-      { id: "samudra", threshold: 1, emoji: "🌊", title: "Samudra Manthana", message: "The ocean stirs — ancient waters begin to churn." },
-      { id: "parijata", threshold: 3, emoji: "🌸", title: "Parijata Flower", message: "A celestial bloom is sighted deep in the forest." },
-      { id: "yakshagana", threshold: 5, emoji: "🎭", title: "Yakshagana Mask", message: "A silent guardian watches from the city's heart." },
-    ];
-    reveals.forEach(({ id, threshold, emoji, title, message }) => {
-      if (step >= threshold && !announcedEggsRef.current.has(id)) {
-        announcedEggsRef.current.add(id);
-        setEggToast({ emoji, title, message });
-        setTimeout(() => setEggToast(null), 5500);
-      }
-    });
-  }, [currentStepNumber]);
 
   // ==========================================
   // Map Panning and Zooming Events
@@ -711,7 +689,7 @@ export default function GameDashboard() {
                 </div>
 
                 {/* Latest Clue Card */}
-                <div className="relative p-4 border-2 border-[#8b5a2b]/50 bg-pamphlet bg-cover text-ink rounded-sm shadow-md flex flex-col justify-between">
+                <div className="relative p-4 border-2 border-[#8b5a2b]/40 bg-[#fefbf3] text-ink rounded-sm shadow-md flex flex-col justify-between">
                   <div>
                     <h4 className="font-serif text-sm font-bold tracking-widest text-[#8b261b] uppercase border-b border-[#7a4823]/20 pb-1.5 mb-3 flex justify-between items-center">
                       <span>🎯 LATEST CLUE — STEP {currentStepNumber}</span>
@@ -724,11 +702,11 @@ export default function GameDashboard() {
                     
                     <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-3">
                       {currentClue?.imageUrl ? (
-                        <div className="relative border-2 border-[#7a4823]/40 rounded-sm overflow-hidden bg-black/5 p-1 shadow-inner">
+                        <div className="relative rounded-sm overflow-hidden p-0.5">
                           <img
                             src={currentClue.imageUrl}
                             alt={`Current Clue Step ${currentStepNumber}`}
-                            className="w-full max-h-72 object-contain rounded-sm shadow-sm"
+                            className="w-full max-h-80 object-contain rounded-sm shadow-sm"
                           />
                         </div>
                       ) : (
