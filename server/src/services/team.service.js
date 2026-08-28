@@ -508,85 +508,93 @@ export const fetchTeamGameState = async (teamId) => {
     throw new Error("Team not found");
   }
 
+  const stepNo = Math.max(1, team.current_step_no || 1);
+
   if (!team.path_id) {
     return {
       success: true,
       gameStarted: false,
+      team: {
+        id: team.id,
+        teamName: team.team_name,
+        score: team.score || 0,
+        currentStep: stepNo,
+        pathId: null,
+        status: team.status
+      },
       message: "Path has not been assigned yet"
     };
-  }
-
-  if (team.current_step_no === null || team.current_step_no === undefined) {
-    throw new Error("Team current step is not configured");
   }
 
   const { data: pathStep, error: pathStepError } = await supabase
     .from("path_steps")
     .select("step_no, clue_id")
     .eq("path_id", team.path_id)
-    .eq("step_no", team.current_step_no)
+    .eq("step_no", stepNo)
     .maybeSingle();
 
-  if (pathStepError) {
-    console.error("Fetch path step error:", pathStepError);
-    throw new Error("Failed to fetch current path step");
+  if (pathStepError || !pathStep) {
+    console.error("Fetch path step error or missing step:", pathStepError, "stepNo:", stepNo, "path_id:", team.path_id);
+    return {
+      success: true,
+      gameStarted: true,
+      team: {
+        id: team.id,
+        teamName: team.team_name,
+        score: team.score || 0,
+        currentStep: stepNo,
+        pathId: team.path_id,
+        status: team.status
+      },
+      currentStep: {
+        stepNo: stepNo,
+        clue: null,
+        location: null
+      },
+      message: "Path step details are currently being updated."
+    };
   }
 
-  if (!pathStep) {
-    throw new Error("Current path step not found");
-  }
-
-  const { data: clue, error: clueError } = await supabase
+  const { data: clue } = await supabase
     .from("clues")
     .select("clue_id, clue_image_url, variant, location_id")
     .eq("clue_id", pathStep.clue_id)
     .maybeSingle();
 
-  if (clueError) {
-    console.error("Fetch clue error:", clueError);
-    throw new Error("Failed to fetch current clue");
-  }
+  const clueData = clue || null;
 
-  if (!clue) {
-    throw new Error("Current clue not found");
-  }
-
-  const { data: location, error: locationError } = await supabase
-    .from("locations")
-    .select("location_id, name")
-    .eq("location_id", clue.location_id)
-    .maybeSingle();
-
-  if (locationError) {
-    console.error("Fetch location error:", locationError);
-    throw new Error("Failed to fetch expected location");
-  }
-
-  if (!location) {
-    throw new Error("Expected location not found");
+  let locationData = null;
+  if (clueData && clueData.location_id) {
+    const { data: location } = await supabase
+      .from("locations")
+      .select("location_id, name")
+      .eq("location_id", clueData.location_id)
+      .maybeSingle();
+    locationData = location;
   }
 
   return {
     success: true,
+    gameStarted: true,
     team: {
       id: team.id,
       teamName: team.team_name,
-      score: team.score,
-      currentStep: team.current_step_no,
+      score: team.score || 0,
+      currentStep: stepNo,
       pathId: team.path_id,
       status: team.status
     },
     currentStep: {
       stepNo: pathStep.step_no,
-      clue: {
-        id: clue.clue_id,
-        imageUrl: clue.clue_image_url || null,
-        variant: clue.variant
-      },
-      location: {
-        id: location.location_id,
-        name: location.name
-      }
+      clue: clueData ? {
+        id: clueData.clue_id,
+        imageUrl: clueData.clue_image_url || null,
+        variant: clueData.variant
+      } : null,
+      location: locationData ? {
+        id: locationData.location_id,
+        name: locationData.name
+      } : null
     }
   };
 };

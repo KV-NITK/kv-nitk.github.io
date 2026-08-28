@@ -167,11 +167,7 @@ export default function GameDashboard() {
         return false;
       }
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch game state");
-      }
-
-      if (data.success || data.gameStarted === false) {
+      if (data.team || data.success) {
         setGameState(data);
         setUser({
           name: data.team?.teamName || data.team?.name || "Team",
@@ -179,7 +175,13 @@ export default function GameDashboard() {
         return true;
       }
 
-      throw new Error(data.message || "Invalid game state");
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch game state");
+      }
+
+      setGameState(data);
+      setUser({ name: "Team" });
+      return true;
     } catch (error) {
       console.error("Failed to fetch game state:", error);
       return false;
