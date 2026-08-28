@@ -50,11 +50,9 @@ jobs:
     needs: test-and-verify
     if: (github.ref == 'refs/heads/master' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
-    defaults:
-      run:
-        shell: /bin/bash --login -e {0}
     steps:
       - name: Deploy via deploy.sh
         run: |
+          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
           cd /home/kannadavedike/kv-nitk.github.io
           bash deploy.sh
