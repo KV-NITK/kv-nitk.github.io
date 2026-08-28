@@ -1,10 +1,12 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (PAUSED)
 
+# Automatic CI/CD pipeline triggers are paused per administrator request.
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  # Disabled automated triggers on push/PR
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
   workflow_dispatch:
 
 permissions:
