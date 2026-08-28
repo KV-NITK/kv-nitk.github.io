@@ -47,7 +47,7 @@ export default function HH2026QrScanner() {
   };
 
   useEffect(() => {
-    // We only want to start the scanner if there is no scanned link
+    // Start the scanner only when no submission result is being shown.
     if (scanResult) {
        if (scannerState.current.html5QrCode && scannerState.current.html5QrCode.isScanning) {
           scannerState.current.html5QrCode.stop().catch(console.error);
@@ -73,7 +73,7 @@ export default function HH2026QrScanner() {
         }
       },
       (decodedText) => {
-        setScannedLink(decodedText);
+        void submitScan(decodedText);
         if (html5QrCode.isScanning) {
           html5QrCode.stop().catch(console.error);
         }
@@ -96,7 +96,7 @@ export default function HH2026QrScanner() {
   }, [scanResult]);
 
   const handleReset = () => {
-    setScannedLink(null);
+    setScanResult(null);
   };
 
   return (
