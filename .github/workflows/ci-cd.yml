@@ -53,7 +53,8 @@ jobs:
     steps:
       - name: Deploy via deploy.sh
         run: |
-          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-          hash -r
+          mkdir -p /home/kannadavedike/actions-runner
+          ln -sf /usr/bin/sudo /home/kannadavedike/actions-runner/sudo 2>/dev/null || true
+          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
           cd /home/kannadavedike/kv-nitk.github.io
           bash deploy.sh
