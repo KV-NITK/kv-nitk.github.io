@@ -148,6 +148,13 @@ export default function GameDashboard() {
     : [];
   const isCompleted = gameState?.completed || team?.status === "completed";
 
+  const TOTAL_LOCATIONS = 8;
+  const solvedCount = isCompleted 
+    ? TOTAL_LOCATIONS 
+    : (gameState?.solvedSteps?.length ?? Math.max(0, (currentStepNumber || 1) - 1));
+  const totalSteps = TOTAL_LOCATIONS;
+  const progressRatio = Math.min(100, Math.round((solvedCount / TOTAL_LOCATIONS) * 100));
+
   // The backend is the source of truth for team identity, clue assignment,
   // score, and progression.
   const fetchGameState = async () => {
@@ -702,8 +709,8 @@ export default function GameDashboard() {
                   <span className="flex items-center gap-2">
                     <Compass className="size-5 animate-spin-slow text-[#7a4823]" /> Active Hunt Progress
                   </span>
-                  <span className="text-xs bg-[#7a4823] text-[#fffdf9] px-2 py-0.5 rounded-sm">
-                    STEP {currentStepNumber} {totalSteps ? `/ ${totalSteps}` : ""}
+                  <span className="text-xs bg-[#7a4823] text-[#fffdf9] px-2.5 py-1 rounded-sm font-bold">
+                    SOLVED: {solvedCount} / {TOTAL_LOCATIONS}
                   </span>
                 </h3>
 
@@ -746,7 +753,7 @@ export default function GameDashboard() {
                 <div className="mb-6 bg-wood/10 p-3 border border-[#7a4823]/15 rounded-sm">
                   <div className="flex justify-between items-center text-xs font-serif font-bold text-[#4a2206] tracking-wider mb-2">
                     <span>PROGRESS</span>
-                    <span>{totalSteps ? `STEP ${currentStepNumber} / ${totalSteps}` : `STEP ${currentStepNumber}`}</span>
+                    <span>{solvedCount} / {TOTAL_LOCATIONS} LOCATIONS SOLVED</span>
                   </div>
                   <div className="w-full h-3.5 bg-[#2b1810]/20 rounded-full overflow-hidden p-0.5 border border-[#8b5a2b]/30">
                     <div 
@@ -765,8 +772,8 @@ export default function GameDashboard() {
                   </div>
                   <div className="bg-[#2b1810]/5 border border-[#7a4823]/20 p-3 text-center rounded-sm">
                     <Navigation className="size-5 mx-auto mb-1 text-emerald-600" />
-                    <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Solved Stops</span>
-                    <span className="font-serif text-lg font-bold text-[#4a2206]">{gameState?.solvedSteps?.length || 0} stops</span>
+                    <span className="block text-[10px] font-serif tracking-wider text-ink-muted uppercase">Solved Locations</span>
+                    <span className="font-serif text-lg font-bold text-[#4a2206]">{solvedCount} / {TOTAL_LOCATIONS}</span>
                   </div>
                 </div>
 
@@ -814,50 +821,58 @@ export default function GameDashboard() {
             {/* SOLVED CLUES & TIMELINE (BOTTOM) */}
             {gameState?.solvedSteps && gameState.solvedSteps.length > 0 && (
               <div className="border-2 border-[#8b5a2b]/40 bg-[#f7eed6] p-5 shadow-lg text-ink">
-                <h3 className="font-serif text-base font-bold text-[#4a2206] uppercase tracking-wide border-b border-[#7a4823]/30 pb-2 mb-4 flex items-center gap-2">
-                  <Trophy className="size-5 text-amber-600" /> Solved Clues & History ({gameState.solvedSteps.length})
+                <h3 className="font-serif text-base font-bold text-[#4a2206] uppercase tracking-wide border-b border-[#7a4823]/30 pb-2 mb-6 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Trophy className="size-5 text-amber-600" /> Solved Clues & History
+                  </span>
+                  <span className="text-xs bg-emerald-800 text-[#f7eed6] px-2.5 py-1 rounded-sm font-bold">
+                    {gameState.solvedSteps.length} / {TOTAL_LOCATIONS} SOLVED
+                  </span>
                 </h3>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-6">
                   {[...gameState.solvedSteps].reverse().map((solved) => (
                     <div 
                       key={solved.stepNo}
-                      className="border border-emerald-800/30 bg-emerald-950/5 p-3.5 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm hover:border-emerald-700/50 transition-all"
+                      className="border border-emerald-800/40 bg-[#f7eed6] rounded-sm overflow-hidden shadow-md hover:shadow-lg transition-all"
                     >
-                      <div className="flex items-start gap-3">
-                        {solved.imageUrl ? (
+                      {/* Big Full-Width Clue Image */}
+                      {solved.imageUrl ? (
+                        <div className="w-full relative bg-stone-950 overflow-hidden">
                           <img 
                             src={solved.imageUrl} 
                             alt={`Solved Step ${solved.stepNo}`} 
-                            className="size-14 object-cover rounded-sm border border-emerald-800/40 shadow-sm shrink-0"
+                            className="w-full max-h-[400px] object-contain mx-auto bg-black/40"
                           />
-                        ) : (
-                          <div className="size-14 bg-emerald-800/10 border border-emerald-800/30 rounded-sm flex items-center justify-center text-emerald-800 font-bold text-xs shrink-0">
-                            Step {solved.stepNo}
+                          <div className="absolute top-3 left-3 bg-emerald-800 text-[#f7eed6] text-xs font-bold font-serif px-3 py-1 rounded-sm uppercase tracking-wider flex items-center gap-1.5 shadow-md border border-emerald-600">
+                            <CheckCircle className="size-3.5 text-emerald-200" /> Step {solved.stepNo} — Solved
                           </div>
-                        )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-32 bg-emerald-950/10 border-b border-emerald-800/20 flex items-center justify-center text-emerald-900 font-bold font-serif text-sm">
+                          Step {solved.stepNo} Image
+                        </div>
+                      )}
+
+                      {/* Content details below image */}
+                      <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f7eed6]">
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="bg-emerald-800 text-[#f7eed6] text-[10px] font-bold font-serif px-2 py-0.5 rounded-sm uppercase tracking-wider flex items-center gap-1">
-                              <CheckCircle className="size-3 text-emerald-200" /> Step {solved.stepNo} — Solved
-                            </span>
-                          </div>
-                          <h5 className="font-serif font-bold text-sm text-[#2b1810] flex items-center gap-1.5">
-                            <MapPin className="size-3.5 text-emerald-800 shrink-0" />
+                          <h5 className="font-serif font-bold text-base text-[#2b1810] flex items-center gap-2">
+                            <MapPin className="size-4 text-emerald-800 shrink-0" />
                             {solved.locationName || `Location ${solved.stepNo}`}
                           </h5>
                           {solved.scannedAt && (
-                            <p className="text-[11px] font-serif text-emerald-900/80 font-medium mt-0.5 flex items-center gap-1">
+                            <p className="text-xs font-serif text-emerald-950/80 font-medium mt-1 flex items-center gap-1">
                               <span className="opacity-75">Scanned at:</span> {new Date(solved.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
                         </div>
-                      </div>
 
-                      <div className="text-right self-end sm:self-center">
-                        <span className="text-xs font-serif font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-sm border border-emerald-300 inline-block">
-                          Completed
-                        </span>
+                        <div className="shrink-0">
+                          <span className="text-xs font-serif font-bold text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-sm border border-emerald-300 inline-flex items-center gap-1.5 shadow-sm">
+                            <CheckCircle className="size-3.5 text-emerald-700" /> Solved ({solved.stepNo} / {TOTAL_LOCATIONS})
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}

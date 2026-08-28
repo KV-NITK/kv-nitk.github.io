@@ -160,49 +160,93 @@ export const verifyScan = async (teamId, scannedQrCode) => {
   // Coordinator confirmation will handle that later.
   // --------------------------------------------------
 
-  const {
-    data: scanAttempt,
-    error: scanError,
-  } = await supabase
+  // Check if a scan attempt already exists for this team and current step
+  const { data: existingAttempt } = await supabase
     .from("scan_attempts")
-    .insert({
-      team_id: team.id,
-      step_no: team.current_step_no,
-      scanned_qr_code: cleanQrCode,
-      scanned_location_id: scannedLocation
-        ? scannedLocation.location_id
-        : null,
-      expected_location_id:
-        expectedLocation.location_id,
-      is_correct: isCorrect,
-      points: 1000,
-      path_step_id: pathStep.path_step_id,
-      status: "scanned",
-      progress_applied: false,
-    })
     .select(`
       "scan-attempts_id",
       team_id,
-      step_no,
-      scanned_qr_code,
-      scanned_location_id,
-      expected_location_id,
-      is_correct,
-      points,
-      scanned_at,
-      path_step_id,
-      status,
-      progress_applied
+      step_no
     `)
-    .single();
+    .eq("team_id", team.id)
+    .eq("step_no", team.current_step_no)
+    .maybeSingle();
 
-  if (scanError) {
-    console.error(
-      "Create scan attempt error:",
-      scanError
-    );
+  let scanAttempt;
 
-    throw new Error("Failed to store scan attempt");
+  if (existingAttempt) {
+    // Update existing row for this step instead of creating a duplicate row
+    const { data: updatedAttempt, error: updateErr } = await supabase
+      .from("scan_attempts")
+      .update({
+        scanned_qr_code: cleanQrCode,
+        scanned_location_id: scannedLocation ? scannedLocation.location_id : null,
+        expected_location_id: expectedLocation.location_id,
+        is_correct: isCorrect,
+        scanned_at: new Date().toISOString(),
+        status: "scanned",
+        progress_applied: false
+      })
+      .eq("team_id", team.id)
+      .eq("step_no", team.current_step_no)
+      .select(`
+        "scan-attempts_id",
+        team_id,
+        step_no,
+        scanned_qr_code,
+        scanned_location_id,
+        expected_location_id,
+        is_correct,
+        points,
+        scanned_at,
+        path_step_id,
+        status,
+        progress_applied
+      `)
+      .single();
+
+    if (updateErr) {
+      console.error("Update scan attempt error:", updateErr);
+      throw new Error("Failed to update scan attempt");
+    }
+    scanAttempt = updatedAttempt;
+  } else {
+    // Insert new row if first scan for this step
+    const { data: newAttempt, error: insertErr } = await supabase
+      .from("scan_attempts")
+      .insert({
+        team_id: team.id,
+        step_no: team.current_step_no,
+        scanned_qr_code: cleanQrCode,
+        scanned_location_id: scannedLocation ? scannedLocation.location_id : null,
+        expected_location_id: expectedLocation.location_id,
+        is_correct: isCorrect,
+        points: 1000,
+        path_step_id: pathStep.path_step_id,
+        status: "scanned",
+        progress_applied: false,
+      })
+      .select(`
+        "scan-attempts_id",
+        team_id,
+        step_no,
+        scanned_qr_code,
+        scanned_location_id,
+        expected_location_id,
+        is_correct,
+        points,
+        scanned_at,
+        path_step_id,
+        status,
+        progress_applied
+      `)
+      .single();
+
+    if (insertErr) {
+      console.error("Create scan attempt error:", insertErr);
+      throw new Error("Failed to store scan attempt");
+    }
+    scanAttempt = newAttempt;
   }
 
   // --------------------------------------------------
