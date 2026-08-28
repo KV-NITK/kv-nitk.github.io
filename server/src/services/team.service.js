@@ -267,6 +267,30 @@ export const createTeam = async ({
     }
   }
 
+  // Auto-assign a random path to the team
+  if (teamId) {
+    try {
+      const { data: pathSteps, error: pathError } = await supabase
+        .from("path_steps")
+        .select("path_id");
+
+      if (!pathError && pathSteps && pathSteps.length > 0) {
+        // Extract unique path IDs
+        const uniquePaths = [...new Set(pathSteps.map(p => p.path_id))];
+        const randomPathId = uniquePaths[Math.floor(Math.random() * uniquePaths.length)];
+
+        await supabase
+          .from("teams")
+          .update({ path_id: randomPathId })
+          .eq("id", teamId);
+          
+        console.log(`Auto-assigned path ${randomPathId} to team ${teamId}`);
+      }
+    } catch (pathAssignErr) {
+      console.error("Failed to auto-assign path during registration:", pathAssignErr);
+    }
+  }
+
   return teamId;
 };
 
