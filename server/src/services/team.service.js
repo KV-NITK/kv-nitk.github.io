@@ -267,24 +267,23 @@ export const createTeam = async ({
     }
   }
 
-  // Auto-assign a random valid path to the team
+  // Auto-assign a random path to the team
   if (teamId) {
     try {
-      const { data: paths, error: pathError } = await supabase
-        .from("paths")
-        .select("path_id")
-        .not("name", "ilike", "%TEST%");
+      const { data: pathSteps, error: pathError } = await supabase
+        .from("path_steps")
+        .select("path_id");
 
-      if (!pathError && paths && paths.length > 0) {
+      if (!pathError && pathSteps && pathSteps.length > 0) {
         // Extract unique path IDs
-        const uniquePaths = [...new Set(paths.map(p => p.path_id))];
+        const uniquePaths = [...new Set(pathSteps.map(p => p.path_id))];
         const randomPathId = uniquePaths[Math.floor(Math.random() * uniquePaths.length)];
 
         await supabase
           .from("teams")
           .update({ path_id: randomPathId })
           .eq("id", teamId);
-          
+
         console.log(`Auto-assigned path ${randomPathId} to team ${teamId}`);
       }
     } catch (pathAssignErr) {
@@ -384,14 +383,14 @@ export const getUserTeam = async (user) => {
   const leaderName = leaderMember
     ? leaderMember.name
     : team.role === "leader" && user
-    ? user.name
-    : "";
+      ? user.name
+      : "";
 
   const leaderEmail = leaderMember
     ? leaderMember.email
     : team.role === "leader" && user
-    ? user.email
-    : "";
+      ? user.email
+      : "";
 
   return {
     id: team.id,
@@ -544,7 +543,7 @@ export const getLiveLeaderboard = async () => {
 
   return (teams || []).map((t) => {
     const leaderMember = (t.team_members || []).find((m) => m.role === "leader");
-    
+
     return {
       id: t.id,
       teamName: t.team_name,

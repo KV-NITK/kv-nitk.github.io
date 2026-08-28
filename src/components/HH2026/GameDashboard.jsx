@@ -819,7 +819,7 @@ export default function GameDashboard() {
                   
                   {isCompleted ? (
                     <div className="mt-4 bg-emerald-100 border border-emerald-400 p-3 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
-                      <CheckCircle className="size-4 text-emerald-800" /> Challenge Cleared! All Clues Decoded!
+                      <CheckCircle className="size-4 text-emerald-800" /> Round 1 Completed!
                     </div>
                   ) : (
                     <button
