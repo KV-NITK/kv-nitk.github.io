@@ -249,7 +249,60 @@ export const verifyScan = async (teamId, scannedQrCode) => {
   }
 
   // --------------------------------------------------
-  // 8. Return verification result
+  // 8. If WRONG scan, immediately apply -50 penalty
+  //    (no coordinator approval needed for penalties)
+  // --------------------------------------------------
+
+  if (!isCorrect) {
+    const newScore = (team.score || 0) - 50;
+
+    await supabase
+      .from("teams")
+      .update({
+        score: newScore,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", team.id);
+
+    // Mark the scan attempt with the penalty
+    await supabase
+      .from("scan_attempts")
+      .update({
+        points: -50,
+        status: "penalty_applied",
+        progress_applied: true
+      })
+      .eq("team_id", team.id)
+      .eq("step_no", team.current_step_no);
+
+    return {
+      success: true,
+
+      scan: {
+        id: scanAttempt["scan-attempts_id"],
+        isCorrect: false,
+        stepNo: team.current_step_no,
+
+        scannedLocation: scannedLocation
+          ? { id: scannedLocation.location_id, name: scannedLocation.name }
+          : null,
+
+        expectedLocation: {
+          id: expectedLocation.location_id,
+          name: expectedLocation.name,
+        },
+
+        points: -50,
+        currentScore: newScore,
+        currentStep: team.current_step_no,
+      },
+
+      message: "Wrong QR code! −50 penalty applied.",
+    };
+  }
+
+  // --------------------------------------------------
+  // 9. Return verification result (correct scan — awaits coordinator approval)
   // --------------------------------------------------
 
   return {
@@ -282,15 +335,11 @@ export const verifyScan = async (teamId, scannedQrCode) => {
 
       points: scanAttempt.points,
 
-      // Current state is returned only.
-      // It is NOT modified.
       currentScore: team.score,
       currentStep: team.current_step_no,
     },
 
-    message: isCorrect
-      ? "Correct QR code"
-      : "Wrong QR code",
+    message: "Correct QR code! Coordinator approval required.",
   };
 };
 
@@ -319,21 +368,8 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
   const currentStep = Math.max(1, team.current_step_no || 1);
   const newStep = currentStep + 1;
 
-  // Look up the scan attempt to determine correct (+100) vs wrong (-50) scoring
-  let pointsDelta = 100; // default to correct
-  if (scanAttemptId) {
-    const { data: scanAttempt } = await supabase
-      .from("scan_attempts")
-      .select('"scan-attempts_id", is_correct, points')
-      .eq('"scan-attempts_id"', scanAttemptId)
-      .maybeSingle();
-
-    if (scanAttempt) {
-      pointsDelta = scanAttempt.is_correct ? 100 : -50;
-    }
-  }
-
-  const newScore = (team.score || 0) + pointsDelta;
+  // Only correct scans reach coordinator approval, so always +100
+  const newScore = (team.score || 0) + 100;
 
   // 2. Update team progression
   const { data: updatedTeam, error: updateError } = await supabase
@@ -359,7 +395,7 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
       .update({
         status: "approved",
         progress_applied: true,
-        points: pointsDelta
+        points: 100
       })
       .eq("team_id", teamId)
       .eq("step_no", currentStep);
