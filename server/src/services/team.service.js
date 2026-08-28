@@ -507,9 +507,9 @@ export const getLiveLeaderboard = async () => {
         role
       )
     `)
-    // We fetch all teams and sort them here since Supabase JS client doesn't support complex secondary sorts across multiple conditions easily, or we can just sort in DB.
-    // Actually, order by score DESC, then updated_at ASC
+    // Order by score DESC, then current_step_no DESC, then updated_at ASC
     .order("score", { ascending: false })
+    .order("current_step_no", { ascending: false })
     .order("updated_at", { ascending: true });
 
   if (error) {

@@ -62,7 +62,7 @@ export default function HH2026Leaderboard() {
       <SiteHeader />
       
       <main className="relative min-h-screen bg-parchment py-24 overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-5xl px-5">
+        <div className="relative z-10 mx-auto w-full max-w-[95%] xl:max-w-7xl px-2 sm:px-5">
           <div className="mb-12 text-center">
             <h1 className="text-carved text-5xl sm:text-7xl font-bold mb-4 uppercase">Leaderboard</h1>
             <p className="text-muted-foreground font-serif tracking-[0.2em] uppercase text-sm">
@@ -70,7 +70,7 @@ export default function HH2026Leaderboard() {
             </p>
           </div>
           
-          <div className="bg-pamphlet-alt p-8 sm:p-12 md:px-20 md:py-16 shadow-2xl relative mx-auto min-h-[400px]">
+          <div className="bg-pamphlet-alt p-4 sm:p-8 md:px-12 md:py-12 shadow-2xl relative mx-auto min-h-[400px]">
             {!isAuthenticated ? (
               <div className="max-w-md mx-auto text-center py-10">
                 <h2 className="font-serif text-2xl font-black uppercase text-[#2b1810] mb-6">
