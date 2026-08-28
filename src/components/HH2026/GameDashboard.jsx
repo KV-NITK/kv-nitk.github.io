@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import MetaData from "../MetaData/MetaData.jsx";
 import { SiteHeader } from "./site-header";
-import { Plaque } from "./ornaments";
 import API_URL from "../../api/api";
-import { Html5Qrcode } from "html5-qrcode";
 import { 
   Trophy, 
   MapPin, 
   Compass, 
   Navigation, 
-  QrCode, 
   Play, 
-  AlertCircle,
   CheckCircle,
   Camera
 } from "lucide-react";
@@ -136,19 +132,13 @@ export default function GameDashboard() {
   const team = gameState?.team;
   const currentStep = gameState?.currentStep;
   const currentClue = currentStep?.clue;
-  const currentLocation = currentStep?.location;
   const currentStepNumber = team?.currentStep ?? currentStep?.stepNo ?? 0;
-  const revealedLocations = Array.isArray(gameState?.revealedLocations)
-    ? gameState.revealedLocations
-    : [];
   const isCompleted = gameState?.completed || team?.status === "completed";
 
   const TOTAL_LOCATIONS = 8;
   const solvedCount = isCompleted 
     ? TOTAL_LOCATIONS 
     : (gameState?.solvedSteps?.length ?? Math.max(0, (currentStepNumber || 1) - 1));
-  const totalSteps = TOTAL_LOCATIONS;
-  const progressRatio = Math.min(100, Math.round((solvedCount / TOTAL_LOCATIONS) * 100));
 
   // The backend is the source of truth for team identity, clue assignment,
   // score, and progression.
@@ -628,9 +618,9 @@ export default function GameDashboard() {
   }
 
   // Mythology Easter-egg reveal pacing, spread evenly across the full hunt arc.
-  const totalSteps = Number.isFinite(gameState?.totalSteps) ? gameState.totalSteps : null;
-  const progressRatio = totalSteps ? Math.min(100, (currentStepNumber / totalSteps) * 100) : 0;
-  const samudraOpacity = totalSteps ? Math.min(0.95, Math.max(0, (currentStepNumber - 1) / totalSteps)) : 0;
+  const totalSteps = TOTAL_LOCATIONS;
+  const progressRatio = Math.min(100, Math.round((solvedCount / TOTAL_LOCATIONS) * 100));
+  const samudraOpacity = Math.min(0.95, Math.max(0, (currentStepNumber - 1) / TOTAL_LOCATIONS));
   const parijataOpacity = gameState && currentStepNumber >= 3 ? 0.9 : 0;
   const yakshaganaOpacity = gameState && currentStepNumber >= 5 ? 0.9 : 0;
 
