@@ -98,29 +98,8 @@ export const validateMemberDetails = (
 ) => {
   const leaderRoll = leaderRollNo ? leaderRollNo.trim().toUpperCase() : "";
 
-  if (leaderRoll && !/^26/.test(leaderRoll)) {
-    return {
-      valid: false,
-      message: "Squad leader roll number must start with 26",
-    };
-  }
+  // Roll number start checks bypassed
 
-  const emails = members
-    .map((member) => (member.email ? member.email.trim().toLowerCase() : ""))
-    .filter((e) => e.length > 0);
-
-  const rollNumbers = members.map((member) =>
-    member.rollNo ? member.rollNo.trim().toUpperCase() : ""
-  );
-
-  const invalidRoll = rollNumbers.find((roll) => !/^26/.test(roll));
-
-  if (invalidRoll) {
-    return {
-      valid: false,
-      message: "All member roll numbers must start with 26",
-    };
-  }
 
   // ----------------------------------------
   // Leader roll number cannot be a member

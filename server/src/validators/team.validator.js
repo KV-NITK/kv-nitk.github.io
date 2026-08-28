@@ -4,10 +4,7 @@ const rollNo = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(
-    /^26/,
-    "Roll number must start with 26"
-  );
+  .min(1, "Roll number is required");
 
 const memberSchema = z.object({
   name: z

@@ -202,22 +202,10 @@ const TeamRegistration = () => {
 
     const leaderRollNo = (user?.rollNo || user?.irisId || "").trim().toUpperCase();
 
-    if (!/^26/.test(leaderRollNo)) {
-      setMessage("Squad Leader roll number must start with 26.");
-      return;
-    }
-
     const allRollNumbers = [
       leaderRollNo,
       ...members.map((member) => member.rollNo.trim().toUpperCase()),
     ];
-
-    const invalidRollNo = allRollNumbers.find((roll) => !/^26/.test(roll));
-
-    if (invalidRollNo) {
-      setMessage("All squad members (including the leader) must have roll numbers starting with 26.");
-      return;
-    }
 
     if (new Set(allRollNumbers).size !== allRollNumbers.length) {
       setMessage("Duplicate roll numbers are not allowed.");
