@@ -13,8 +13,8 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const getCookieOptions = (maxAge) => ({
   httpOnly: true,
-  secure: true,
-  sameSite: "none",
+  secure: isProduction,
+  sameSite: "lax",
   ...(maxAge ? { maxAge } : {}),
 });
 
