@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import MetaData from "../MetaData/MetaData.jsx";
 import { SiteHeader } from "./site-header";
 import { Plaque } from "./ornaments";
@@ -10,14 +9,10 @@ import {
   MapPin, 
   Compass, 
   Navigation, 
-  RotateCcw, 
-  HelpCircle, 
   QrCode, 
   Play, 
   AlertCircle,
   CheckCircle,
-  XCircle,
-  User,
   Camera
 } from "lucide-react";
 
