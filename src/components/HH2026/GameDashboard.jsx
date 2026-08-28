@@ -621,19 +621,6 @@ export default function GameDashboard() {
           </div>
         )}
 
-        {/* Mythology Easter-egg Reveal Toast */}
-        {eggToast && (
-          <div className="absolute top-40 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md animate-float no-drag">
-            <div className="p-4 border-2 border-amber-700 shadow-[0_15px_30px_rgba(0,0,0,0.65)] rounded-sm flex items-start gap-3 bg-[#f7eed6] text-[#4a2206]">
-              <span className="text-xl leading-none">{eggToast.emoji}</span>
-              <div>
-                <h4 className="font-serif font-bold text-sm uppercase">{eggToast.title}</h4>
-                <p className="text-xs font-serif leading-relaxed mt-1">{eggToast.message}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Outer Dashboard layout container */}
         <div className="max-w-4xl mx-auto flex flex-col gap-6 w-full flex-grow items-stretch">
           
