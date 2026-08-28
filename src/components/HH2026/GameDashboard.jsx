@@ -506,24 +506,19 @@ export default function GameDashboard() {
       }
 
       if (response.ok && data.success) {
-        if (data.scan && data.scan.isCorrect) {
-          // Correct scan → coordinator must approve to advance
+        if (data.scan) {
+          // Both correct and wrong scans need coordinator approval
           setPendingApproval({
             scanId: data.scan.id,
-            locationName: data.scan.expectedLocation?.name || `Location ${currentStepNumber}`
+            locationName: data.scan.expectedLocation?.name || `Location ${currentStepNumber}`,
+            isCorrect: data.scan.isCorrect
           });
           setScanResult({
-            success: true,
-            message: "Correct Location! Coordinator, please click 'Approve & Advance'. (+100 pts)"
+            success: data.scan.isCorrect,
+            message: data.scan.isCorrect
+              ? "Correct Location! Coordinator, please approve. (+100 pts)"
+              : "Wrong Location! Coordinator, please approve penalty. (-50 pts)"
           });
-        } else if (data.scan && !data.scan.isCorrect) {
-          // Wrong scan → penalty already applied by backend, just show message
-          setScanResult({
-            success: false,
-            message: `Wrong Location! -50 penalty applied. Score: ${data.scan.currentScore ?? 0}`
-          });
-          // Refresh game state to reflect updated score
-          await fetchGameState();
         }
       } else {
         setScanResult({
@@ -712,26 +707,50 @@ export default function GameDashboard() {
 
                 {/* Coordinator Approval & Advance Confirmation Card */}
                 {pendingApproval && (
-                  <div className="border-2 border-emerald-700 bg-emerald-950/10 p-4 rounded-sm shadow-xl border-dashed mb-6 animate-fadeIn">
-                    <div className="flex items-center gap-2 text-emerald-900 border-b border-emerald-800/30 pb-2 mb-2">
-                      <CheckCircle className="size-5 text-emerald-700 shrink-0" />
+                  <div className={`border-2 p-4 rounded-sm shadow-xl border-dashed mb-6 animate-fadeIn ${
+                    pendingApproval.isCorrect
+                      ? "border-emerald-700 bg-emerald-950/10"
+                      : "border-red-700 bg-red-950/10"
+                  }`}>
+                    <div className={`flex items-center gap-2 border-b pb-2 mb-2 ${
+                      pendingApproval.isCorrect
+                        ? "text-emerald-900 border-emerald-800/30"
+                        : "text-red-900 border-red-800/30"
+                    }`}>
+                      {pendingApproval.isCorrect
+                        ? <CheckCircle className="size-5 text-emerald-700 shrink-0" />
+                        : <XCircle className="size-5 text-red-700 shrink-0" />
+                      }
                       <h4 className="font-serif font-bold text-sm uppercase tracking-wide">
                         Coordinator Approval Required
                       </h4>
                     </div>
                     
                     <p className="font-serif text-xs text-[#2b1810] mb-3 leading-relaxed">
-                      Location QR for <strong className="text-emerald-950 font-bold">{pendingApproval.locationName}</strong> verified! Approve to advance. <strong className="text-emerald-800">(+100 pts)</strong>
+                      {pendingApproval.isCorrect ? (
+                        <>Correct QR for <strong className="text-emerald-950 font-bold">{pendingApproval.locationName}</strong>. Approve to advance and award <strong className="text-emerald-800">+100 pts</strong>.</>
+                      ) : (
+                        <>Wrong QR scanned (expected <strong className="text-red-950 font-bold">{pendingApproval.locationName}</strong>). Approve to apply <strong className="text-red-700">-50 pts</strong> penalty. Step will not advance.</>
+                      )}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleCoordinatorAdvance}
                         disabled={advancing}
-                        className="flex-grow bg-emerald-800 hover:bg-emerald-900 text-[#f7eed6] py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-wider shadow-md rounded-sm cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className={`flex-grow py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-wider shadow-md rounded-sm cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+                          pendingApproval.isCorrect
+                            ? "bg-emerald-800 hover:bg-emerald-900 text-[#f7eed6]"
+                            : "bg-red-800 hover:bg-red-900 text-[#f7eed6]"
+                        }`}
                       >
                         <Play className="size-4 fill-current" />
-                        {advancing ? "Advancing Team..." : `Approve & Advance to Step ${currentStepNumber + 1}`}
+                        {advancing
+                          ? "Processing..."
+                          : pendingApproval.isCorrect
+                            ? `Approve & Advance to Step ${currentStepNumber + 1}`
+                            : "Approve Penalty (-50 pts)"
+                        }
                       </button>
 
                       <button

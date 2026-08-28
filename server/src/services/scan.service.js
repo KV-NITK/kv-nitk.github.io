@@ -249,60 +249,9 @@ export const verifyScan = async (teamId, scannedQrCode) => {
   }
 
   // --------------------------------------------------
-  // 8. If WRONG scan, immediately apply -50 penalty
-  //    (no coordinator approval needed for penalties)
-  // --------------------------------------------------
-
-  if (!isCorrect) {
-    const newScore = (team.score || 0) - 50;
-
-    await supabase
-      .from("teams")
-      .update({
-        score: newScore,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", team.id);
-
-    // Mark the scan attempt with the penalty
-    await supabase
-      .from("scan_attempts")
-      .update({
-        points: -50,
-        status: "penalty_applied",
-        progress_applied: true
-      })
-      .eq("team_id", team.id)
-      .eq("step_no", team.current_step_no);
-
-    return {
-      success: true,
-
-      scan: {
-        id: scanAttempt["scan-attempts_id"],
-        isCorrect: false,
-        stepNo: team.current_step_no,
-
-        scannedLocation: scannedLocation
-          ? { id: scannedLocation.location_id, name: scannedLocation.name }
-          : null,
-
-        expectedLocation: {
-          id: expectedLocation.location_id,
-          name: expectedLocation.name,
-        },
-
-        points: -50,
-        currentScore: newScore,
-        currentStep: team.current_step_no,
-      },
-
-      message: "Wrong QR code! -50 penalty applied.",
-    };
-  }
-
-  // --------------------------------------------------
-  // 9. Return verification result (correct scan — awaits coordinator approval)
+  // 8. Return verification result
+  //    Both correct and wrong scans await coordinator approval.
+  //    No score changes happen here.
   // --------------------------------------------------
 
   return {
@@ -310,16 +259,11 @@ export const verifyScan = async (teamId, scannedQrCode) => {
 
     scan: {
       id: scanAttempt["scan-attempts_id"],
-
       isCorrect,
-
       stepNo: team.current_step_no,
 
       scannedLocation: scannedLocation
-        ? {
-            id: scannedLocation.location_id,
-            name: scannedLocation.name,
-          }
+        ? { id: scannedLocation.location_id, name: scannedLocation.name }
         : null,
 
       expectedLocation: {
@@ -333,13 +277,13 @@ export const verifyScan = async (teamId, scannedQrCode) => {
         variant: clue.variant,
       },
 
-      points: scanAttempt.points,
-
       currentScore: team.score,
       currentStep: team.current_step_no,
     },
 
-    message: "Correct QR code! Coordinator approval required.",
+    message: isCorrect
+      ? "Correct location! Coordinator approval required."
+      : "Wrong location. Coordinator approval required for penalty.",
   };
 };
 
@@ -366,19 +310,37 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
   }
 
   const currentStep = Math.max(1, team.current_step_no || 1);
-  const newStep = currentStep + 1;
 
-  // Only correct scans reach coordinator approval, so always +100
-  const newScore = (team.score || 0) + 100;
+  // 2. Look up the scan attempt to check correct vs wrong
+  let isCorrect = true;
+  const { data: scanAttempt } = await supabase
+    .from("scan_attempts")
+    .select('"scan-attempts_id", is_correct')
+    .eq("team_id", teamId)
+    .eq("step_no", currentStep)
+    .maybeSingle();
 
-  // 2. Update team progression
+  if (scanAttempt) {
+    isCorrect = scanAttempt.is_correct;
+  }
+
+  // 3. Determine score delta and whether to advance
+  //    Correct: +100, advance step
+  //    Wrong:   -50, stay on same step
+  const pointsDelta = isCorrect ? 100 : -50;
+  const newScore = (team.score || 0) + pointsDelta;
+
+  const updatePayload = {
+    score: newScore,
+    updated_at: new Date().toISOString()
+  };
+  if (isCorrect) {
+    updatePayload.current_step_no = currentStep + 1;
+  }
+
   const { data: updatedTeam, error: updateError } = await supabase
     .from("teams")
-    .update({
-      current_step_no: newStep,
-      score: newScore,
-      updated_at: new Date().toISOString()
-    })
+    .update(updatePayload)
     .eq("id", teamId)
     .select("id, current_step_no, score")
     .single();
@@ -388,14 +350,14 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
     throw new Error("Failed to advance team step: " + (updateError.message || "Database update failed"));
   }
 
-  // 3. Update scan attempt status to 'approved' and progress_applied to true
+  // 4. Mark scan attempt as approved
   try {
     await supabase
       .from("scan_attempts")
       .update({
         status: "approved",
         progress_applied: true,
-        points: 100
+        points: pointsDelta
       })
       .eq("team_id", teamId)
       .eq("step_no", currentStep);
@@ -410,6 +372,8 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
       currentStep: updatedTeam.current_step_no,
       score: updatedTeam.score
     },
-    message: `Team successfully advanced to Step ${updatedTeam.current_step_no}!`
+    message: isCorrect
+      ? `Correct! +100 pts. Advanced to Step ${updatedTeam.current_step_no}.`
+      : `Wrong location. -50 pts. Remain on Step ${currentStep}.`
   };
 };
