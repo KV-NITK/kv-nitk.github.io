@@ -245,6 +245,15 @@ const TeamRegistration = () => {
 
       if (!response.ok) {
         let errorMsg = data.message || "Registration failed.";
+        if (data.errors && typeof data.errors === "object") {
+          const fieldErrs = Object.entries(data.errors)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join(' | ');
+          if (fieldErrs) errorMsg += ` (${fieldErrs})`;
+        }
+        if (data.details) {
+          errorMsg += ` - Details: ${data.details}`;
+        }
         if (data.emails && Array.isArray(data.emails) && data.emails.length > 0) {
           errorMsg += ` Email(s): ${data.emails.join(", ")}`;
         }

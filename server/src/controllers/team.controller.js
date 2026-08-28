@@ -229,7 +229,8 @@ export const registerTeam = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to register team",
+      message: error?.message || "Failed to register team",
+      details: error?.details || error?.hint || null,
     });
   }
 };
