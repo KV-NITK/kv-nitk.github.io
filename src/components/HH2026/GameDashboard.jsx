@@ -793,41 +793,52 @@ export default function GameDashboard() {
                   </div>
                 </div>
 
-                {/* Latest Clue Card */}
+                {/* Latest Clue Card / Completion Card */}
                 <div className="relative p-4 border-2 border-[#8b5a2b]/40 bg-[#fefbf3] text-ink rounded-sm shadow-md flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-serif text-sm font-bold tracking-widest text-[#8b261b] uppercase border-b border-[#7a4823]/20 pb-1.5 mb-3 flex justify-between items-center">
-                      <span>LATEST CLUE — STEP {currentStepNumber}</span>
-                    </h4>
-                    
-                    <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-1">
-                      {currentClue?.imageUrl ? (
-                        <div className="relative rounded-sm overflow-hidden p-0.5">
-                          <img
-                            src={currentClue.imageUrl}
-                            alt={`Current Clue Step ${currentStepNumber}`}
-                            className="w-full max-h-80 object-contain rounded-sm shadow-sm"
-                          />
-                        </div>
-                      ) : (
-                        <p className="italic text-center py-6 text-amber-900/70 border border-dashed border-amber-900/30 rounded-sm">
-                          "Clue image for Step {currentStepNumber} is being prepared..."
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
                   {isCompleted ? (
-                    <div className="mt-4 bg-emerald-100 border border-emerald-400 p-3 text-emerald-950 text-center text-xs font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
-                      <CheckCircle className="size-4 text-emerald-800" /> Round 1 Completed!
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                      <Trophy className="size-12 text-amber-600 mb-3" />
+                      <h4 className="font-serif text-lg font-bold tracking-widest text-[#8b261b] uppercase mb-2">
+                        Congratulations!
+                      </h4>
+                      <p className="font-serif text-sm text-[#2b1810]">
+                        You have successfully completed all locations for Round 1.
+                      </p>
+                      <div className="mt-6 w-full bg-emerald-100 border border-emerald-400 p-4 text-emerald-950 text-center text-sm font-serif font-bold rounded-sm uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
+                        <CheckCircle className="size-5 text-emerald-800" /> Round 1 Completed!
+                      </div>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setScannerOpen(true)}
-                      className="mt-4 w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-[0.2em] shadow-md flex items-center justify-center gap-2 rounded-sm cursor-pointer transition-all active:scale-[0.98] no-drag"
-                    >
-                      <Camera className="size-4" /> Scan Location QR Code
-                    </button>
+                    <>
+                      <div>
+                        <h4 className="font-serif text-sm font-bold tracking-widest text-[#8b261b] uppercase border-b border-[#7a4823]/20 pb-1.5 mb-3 flex justify-between items-center">
+                          <span>LATEST CLUE — STEP {currentStepNumber}</span>
+                        </h4>
+                        
+                        <div className="font-serif text-xs leading-relaxed text-ink-muted font-medium mb-1">
+                          {currentClue?.imageUrl ? (
+                            <div className="relative rounded-sm overflow-hidden p-0.5">
+                              <img
+                                src={currentClue.imageUrl}
+                                alt={`Current Clue Step ${currentStepNumber}`}
+                                className="w-full max-h-80 object-contain rounded-sm shadow-sm"
+                              />
+                            </div>
+                          ) : (
+                            <p className="italic text-center py-6 text-amber-900/70 border border-dashed border-amber-900/30 rounded-sm">
+                              "Clue image for Step {currentStepNumber} is being prepared..."
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setScannerOpen(true)}
+                        className="mt-4 w-full bg-[#8b261b] hover:bg-[#6e1e15] text-[#f7eed6] py-3.5 px-4 font-serif text-xs font-bold uppercase tracking-[0.2em] shadow-md flex items-center justify-center gap-2 rounded-sm cursor-pointer transition-all active:scale-[0.98] no-drag"
+                      >
+                        <Camera className="size-4" /> Scan Location QR Code
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
