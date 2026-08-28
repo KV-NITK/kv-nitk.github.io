@@ -268,8 +268,11 @@ export function LegendSection() {
                     FURTHER INSTRUCTIONS WILL BE PROVIDED AFTER YOU QUALIFY ROUND 1.
                   </p>
                   <div className="mt-2 border-t border-[#8b5a2b]/30 pt-3">
-                    <p className="font-serif text-xl sm:text-2xl font-black text-ink-accent">
-                      Rs 10,000 worth Bounty!
+                    <p className="line-through font-serif text-xl sm:text-2xl font-black text-ink-accent" >
+                      Rs 10,000
+                    </p>
+                    <p className="font-serif text-xl sm:text-2xl font-black text-ink-accent" >
+                      Rs 15,000 worth Bounty!
                     </p>
                     <p className="text-xs text-ink-muted mt-1">
                       Awarded to top qualifying squads to open the vault.
