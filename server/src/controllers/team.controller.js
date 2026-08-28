@@ -1,3 +1,4 @@
+import { createSession } from "../services/session.service.js";
 import { registerTeamSchema } from "../validators/team.validator.js";
 
 import {
@@ -196,6 +197,19 @@ export const registerTeam = async (req, res) => {
       leaderEmail: req.user.email,
       members: data.members,
     });
+
+    // 9. Automatically create team session cookie
+    try {
+      const { sessionId } = await createSession(teamId, "team");
+      res.cookie("team_session_id", sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+    } catch (sErr) {
+      console.error("Failed to create team session upon registration:", sErr);
+    }
 
     return res.status(201).json({
       success: true,
