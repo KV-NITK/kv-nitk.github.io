@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import MetaData from "../MetaData/MetaData.jsx";
 import { SiteHeader } from "./site-header";
+import { Plaque, Rivets } from "./ornaments";
 import API_URL from "../../api/api";
+import { Html5Qrcode } from "html5-qrcode";
 import { 
   Trophy, 
   MapPin, 
@@ -9,7 +12,9 @@ import {
   Navigation, 
   Play, 
   CheckCircle,
-  Camera
+  XCircle,
+  Camera,
+  QrCode
 } from "lucide-react";
 
 const MAP_WIDTH = 1500;
@@ -597,7 +602,6 @@ export default function GameDashboard() {
         <SiteHeader />
         <main className="relative z-10 mx-auto w-full max-w-lg px-4 py-20 flex-grow flex items-center justify-center">
           <div className="relative border-2 border-primary/50 bg-wood p-4 shadow-2xl rounded-sm">
-            <Rope className="absolute -top-6 right-8 left-8 h-9 animate-sway" />
             <Rivets count={8} className="px-2 pb-3 pt-1" />
             <div className="relative border-2 border-[#8b5a2b]/40 bg-[#f7eed6] p-8 text-center text-[#2b1810]">
               <Compass className="size-16 mx-auto mb-4 text-[#7a4823] animate-spin-compass" />
@@ -621,7 +625,7 @@ export default function GameDashboard() {
   }
 
   // Mythology Easter-egg reveal pacing, spread evenly across the full hunt arc.
-  const totalSteps = TOTAL_LOCATIONS;
+
   const progressRatio = Math.min(100, Math.round((solvedCount / TOTAL_LOCATIONS) * 100));
   const samudraOpacity = Math.min(0.95, Math.max(0, (currentStepNumber - 1) / TOTAL_LOCATIONS));
   const parijataOpacity = gameState && currentStepNumber >= 3 ? 0.9 : 0;
