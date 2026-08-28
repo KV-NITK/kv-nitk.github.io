@@ -289,12 +289,16 @@ export const advanceTeamStep = async (teamId, scanAttemptId) => {
     throw new Error("Failed to advance team step");
   }
 
-  // 3. Mark scan attempt as approved if scanAttemptId provided
+  // 3. Ensure scan attempt is marked as correct
   if (scanAttemptId) {
-    await supabase
-      .from("scan_attempts")
-      .update({ status: "approved" })
-      .eq("scan-attempts_id", scanAttemptId);
+    try {
+      await supabase
+        .from("scan_attempts")
+        .update({ is_correct: true })
+        .eq("scan-attempts_id", scanAttemptId);
+    } catch (attemptErr) {
+      console.warn("Scan attempt update warning (non-fatal):", attemptErr);
+    }
   }
 
   return {
