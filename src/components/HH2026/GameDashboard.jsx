@@ -982,7 +982,15 @@ export default function GameDashboard() {
                       )}
                     </h4>
                     <p className="font-serif italic text-xs leading-relaxed text-ink-muted font-medium text-pretty">
-                      "{currentClue?.text || "Clue unavailable."}"
+                      {currentClue?.imageUrl ? (
+                        <img
+                          src={currentClue.imageUrl}
+                          alt="Clue"
+                          className="w-full max-h-48 object-contain rounded-sm border border-[#c1ad87] shadow-sm my-1"
+                        />
+                      ) : (
+                        <>"{currentClue?.text || "Clue unavailable."}"</>
+                      )}
                     </p>
                     <div className="mt-3">
                       <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-ink-muted">
