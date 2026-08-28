@@ -489,6 +489,50 @@ export const getAllTeamsPublic = async () => {
 };
 
 // ==========================================
+// Get Live Leaderboard
+// ==========================================
+
+export const getLiveLeaderboard = async () => {
+  const { data: teams, error } = await supabase
+    .from("teams")
+    .select(`
+      id,
+      team_name,
+      score,
+      current_step_no,
+      status,
+      updated_at,
+      team_members (
+        name,
+        role
+      )
+    `)
+    // We fetch all teams and sort them here since Supabase JS client doesn't support complex secondary sorts across multiple conditions easily, or we can just sort in DB.
+    // Actually, order by score DESC, then updated_at ASC
+    .order("score", { ascending: false })
+    .order("updated_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching leaderboard data:", error);
+    throw new Error("Failed to fetch leaderboard data");
+  }
+
+  return (teams || []).map((t) => {
+    const leaderMember = (t.team_members || []).find((m) => m.role === "leader");
+    
+    return {
+      id: t.id,
+      teamName: t.team_name,
+      leaderName: leaderMember ? leaderMember.name : "Squad Leader",
+      locationsVisited: Math.max(0, (t.current_step_no || 1) - 1),
+      points: t.score || 0,
+      timestamp: t.updated_at,
+      status: t.status || "Active",
+    };
+  });
+};
+
+// ==========================================
 // Get Team Game State
 // ==========================================
 

@@ -11,6 +11,7 @@ import {
   getUserTeam,
   deleteTeamByLeader,
   getAllTeamsPublic,
+  getLiveLeaderboard,
   fetchTeamGameState,
 } from "../services/team.service.js";
 
@@ -55,6 +56,37 @@ export const getAllRegisteredTeamsPublic = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch registered teams list",
+    });
+  }
+};
+
+export const getLeaderboardController = async (req, res) => {
+  try {
+    const providedPass =
+      req.query.pass ||
+      req.headers["x-passcode"] ||
+      req.headers["authorization"] ||
+      "";
+
+    const cleanPass = String(providedPass).trim().toLowerCase();
+
+    if (cleanPass !== "raama-raama") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid passcode. Please enter the correct event passcode to view the leaderboard.",
+      });
+    }
+
+    const teams = await getLiveLeaderboard();
+    return res.json({
+      success: true,
+      teams,
+    });
+  } catch (error) {
+    console.error("Fetch leaderboard error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch leaderboard",
     });
   }
 };
