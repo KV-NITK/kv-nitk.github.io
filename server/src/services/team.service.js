@@ -267,16 +267,17 @@ export const createTeam = async ({
     }
   }
 
-  // Auto-assign a random path to the team
+  // Auto-assign a random valid path to the team
   if (teamId) {
     try {
-      const { data: pathSteps, error: pathError } = await supabase
-        .from("path_steps")
-        .select("path_id");
+      const { data: paths, error: pathError } = await supabase
+        .from("paths")
+        .select("path_id")
+        .not("name", "ilike", "%TEST%");
 
-      if (!pathError && pathSteps && pathSteps.length > 0) {
+      if (!pathError && paths && paths.length > 0) {
         // Extract unique path IDs
-        const uniquePaths = [...new Set(pathSteps.map(p => p.path_id))];
+        const uniquePaths = [...new Set(paths.map(p => p.path_id))];
         const randomPathId = uniquePaths[Math.floor(Math.random() * uniquePaths.length)];
 
         await supabase
