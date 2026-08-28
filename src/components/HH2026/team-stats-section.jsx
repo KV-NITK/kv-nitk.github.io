@@ -6,7 +6,9 @@ import {
   Scroll,
   Trophy,
   Users,
+  QrCode
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Rivets } from './ornaments'
 import { FootprintTrail, Key, Roam } from './roaming-assets'
 import { teams, TOTAL_STEPS } from './stats-data'
@@ -87,7 +89,17 @@ function TrailStep({ step, isLast }) {
 
         {/* Clue card or locked message */}
         {unlocked && clue ? (
-          <ClueCard clue={clue} variant={stepNum} />
+          <div className="flex flex-col gap-4" center>
+            <ClueCard clue={clue} variant={stepNum} />
+            {stepNum === 0 && (
+              <Link
+                to="/hh-2026/qr-scanner"
+                className="inline-flex items-center gap-2 self-start border border-primary/60 bg-primary px-5 py-2 font-serif text-xs font-bold tracking-wider text-background shadow-md transition-all hover:bg-primary/80 uppercase"
+              >
+                <QrCode className="size-4" /> Scan QR
+              </Link>
+            )}
+          </div>
         ) : !unlocked ? (
           <div className="flex items-center gap-2 rounded-sm border border-muted-foreground/15 bg-muted/20 px-4 py-3">
             <Lock className="size-3.5 text-muted-foreground/40" />
@@ -183,7 +195,7 @@ function TeamCard({ team, rank }) {
 
       {/* Trail steps */}
       <div className="relative mt-6 ml-2 sm:ml-4">
-        {team.trail.map((step, i) => (
+        {[...team.trail].reverse().map((step, i) => (
           <TrailStep
             key={step.step}
             step={step}
