@@ -5,6 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -47,7 +48,7 @@ jobs:
   deploy-to-nitk-server:
     name: Auto-Deploy to NITK Campus Server
     needs: test-and-verify
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/master' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -57,6 +58,7 @@ jobs:
         run: |
           cd /home/kannadavedike/kv-nitk.github.io
           git pull origin master
-          echo [REDACTED_PASSWORD] | sudo -S systemctl restart kv-backend
+          sudo systemctl restart kv-backend
           npm run build
-          echo [REDACTED_PASSWORD] | sudo -S bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
+          sudo bash -c 'cp -r build/* /var/www/kannadavedike/ && cp -r build/* /var/www/kannadavedike/kv-nitk.github.io/ && chown -R www-data:www-data /var/www/kannadavedike && systemctl reload nginx'
+
