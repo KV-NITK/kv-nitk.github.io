@@ -67,7 +67,8 @@ export const irisCallback = async (req, res) => {
       irisId: String(userProfile.reg_no || userProfile.id || userProfile.roll_no || "unknown"),
       name: `${userProfile.first_name || ""} ${userProfile.last_name || ""}`.trim() || userProfile.name || "IRIS Student",
       email: userProfile.email || "",
-      rollNo: userProfile.roll_no || userProfile.reg_no || "",
+      rollNo: userProfile.roll_no || "",
+      regNo: String(userProfile.reg_no || ""),
     };
 
     // Create YOUR application's session with profile info

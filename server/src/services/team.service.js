@@ -303,6 +303,7 @@ export const getUserTeam = async (user) => {
   if (!user) return null;
 
   const rollNo = user.rollNo ? user.rollNo.trim().toUpperCase() : null;
+  const regNo = user.regNo ? String(user.regNo).trim().toUpperCase() : null;
   const email = user.email ? user.email.trim().toLowerCase() : null;
   const irisId = user.irisId ? String(user.irisId).trim() : null;
 
@@ -312,6 +313,7 @@ export const getUserTeam = async (user) => {
   const leaderConditions = [];
   if (irisId) leaderConditions.push(`leader_iris_id.eq.${irisId}`);
   if (rollNo) leaderConditions.push(`leader_roll_no.eq.${rollNo}`);
+  if (regNo) leaderConditions.push(`leader_roll_no.eq.${regNo}`);
 
   if (leaderConditions.length > 0) {
     const { data: leaderTeams, error } = await supabase
@@ -327,9 +329,10 @@ export const getUserTeam = async (user) => {
   }
 
   // 2. If not found by leader fields, check if user is in team_members (by roll_no OR email)
-  if (!team && (rollNo || email)) {
+  if (!team && (rollNo || regNo || email)) {
     const memberConditions = [];
     if (rollNo) memberConditions.push(`roll_no.eq.${rollNo}`);
+    if (regNo) memberConditions.push(`roll_no.eq.${regNo}`);
     if (email) memberConditions.push(`normalized_email.eq.${email},email.eq.${email}`);
 
     if (memberConditions.length > 0) {
