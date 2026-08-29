@@ -618,15 +618,7 @@ export const fetchTeamGameState = async (teamId) => {
           .eq("clue_id", pStep.clue_id)
           .maybeSingle();
 
-        let locName = `Location ${k}`;
-        if (pClue && pClue.location_id) {
-          const { data: pLoc } = await supabase
-            .from("locations")
-            .select("name")
-            .eq("location_id", pClue.location_id)
-            .maybeSingle();
-          if (pLoc) locName = pLoc.name;
-        }
+
 
         const { data: pScan } = await supabase
           .from("scan_attempts")
@@ -640,9 +632,7 @@ export const fetchTeamGameState = async (teamId) => {
 
         solvedSteps.push({
           stepNo: k,
-          locationName: locName,
           scannedAt: pScan?.scanned_at || null,
-          imageUrl: pClue?.clue_image_url || null,
           variant: pClue?.variant || null
         });
       }
