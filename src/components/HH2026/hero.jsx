@@ -35,18 +35,110 @@ export function Hero() {
           <Revolver className="scale-x-[-1] rotate-[10deg] opacity-90 drop-shadow-[0_16px_14px_oklch(0_0_0/50%)]" />
         </Roam>
         <div className="flex flex-col items-start gap-7">
-          <div className="flex items-center gap-3 border border-primary/40 px-3 py-2">
-            <img
-              src="/hh2026/kannada-vedike-logo.png"
-              alt="Kannada Vedike NITK logo"
-              width={32}
-              height={32}
-              className="size-6 shrink-0 rounded-full"
-            />
-            <p className="font-serif text-[0.65rem] tracking-[0.24em] text-primary uppercase">
-              Presented by Kannada Vedike · NITK
-            </p>
+          {/* Primary credential badge */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3 border border-primary/40 bg-background/40 px-3 py-2">
+              <img
+                src="/hh2026/kannada-vedike-logo.png"
+                alt="Kannada Vedike NITK logo"
+                width={32}
+                height={32}
+                className="size-6 shrink-0 rounded-full"
+              />
+              <p className="font-serif text-[0.65rem] tracking-[0.24em] text-primary uppercase">
+                Presented by Kannada Vedike · NITK
+              </p>
+            </div>
+
+            {/* Secondary partner row — collab + sponsors */}
+            <div
+              className="relative overflow-hidden border border-primary/40 px-4 py-2"
+              style={{
+                background:
+                  'linear-gradient(105deg, oklch(0.18 0.022 62) 0%, oklch(0.21 0.032 72) 50%, oklch(0.18 0.022 62) 100%)',
+              }}
+            >
+              {/* Shimmer sweep over the border */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 animate-border-shimmer"
+                style={{
+                  background:
+                    'linear-gradient(90deg, transparent 0%, oklch(0.79 0.135 79 / 18%) 50%, transparent 100%)',
+                }}
+              />
+
+              {/*
+                Mobile  → flex-col, items-center: two centered stacked rows
+                sm+     → flex-row, items-center: single horizontal row with compass bookends
+              */}
+              <div className="relative flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-0">
+
+                {/* Left compass — sm+ only */}
+                <span
+                  aria-hidden="true"
+                  className="hidden sm:block shrink-0 w-4 h-4 bg-contain bg-center bg-no-repeat opacity-50 sm:mr-3"
+                  style={{ backgroundImage: "url('/hh2026/prop-compass.png')" }}
+                />
+
+                {/* In Collaboration With */}
+                <div className="flex items-center gap-2 sm:shrink-0">
+                  <span className="font-serif text-[0.6rem] font-bold uppercase tracking-[0.26em] text-primary/75 whitespace-nowrap">
+                    In Collaboration With
+                  </span>
+                  <div className="bg-white/95 rounded px-2 py-1 shadow-sm shadow-black/40 transition-transform duration-200 hover:scale-105">
+                    <img
+                      src="/hh2026/Innovatiion_collab.png"
+                      alt="Institution's Innovation Council"
+                      className="h-8 w-auto object-contain"
+                      loading="eager"
+                    />
+                  </div>
+                </div>
+
+                {/* Vertical divider — sm+ only */}
+                <span
+                  aria-hidden="true"
+                  className="hidden sm:block h-5 w-px bg-primary/30 shrink-0 sm:mx-3"
+                />
+
+                {/* Sponsors */}
+                <div className="flex items-center gap-2 sm:shrink-0">
+                  <span className="font-serif text-[0.6rem] font-bold uppercase tracking-[0.26em] text-primary/75 whitespace-nowrap">
+                    Sponsors
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="bg-white/95 rounded px-2 py-1 shadow-sm shadow-black/40 transition-transform duration-200 hover:scale-105">
+                      <img
+                        src="/hh2026/sponsor_1.png"
+                        alt="7th Heaven"
+                        className="h-8 w-auto object-contain"
+                        loading="eager"
+                      />
+                    </div>
+                    <div className="bg-white/95 rounded px-2 py-1 shadow-sm shadow-black/40 transition-transform duration-200 hover:scale-105">
+                      <img
+                        src="/hh2026/sponsor_2.PNG"
+                        alt="Spin Unisex Salon"
+                        className="h-8 w-auto object-contain"
+                        loading="eager"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right compass — sm+ only */}
+                <span
+                  aria-hidden="true"
+                  className="hidden sm:block shrink-0 w-4 h-4 bg-contain bg-center bg-no-repeat opacity-50 sm:ml-auto"
+                  style={{ backgroundImage: "url('/hh2026/prop-compass.png')" }}
+                />
+
+              </div>
+            </div>
+
           </div>
+
 
           <div className="flex flex-col gap-6">
             <ArchSign eyebrow="Avane Srimannarayana" footnote="A search for the one">
