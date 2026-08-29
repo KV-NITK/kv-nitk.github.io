@@ -1,6 +1,8 @@
 import { getSession, createSession } from "../services/session.service.js";
 import { getUserTeam } from "../services/team.service.js";
 
+import { supabase } from "../config/supabase.js";
+
 export const requireTeamAuth = async (req, res, next) => {
   try {
     // 1. Check for team_session_id cookie
@@ -9,10 +11,22 @@ export const requireTeamAuth = async (req, res, next) => {
     if (teamSessionId) {
       const teamSession = await getSession(teamSessionId);
       if (teamSession && teamSession.session_type === "team") {
-        req.team = {
-          id: teamSession.user_id,
-        };
-        return next();
+        // Verify team still exists (hasn't been deleted)
+        const { data: teamCheck } = await supabase
+          .from("teams")
+          .select("id")
+          .eq("id", teamSession.user_id)
+          .maybeSingle();
+
+        if (teamCheck) {
+          req.team = {
+            id: teamSession.user_id,
+          };
+          return next();
+        } else {
+          // Team was deleted, clear the ghost session
+          res.clearCookie("team_session_id");
+        }
       }
     }
 
