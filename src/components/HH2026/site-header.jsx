@@ -42,13 +42,15 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <HashLink
-          smooth
-          to="/hh-2026#register"
-          className="border border-primary bg-primary px-4 py-2 font-serif text-xs font-bold tracking-[0.18em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
-        >
-          Register
-        </HashLink>
+        <div className="flex items-center gap-3">
+          <HashLink
+            smooth
+            to="/hh-2026#register"
+            className="border border-primary bg-primary px-4 py-2 font-serif text-xs font-bold tracking-[0.18em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
+          >
+            Info
+          </HashLink>
+        </div>
       </div>
     </header>
   )

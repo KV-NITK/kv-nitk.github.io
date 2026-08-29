@@ -336,10 +336,13 @@ export const getUserTeam = async (user) => {
     if (email) memberConditions.push(`normalized_email.eq.${email},email.eq.${email}`);
 
     if (memberConditions.length > 0) {
+      console.log(`[DEBUG] Looking up member with conditions:`, memberConditions.join(" OR "));
       const { data: memberMatches } = await supabase
         .from("team_members")
         .select("team_id, role")
         .or(memberConditions.join(","));
+      
+      console.log(`[DEBUG] Found member matches:`, memberMatches);
 
       if (memberMatches && memberMatches.length > 0) {
         const memberMatch = memberMatches[0];
