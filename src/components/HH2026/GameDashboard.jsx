@@ -739,7 +739,7 @@ export default function GameDashboard() {
                       {pendingApproval.isCorrect ? (
                         <>Correct QR for <strong className="text-emerald-950 font-bold">{pendingApproval.locationName}</strong>. Approve to advance and award <strong className="text-emerald-800">+100 pts</strong>.</>
                       ) : (
-                        <>Wrong QR scanned (expected <strong className="text-red-950 font-bold">{pendingApproval.locationName}</strong>). Approve to apply <strong className="text-red-700">-50 pts</strong> penalty. Step will not advance.</>
+                        <>Wrong QR scanned. Approve to apply <strong className="text-red-700">-50 pts</strong> penalty. Step will not advance.</>
                       )}
                     </p>
 
