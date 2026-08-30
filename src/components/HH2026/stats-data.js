@@ -14,7 +14,7 @@ export const locations = [
   'Library Clock Tower',
   'Amphitheatre Steps',
   'Old Canteen Banyan Tree',
-  'Main Building Corridor',
+  'E-library',
   'SAC Courtyard',
   'Tennis Court Wall',
   'Mega Mess Garden',
