@@ -52,7 +52,7 @@ export function RegisterSection() {
 
         <div className="relative">
           <Link
-            to={REGISTRATION_OPEN ? '/team-registration' : '/play'}
+            to='/hh-2026/play'
             className="clip-torn relative border border-primary bg-primary px-9 py-5 pt-9 font-serif text-sm font-bold tracking-[0.2em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
           >
             {REGISTRATION_OPEN ? 'Register your squad' : 'Play'}
