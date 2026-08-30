@@ -872,30 +872,10 @@ export default function GameDashboard() {
                       key={solved.stepNo}
                       className="border border-emerald-800/40 bg-[#f7eed6] rounded-sm overflow-hidden shadow-md hover:shadow-lg transition-all"
                     >
-                      {/* Big Full-Width Clue Image */}
-                      {solved.imageUrl ? (
-                        <div className="w-full relative bg-stone-950 overflow-hidden">
-                          <img 
-                            src={solved.imageUrl} 
-                            alt={`Solved Step ${solved.stepNo}`} 
-                            className="w-full max-h-[400px] object-contain mx-auto bg-black/40"
-                          />
-                          <div className="absolute top-3 left-3 bg-emerald-800 text-[#f7eed6] text-xs font-bold font-serif px-3 py-1 rounded-sm uppercase tracking-wider flex items-center gap-1.5 shadow-md border border-emerald-600">
-                            <CheckCircle className="size-3.5 text-emerald-200" /> Step {solved.stepNo} — Solved
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-full h-32 bg-emerald-950/10 border-b border-emerald-800/20 flex items-center justify-center text-emerald-900 font-bold font-serif text-sm">
-                          Step {solved.stepNo} Image
-                        </div>
-                      )}
-
-                      {/* Content details below image */}
                       <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f7eed6]">
                         <div>
                           <h5 className="font-serif font-bold text-base text-[#2b1810] flex items-center gap-2">
-                            <MapPin className="size-4 text-emerald-800 shrink-0" />
-                            {solved.locationName || `Location ${solved.stepNo}`}
+                            Step {solved.stepNo}
                           </h5>
                           {solved.scannedAt && (
                             <p className="text-xs font-serif text-emerald-950/80 font-medium mt-1 flex items-center gap-1">
