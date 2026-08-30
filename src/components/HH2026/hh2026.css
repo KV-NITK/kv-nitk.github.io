@@ -138,14 +138,12 @@
  * adjacent cards don't look identically stamped.
  */
 @utility bg-pamphlet {
-  background-color: oklch(0.22 0.03 60 / 40%);
   background-image: url('/hh2026/prop-parchment-scrap-1.png');
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
 
 @utility bg-pamphlet-alt {
-  background-color: oklch(0.22 0.03 60 / 40%);
   background-image: url('/hh2026/prop-parchment-scrap-2.png');
   background-size: 100% 100%;
   background-repeat: no-repeat;

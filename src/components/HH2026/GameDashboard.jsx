@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import MetaData from "../MetaData/MetaData.jsx";
 import { SiteHeader } from "./site-header";
 import { Plaque, Rivets } from "./ornaments";
+import { RefreshmentPopup } from "./refreshment-popup";
 import API_URL from "../../api/api";
 import { Html5Qrcode } from "html5-qrcode";
 import { 
@@ -642,6 +643,7 @@ export default function GameDashboard() {
   return (
     <div className="hh2026-page min-h-screen bg-parchment text-foreground relative flex flex-col justify-between overflow-hidden">
       <MetaData title="Fog of War Map & Progress — Hudugata Hudakata 2026" />
+      <RefreshmentPopup />
       <SiteHeader />
       <style>{`
         @keyframes eagle-hover {
