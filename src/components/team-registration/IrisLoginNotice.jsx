@@ -1,13 +1,16 @@
 import React from "react";
 import { Revolver } from "../HH2026/roaming-assets";
 
-export function IrisLoginNotice({ handleIrisLogin }) {
+export function IrisLoginNotice({
+  handleIrisLogin,
+  message = "Login with your NITK IRIS account to claim your squad's spot in the hunt.",
+}) {
   return (
     <div className="flex flex-col items-center gap-6 py-12 text-center">
       <Revolver className="w-32" />
 
       <p className="max-w-md font-serif text-lg font-semibold leading-relaxed text-[#3d1e0b]">
-        Login with your NITK IRIS account to claim your squad&apos;s spot in the hunt.
+        {message}
       </p>
 
       <button

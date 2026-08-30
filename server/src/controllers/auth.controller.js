@@ -20,8 +20,13 @@ const getCookieOptions = (maxAge) => ({
 
 export const irisLogin = (req, res) => {
   const state = crypto.randomBytes(32).toString("hex");
+  const redirectPath =
+    typeof req.query.redirect === "string" && req.query.redirect.startsWith("/")
+      ? req.query.redirect
+      : "/team-registration";
 
   res.cookie("iris_oauth_state", state, getCookieOptions(10 * 60 * 1000));
+  res.cookie("iris_redirect_to", redirectPath, getCookieOptions(10 * 60 * 1000));
 
   const url = getIrisAuthorizationUrl(state);
 
@@ -85,8 +90,12 @@ export const irisCallback = async (req, res) => {
     const encodedUser = Buffer.from(JSON.stringify(user)).toString("base64");
     res.cookie("user_meta", encodedUser, getCookieOptions(24 * 60 * 60 * 1000));
 
+    const redirectTo = req.cookies.iris_redirect_to || "/team-registration";
+    res.clearCookie("iris_redirect_to", getCookieOptions());
+
+    const separator = redirectTo.includes("?") ? "&" : "?";
     return res.redirect(
-      `${process.env.FRONTEND_URL}/team-registration?t=${Date.now()}`
+      `${process.env.FRONTEND_URL}${redirectTo}${separator}t=${Date.now()}`
     );
 
   } catch (error) {
