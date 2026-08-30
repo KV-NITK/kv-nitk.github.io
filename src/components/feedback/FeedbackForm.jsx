@@ -157,22 +157,26 @@ export function FeedbackForm({
         </div>
       )}
 
-      {/* Question 1: Team Name */}
+      {/* Question 1: Team Name (Read-Only) */}
       <div className="flex flex-col gap-2.5 bg-[#fffdf9] p-5 border-2 border-[#7a4823]/40 rounded-sm shadow-sm">
-        <label
-          htmlFor="teamName"
-          className="font-serif text-sm font-bold text-[#201007]"
-        >
-          Team Name <span className="text-[#8b261b]">*</span>
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="teamName"
+            className="font-serif text-sm font-bold text-[#201007]"
+          >
+            Team Name <span className="text-[#8b261b]">*</span>
+          </label>
+          <span className="text-[11px] font-semibold text-[#7a4823] uppercase tracking-wider">
+            Locked to Registered Squad
+          </span>
+        </div>
         <input
           id="teamName"
           type="text"
-          value={teamName}
-          onChange={(e) => setTeamName(e.target.value)}
-          placeholder="Your squad name"
-          required
-          className="w-full border-2 border-[#7a4823]/40 bg-white px-4 py-3 text-sm font-semibold text-[#1a0a03] placeholder:text-[#8a7260] transition-all focus:border-[#4a2206] focus:outline-none focus:ring-2 focus:ring-[#7a4823]/30 rounded-sm"
+          value={defaultTeamName}
+          readOnly
+          tabIndex={-1}
+          className="w-full border-2 border-[#7a4823]/30 bg-[#f7eed6]/50 px-4 py-3 text-sm font-bold text-[#2b1810] cursor-not-allowed select-none rounded-sm"
         />
       </div>
 

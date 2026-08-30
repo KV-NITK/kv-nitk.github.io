@@ -5,9 +5,13 @@ import {
   submitFeedback,
   getTeamFeedbackList,
   getFeedbackList,
+  getPublicFeedbackResponses,
 } from "../controllers/feedback.controller.js";
 
 const router = express.Router();
+
+// Passcode protected public feedback list (raama-raama)
+router.get("/public-list", getPublicFeedbackResponses);
 
 // Get logged-in user's submission
 router.get("/me", requireAuth, getMyFeedback);

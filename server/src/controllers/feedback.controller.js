@@ -96,6 +96,40 @@ export const getTeamFeedbackList = async (req, res) => {
 };
 
 /**
+ * Get public feedback list with passcode verification (raama-raama)
+ */
+export const getPublicFeedbackResponses = async (req, res) => {
+  try {
+    const providedPass =
+      req.query.pass ||
+      req.headers["x-passcode"] ||
+      req.headers["authorization"] ||
+      "";
+
+    const cleanPass = String(providedPass).trim().toLowerCase();
+
+    if (cleanPass !== "raama-raama" && cleanPass !== "raaama-raama") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid passcode. Please enter the correct event passcode to view feedback responses.",
+      });
+    }
+
+    const feedbackList = await getAllFeedback();
+    return res.json({
+      success: true,
+      feedback: feedbackList,
+    });
+  } catch (error) {
+    console.error("Fetch public feedback responses error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch feedback responses list.",
+    });
+  }
+};
+
+/**
  * Get all feedback submissions across all teams
  */
 export const getFeedbackList = async (req, res) => {

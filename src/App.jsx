@@ -20,10 +20,11 @@ import GameDashboard from './components/HH2026/GameDashboard';
 import HH2026Leaderboard from './components/HH2026/leaderboard';
 import HH2026QrScanner from './components/HH2026/qr-scanner';
 import Feedback from './components/feedback/Feedback';
+import FeedbackResponses from './components/feedback-responses/FeedbackResponses';
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -41,6 +42,8 @@ function AppRoutes() {
         <Route path="/Merch" element={<Merch />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
+        <Route path="/feedback-responses" element={<FeedbackResponses />} />
+        <Route path="/feedback/responses" element={<FeedbackResponses />} />
         <Route path="/hh-2026/stats" element={<HH2026Stats />} />
         <Route path="/list-of-members" element={<ListOfMembers />} />
         <Route path="/hh-2026" element={<HH2026 />} />
