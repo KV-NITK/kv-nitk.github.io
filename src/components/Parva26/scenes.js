@@ -1,11 +1,11 @@
 // The scroll sections of the page, in order. `scene` matches the numbering in
-// parve26spec.md §3 and `act` drives the reel progress labels (spec §2).
+// parve26spec.md §3 and `act` drives the film reel's paper tag.
 // Scenes 0 and 1 (lamp, curtain) are intro overlays, not sections.
 export const ACTS = {
-  'first-half': 'First Half',
-  interval: 'ವಿರಾಮ',
-  'second-half': 'Second Half',
-  climax: 'Climax',
+  'first-half': { kn: 'ಮೊದಲಾರ್ಧ', en: 'First Half' },
+  interval: { kn: 'ವಿರಾಮ', en: 'Interval' },
+  'second-half': { kn: 'ದ್ವಿತೀಯಾರ್ಧ', en: 'Second Half' },
+  end: { kn: 'ಶುಭಂ', en: 'The End' },
 }
 
 export const SCENES = [
@@ -19,5 +19,5 @@ export const SCENES = [
   { scene: 9, id: 'release-day', act: 'second-half', kn: 'ಬಿಡುಗಡೆ ದಿನ', en: 'Release Day' },
   { scene: 10, id: 'timeline', act: 'second-half', kn: 'ಬೆಳ್ಳಿ ಪರದೆಯ ಪಯಣ', en: 'Sandalwood through the years' },
   { scene: 11, id: 'emoji-game', act: 'second-half', kn: 'ಯಾವ ಸಿನಿಮಾ?', en: 'Which film?' },
-  { scene: 12, id: 'credits', act: 'climax', kn: 'ಶುಭಂ', en: 'Credits' },
+  { scene: 12, id: 'credits', act: 'end', kn: 'ಶುಭಂ', en: 'Credits' },
 ]

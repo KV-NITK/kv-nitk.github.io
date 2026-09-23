@@ -43,6 +43,16 @@ code {
   --color-paper: #efe6d2;
   --color-print: #3b2a1a;
   --color-pen: #1d2a4d;
+
+  /* The film reel's paper tag swings when the act changes */
+  --animate-tag-swing: p26-tag-swing 0.9s ease-out;
+
+  @keyframes p26-tag-swing {
+    0% { rotate: -14deg; }
+    35% { rotate: 8deg; }
+    65% { rotate: -4deg; }
+    100% { rotate: 0deg; }
+  }
 }
 
 @theme inline {
