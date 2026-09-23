@@ -1,0 +1,74 @@
+import '@fontsource-variable/anek-kannada'
+import '@fontsource-variable/baloo-tamma-2'
+import '@fontsource/bebas-neue'
+import '@fontsource-variable/noto-serif-kannada'
+import '@fontsource/special-elite'
+
+import MetaData from '../MetaData/MetaData'
+import { PrefsProvider, Sub } from './prefs'
+import { TopBar } from './top-bar'
+import { FilmLayer } from './fx/film-layer'
+import { InkDefs } from './fx/ink-defs'
+import { ACTS } from './scenes'
+import { TitleScene } from './scene-title'
+import { CertificateScene } from './scene-certificate'
+import { GandhadaGudiScene } from './scene-gandhada-gudi'
+import { NowShowingScene } from './scene-now-showing'
+import { GuestsScene } from './scene-guests'
+import { IntervalScene } from './scene-interval'
+import { ReleaseDayScene } from './scene-release-day'
+import { TimelineScene } from './scene-timeline'
+import { EmojiGameScene } from './scene-emoji-game'
+import { CreditsScene } from './scene-credits'
+
+// Parva 2026 landing page: the whole page is one show at "Sri Gandhada Gudi
+// Chitramandira". Full plan in parve26spec.md.
+export default function Parva26() {
+  return (
+    <PrefsProvider>
+      <div className="parva26-page min-h-screen scheme-dark bg-theatre font-kn-body text-gandha antialiased">
+        <MetaData title="ಪರ್ವ 2026 · Parva by Kannada Vedike, NITK" />
+        <InkDefs />
+        <FilmLayer />
+        <TopBar />
+        <main>
+          <TitleScene />
+          <CertificateScene />
+          <GandhadaGudiScene />
+          <FanPassStub />
+          <NowShowingScene />
+          <GuestsScene />
+          <IntervalScene />
+          <ReleaseDayScene />
+          <TimelineScene />
+          <EmojiGameScene />
+          <CreditsScene />
+        </main>
+      </div>
+    </PrefsProvider>
+  )
+}
+
+// Scene 5, ನಿಮ್ಮ ಪಾಸ್ · Fan Pass: build order puts this after the theatre
+// effects and transliteration work (build plan step 11), so it stays a
+// placeholder for now.
+function FanPassStub() {
+  return (
+    <section
+      id="fan-pass"
+      className="flex min-h-[70vh] scroll-mt-14 flex-col items-center justify-center gap-3 border-b border-heartwood/40 px-4 py-20 text-center"
+    >
+      <p className="font-poster text-lg tracking-[0.2em] text-sandal">
+        Scene 5 · {ACTS['first-half']}
+      </p>
+      <Sub
+        as="h2"
+        kn="ಅಭಿಮಾನಿ ಪಾಸ್"
+        en="Fan Pass"
+        knClassName="font-kn-display text-5xl font-bold leading-tight sm:text-7xl"
+        enClassName="font-poster text-2xl tracking-wide text-sandal"
+      />
+      <p className="text-sm text-gandha/60">Coming soon</p>
+    </section>
+  )
+}

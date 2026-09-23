@@ -4,6 +4,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fontsource-variable/anek-kannada": "^5.3.0",
+    "@fontsource-variable/baloo-tamma-2": "^5.3.0",
+    "@fontsource-variable/noto-serif-kannada": "^5.3.0",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/special-elite": "^5.3.0",
     "@gsap/react": "^2.1.2",
     "@react-three/fiber": "^9.4.0",
     "@tailwindcss/vite": "^4.1.16",
