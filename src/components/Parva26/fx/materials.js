@@ -29,3 +29,10 @@ export const filmSprockets = {
   backgroundPosition: '0 2px, 0 calc(100% - 2px)',
   backgroundRepeat: 'repeat-x',
 }
+
+// Maroon seat velvet: stitched vertical channels, darker toward the sides and
+// the bottom, lit from the screen above.
+export const velvet = {
+  backgroundImage:
+    'repeating-linear-gradient(90deg, rgba(20,0,5,.45) 0 2px, rgba(255,120,140,.06) 3px, transparent 6px 26px), linear-gradient(90deg, rgba(0,0,0,.35), transparent 18%, transparent 82%, rgba(0,0,0,.35)), linear-gradient(180deg, #8c1b2e, #5e0f1d 40%, #3b0912)',
+}

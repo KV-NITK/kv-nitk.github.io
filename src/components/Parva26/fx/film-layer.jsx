@@ -26,6 +26,22 @@ export function useFilmScreen(ref) {
   }, [ref])
 }
 
+// Other canvases that animate (the title film's forest) paint on this layer's
+// tick, so every canvas on the page changes in the same frame and the browser
+// composites once per tick. Nothing ticks with reduced motion.
+const tickers = new Set()
+
+export function useFilmTick(callback) {
+  const callbackRef = useRef(callback)
+  callbackRef.current = callback
+
+  useEffect(() => {
+    const tick = (now) => callbackRef.current(now)
+    tickers.add(tick)
+    return () => tickers.delete(tick)
+  }, [])
+}
+
 function makeGrainTiles() {
   return Array.from({ length: GRAIN_FRAMES }, () => {
     const tile = document.createElement('canvas')
@@ -183,6 +199,7 @@ export function FilmLayer() {
       raf = requestAnimationFrame(loop)
       if (now - lastTick >= TICK_MS) {
         lastTick = now
+        for (const tick of tickers) tick(now)
         advance()
         render()
       } else if (scrolled) {

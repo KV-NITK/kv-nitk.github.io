@@ -70,7 +70,7 @@ export function IntervalScene() {
           enClassName="mt-1 font-poster text-lg tracking-wide text-sandal"
         />
 
-        <div className="mb-16">
+        <div id="bhoori-bhojana" className="mb-16 scroll-mt-20">
           <Sub
             as="h3"
             kn="ಬಾಳೆ ಎಲೆ ಊಟ"
@@ -93,7 +93,7 @@ export function IntervalScene() {
           </div>
         </div>
 
-        <div>
+        <div id="angadi" className="scroll-mt-20">
           <Sub
             as="h3"
             kn="ಪರ್ವ ಅಂಗಡಿ"
