@@ -13,9 +13,9 @@ import { cn } from '../../lib/utils'
 // camera before cutting to its section. The golden fan pass sits in the middle
 // because it's the main promotion.
 const TICKETS = [
-  { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Get food coupon', tilt: -7, Face: LeafTicket },
-  { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', tilt: 2, Face: GoldenTicket },
-  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', tilt: 8, Face: PriceTag },
+  { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Get food coupon', label: 'Food coupon', tilt: -7, Face: LeafTicket },
+  { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket },
+  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 
 // --seat is how much of the seat shows below its rail, --peek how far the
@@ -92,7 +92,7 @@ function Tickets() {
     // Behind the rail and cushion (later siblings), with each ticket's lower
     // end tucked 1.5rem down inside the seat.
     <div className="absolute inset-x-[4%] bottom-[calc(100%-1.5rem)] flex items-end justify-center gap-[3%]" onPointerLeave={() => setActive(null)}>
-      {TICKETS.map(({ id, href, kn, en, tilt, Face }) => (
+      {TICKETS.map(({ id, href, kn, en, label, tilt, Face }) => (
         <a
           key={id}
           href={href}
@@ -109,7 +109,7 @@ function Tickets() {
           )}
           style={{ rotate: `${active === id ? tilt * 0.4 - 2 : tilt}deg` }}
         >
-          <Face kn={kn} en={en} lit={active === id} />
+          <Face kn={kn} en={label} lit={active === id} />
         </a>
       ))}
     </div>
@@ -141,14 +141,18 @@ const notched = {
 
 function Caption({ en, className }) {
   const { subtitles } = usePrefs()
-  return <span className={cn('block font-poster text-[0.7rem] leading-none tracking-[0.12em] sm:text-xs', !subtitles && 'sr-only', className)}>{en}</span>
+  return (
+    <span className={cn('block whitespace-nowrap font-poster text-[0.7rem] leading-none tracking-[0.12em] sm:text-xs', !subtitles && 'sr-only', className)}>
+      {en}
+    </span>
+  )
 }
 
 // Banana-leaf green, with the leaf's side veins showing through the print.
 function LeafTicket({ kn, en, lit }) {
   return (
     <span
-      className="relative flex h-[5.2rem] w-[6.6rem] flex-col justify-between rounded-[4px] bg-[#4f8a36] px-3 pb-2.5 pt-2 text-[#f6efd6] bg-blend-multiply sm:h-[6.4rem] sm:w-[8.6rem]"
+      className="relative flex h-[5.2rem] w-[6.8rem] flex-col gap-1 rounded-[4px] bg-[#4f8a36] pb-2.5 pl-2.5 pr-6 pt-2 text-[#f6efd6] bg-blend-multiply sm:h-[6.4rem] sm:w-[9.4rem] sm:pl-3 sm:pr-8"
       style={{
         ...paper,
         ...notched,
@@ -161,10 +165,10 @@ function LeafTicket({ kn, en, lit }) {
         <span aria-hidden className="font-typewriter text-[0.55rem] text-[#f6efd6]/70">No. {toKannadaDigits('042')}</span>
       </span>
       <span>
-        <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight sm:text-xl">{kn}</span>
+        <span lang="kn" className="block whitespace-nowrap font-kn-display text-[0.9rem] font-extrabold leading-tight sm:text-xl">{kn}</span>
         <Caption en={en} className="text-[#f6efd6]/80" />
       </span>
-      <span aria-hidden className="absolute inset-y-2 right-6 border-r border-dashed border-[#f6efd6]/35 sm:right-8" />
+      <span aria-hidden className="absolute inset-y-2 right-5 border-r border-dashed border-[#f6efd6]/35 sm:right-7" />
       <Sheen lit={lit} />
     </span>
   )
@@ -193,14 +197,14 @@ function GoldenTicket({ kn, en, lit }) {
       }}
     >
       <span
-        className="relative flex h-[5.8rem] w-[7.2rem] flex-col items-center justify-center gap-0.5 rounded-[3px] text-center text-[#5a1c0a] outline-1 -outline-offset-4 outline-dotted outline-[#7a4a1c]/50 sm:h-[7rem] sm:w-[9.4rem]"
+        className="relative flex h-[5.8rem] w-[6.4rem] flex-col items-center justify-center gap-0.5 rounded-[3px] pb-6 text-center text-[#5a1c0a] outline-1 -outline-offset-4 outline-dotted outline-[#7a4a1c]/50 sm:h-[7rem] sm:w-[9.4rem] sm:pb-7"
         style={{
           backgroundImage:
             'linear-gradient(125deg, #f9e39a 0%, #e0b24a 30%, #f6d67e 48%, #c99532 70%, #f2d27c 100%)',
         }}
       >
         <span aria-hidden className="font-poster text-[0.6rem] tracking-[0.3em] text-[#7a3a12]/80">★ ಪರ್ವ ★</span>
-        <span lang="kn" className="block font-kn-display text-lg font-extrabold leading-tight [text-shadow:0_1px_0_rgba(255,240,190,.6)] sm:text-2xl">{kn}</span>
+        <span lang="kn" className="block whitespace-nowrap font-kn-display text-base font-extrabold leading-tight [text-shadow:0_1px_0_rgba(255,240,190,.6)] sm:text-2xl">{kn}</span>
         <Caption en={en} className="text-[#6b2a0e]/85" />
         <Sheen lit={lit} />
       </span>
@@ -216,13 +220,13 @@ function PriceTag({ kn, en, lit }) {
         <path d="M20 26 C10 18 8 4 18 2 C28 0 30 14 20 26" fill="none" stroke="#e9dcbc" strokeWidth="1.3" />
       </svg>
       <span
-        className="relative flex h-[5rem] w-[5.8rem] flex-col items-center justify-end rounded-b-[4px] bg-[#c49a66] px-2 pb-2.5 text-center text-[#3d2410] bg-blend-multiply [clip-path:polygon(22%_0,78%_0,100%_24%,100%_100%,0_100%,0_24%)] sm:h-[6.2rem] sm:w-[7.4rem]"
+        className="relative flex h-[5.2rem] w-[6rem] flex-col items-center rounded-b-[4px] bg-[#c49a66] px-2 pt-7 text-center text-[#3d2410] bg-blend-multiply [clip-path:polygon(22%_0,78%_0,100%_24%,100%_100%,0_100%,0_24%)] sm:h-[6.6rem] sm:w-[8.4rem] sm:pt-8"
         style={paper}
       >
         <span aria-hidden className="absolute left-1/2 top-2 size-3.5 -translate-x-1/2 rounded-full shadow-[0_1px_1px_rgba(0,0,0,.5)]" style={brass}>
           <span className="absolute inset-[3px] rounded-full bg-[#2a1a0e]" />
         </span>
-        <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight [filter:url(#p26-ink)] sm:text-xl">{kn}</span>
+        <span lang="kn" className="block whitespace-nowrap font-kn-display text-[0.85rem] font-extrabold leading-tight [text-shadow:0_1px_0_rgba(255,235,200,.35)] sm:text-lg">{kn}</span>
         <Caption en={en} className="text-[#3d2410]/80" />
         <Sheen lit={lit} />
       </span>

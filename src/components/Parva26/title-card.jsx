@@ -37,8 +37,9 @@ export function TitleCard() {
       const q = gsap.utils.selector(rootRef)
       const nearTop = () => window.scrollY < window.innerHeight * 0.5
       if (reduced) {
-        if (nearTop()) sayLine(TAGLINE_EN)
-        return
+        // After the strip has mounted
+        const id = setTimeout(() => nearTop() && sayLine(TAGLINE_EN), 600)
+        return () => clearTimeout(id)
       }
 
       gsap.set([q('[data-presents]'), q('[data-akshara]'), q('[data-parva-en]'), q('[data-tagline]')], { autoAlpha: 0 })
@@ -80,7 +81,7 @@ export function TitleCard() {
         <span className="sr-only">
           <span lang="kn">ಪರ್ವ</span> Parva 2026
         </span>
-        <span aria-hidden lang="kn" className="flex font-kn-display text-[min(19cqw,27cqh)] font-extrabold leading-[1.05]">
+        <span aria-hidden lang="kn" className="flex justify-center font-kn-display text-[min(19cqw,27cqh)] font-extrabold leading-[1.05]">
           {AKSHARAS.map((akshara, i) => (
             <span key={i} data-akshara className={cn('inline-grid', i > 0 && '-ml-[0.04em]')}>
               {/* Back to front: extrusion, kumkuma outline, gold face, shine */}

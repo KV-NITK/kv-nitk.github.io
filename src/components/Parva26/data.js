@@ -6,6 +6,7 @@ export const EVENT = {
   date: '2026-11-21T10:00:00+05:30', // TODO(content): confirm actual date
   dateLabel: 'ನವೆಂಬರ್ ೨೧, ೨೦೨೬ · November 21, 2026', // TODO(content)
   venue: 'Sir M. Visvesvaraya Auditorium (SJA) · NITK Surathkal', // TODO(content)
+  venueShort: 'SJA · NITK Surathkal', // TODO(content): as painted on the show board
 }
 
 // Scene 6: ಇಂದೇ ನೋಡಿ · Now Showing

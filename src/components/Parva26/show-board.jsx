@@ -11,34 +11,42 @@ import { cn } from '../../lib/utils'
 
 const [DATE_KN, DATE_EN] = EVENT.dateLabel.split(' · ')
 
-// The show-timing board on the right pillar (brief, Scene 2): a black board in
-// a wooden frame under a small brass lamp, with the time left to Parva on
-// split-flap tiles that flip every minute. The headings are painted on.
+// The show-timing board (brief, Scene 2): a black board in a wooden frame
+// under a small brass lamp, with the time left to Parva on split-flap tiles
+// that flip every minute. The headings are painted on. On the pillar (lg) it
+// is tall and narrow; below the screen on phones it lies wide and low.
 export function ShowBoard({ className }) {
   const { days, hours, minutes } = useCountdown(EVENT.date)
   const { subtitles } = usePrefs()
-  const en = `${days} days, ${hours} hours and ${minutes} minutes to go`
+  const en = `${days} days, ${hours} hours and ${minutes} minutes to go · ${DATE_EN}`
 
   return (
-    <div className={cn('relative pt-7', className)} data-en={`Parva releases in ${en} · ${DATE_EN}`}>
+    <div className={cn('relative pt-7', className)} data-en={`Parva releases in ${en} · ${EVENT.venue}`}>
       <BoardLamp />
       <div className="rounded-[3px] p-[7px] shadow-[inset_0_1px_0_rgba(255,220,170,.35),0_12px_24px_rgba(0,0,0,.6)]" style={wood}>
-        <div className="relative overflow-hidden rounded-[2px] bg-[#15120f] px-3 pb-3 pt-2.5 text-center shadow-[inset_0_2px_10px_rgba(0,0,0,.9)] sm:px-4">
-          <p lang="kn" className="-rotate-[0.6deg] font-kn-display text-lg font-bold leading-snug text-[#f2d68f] [text-shadow:0_1px_0_rgba(0,0,0,.7),0_0_1px_rgba(242,214,143,.6)]">
-            ಪರ್ವ ಬಿಡುಗಡೆಗೆ ಇನ್ನು
-          </p>
-
-          <div className="mt-2 flex items-start justify-center gap-2.5 sm:gap-3">
-            <TileGroup value={days} minDigits={2} label="ದಿನ" />
-            <TileGroup value={hours} minDigits={2} label="ಗಂಟೆ" />
-            <TileGroup value={minutes} minDigits={2} label="ನಿಮಿಷ" />
+        <div className="relative overflow-hidden rounded-[2px] bg-[#15120f] px-3 pb-2.5 pt-2.5 text-center shadow-[inset_0_2px_10px_rgba(0,0,0,.9)] sm:px-4">
+          <div className="flex items-center justify-center gap-4 lg:flex-col lg:gap-2">
+            <p
+              lang="kn"
+              className="w-[6.5rem] -rotate-[0.6deg] text-left font-kn-display text-base font-bold leading-tight text-[#f2d68f] [text-shadow:0_1px_0_rgba(0,0,0,.7),0_0_1px_rgba(242,214,143,.6)] lg:w-auto lg:text-center lg:text-lg"
+            >
+              ಪರ್ವ ಬಿಡುಗಡೆಗೆ ಇನ್ನು
+            </p>
+            <div className="flex items-start justify-center gap-2.5 sm:gap-3">
+              <TileGroup value={days} minDigits={2} label="ದಿನ" />
+              <TileGroup value={hours} minDigits={2} label="ಗಂಟೆ" />
+              <TileGroup value={minutes} minDigits={2} label="ನಿಮಿಷ" />
+            </div>
           </div>
-          <p className={cn('mt-1 font-typewriter text-[0.62rem] text-[#e9dcc0]/65', !subtitles && 'sr-only')}>{en}</p>
+          <p className={cn('mt-1.5 font-typewriter text-[0.62rem] leading-snug text-[#e9dcc0]/65', !subtitles && 'sr-only')}>{en}</p>
 
-          <div aria-hidden className="mx-auto my-2 h-px w-4/5 bg-linear-to-r from-transparent via-[#c9a45a]/50 to-transparent" />
-          <p lang="kn" className="rotate-[0.4deg] font-kn-display text-sm font-semibold text-[#efe2c4] [text-shadow:0_1px_0_rgba(0,0,0,.7)]">{DATE_KN}</p>
-          <p className={cn('text-[0.62rem] text-[#efe2c4]/60', !subtitles && 'sr-only')}>{DATE_EN}</p>
-          <p className="mt-0.5 font-poster text-sm leading-tight tracking-wider text-[#e3c98f]">{EVENT.venue}</p>
+          <div aria-hidden className="mx-auto my-1.5 h-px w-4/5 bg-linear-to-r from-transparent via-[#c9a45a]/50 to-transparent lg:my-2" />
+          <p className="flex flex-wrap items-baseline justify-center gap-x-2 lg:flex-col lg:items-center">
+            <span lang="kn" className="rotate-[0.4deg] font-kn-display text-sm font-semibold text-[#efe2c4] [text-shadow:0_1px_0_rgba(0,0,0,.7)]">
+              {DATE_KN}
+            </span>
+            <span className="font-poster text-sm leading-tight tracking-wider text-[#e3c98f]">{EVENT.venueShort}</span>
+          </p>
 
           {/* The lamp above lights the top of the board */}
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-radial-[ellipse_at_50%_-10%] from-[#ffd79a]/22 via-transparent via-60% to-black/35" />

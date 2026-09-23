@@ -35,12 +35,12 @@ export function TitleScene() {
 
       <div
         ref={boardRef}
-        className="relative mx-auto mt-3 w-[min(100%-2rem,20rem)] lg:absolute lg:right-[calc((100vw-min(66vw,104svh))/4)] lg:top-[24svh] lg:mt-0 lg:w-[clamp(12.5rem,15vw,15rem)] lg:translate-x-1/2"
+        className="relative mx-auto my-auto w-[min(100%-2rem,22rem)] py-3 lg:absolute lg:py-0 lg:right-[calc((100vw-min(66vw,104svh))/4)] lg:top-[24svh] lg:mt-0 lg:w-[clamp(12.5rem,15vw,15rem)] lg:translate-x-1/2"
       >
         <ShowBoard />
       </div>
 
-      <div ref={seatsRef} className="relative mt-auto pt-6">
+      <div ref={seatsRef} className="relative pt-2 lg:mt-auto">
         <SeatRow />
       </div>
     </section>
@@ -73,7 +73,7 @@ function SilverScreen() {
     <div className="bg-[#050302] p-[0.7%] lg:p-[0.9%]" style={{ clipPath: CURVE }}>
       <div
         ref={screenRef}
-        className="@container relative aspect-[6/5] bg-radial from-[#efe6d6] to-[#a9adb4] sm:aspect-[16/9] lg:aspect-[2/1]"
+        className="relative aspect-[6/5] max-h-[38svh] w-full bg-radial from-[#efe6d6] to-[#a9adb4] [container-type:size] sm:aspect-[16/9] sm:max-h-none lg:aspect-[2/1]"
         style={{ clipPath: CURVE }}
       >
         <ForestFilm className="absolute inset-[1.1%] size-[97.8%]" />
