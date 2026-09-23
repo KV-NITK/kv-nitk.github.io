@@ -23,6 +23,28 @@ code {
     monospace;
 }
 
+/* Parva 2026 (/parva-26) palette and fonts, see parve26spec.md §1 */
+@theme {
+  --color-theatre: #140c08;
+  --color-heartwood: #6b3f22;
+  --color-sandal: #c8955f;
+  --color-gandha: #f1dfc0;
+  --color-arishina: #f2c12e;
+  --color-kumkuma: #c8102e;
+  --color-brass: #b8862b;
+  --color-projector: #fff4dc;
+
+  --font-kn-display: 'Baloo Tamma 2 Variable', 'Anek Kannada Variable', sans-serif;
+  --font-kn-body: 'Anek Kannada Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-poster: 'Bebas Neue', 'Anek Kannada Variable', Impact, sans-serif;
+  --font-kn-serif: 'Noto Serif Kannada Variable', Georgia, serif;
+  --font-typewriter: 'Special Elite', 'Noto Serif Kannada Variable', 'Courier New', monospace;
+
+  --color-paper: #efe6d2;
+  --color-print: #3b2a1a;
+  --color-pen: #1d2a4d;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

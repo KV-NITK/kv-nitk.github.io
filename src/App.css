@@ -2,7 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Kannada:wght@100..900&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
 
-* {
+/* Skips the Parva 2026 page, whose Tailwind font classes this unlayered rule
+   would otherwise override. :where() keeps the specificity at zero, so every
+   other page behaves exactly as before. */
+:where(:not(.parva26-page, .parva26-page *)) {
   font-family: "Poppins", sans-serif;
 }
 
