@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
 import { usePrefs } from './prefs'
+import { useCurrentScene } from './use-current-scene'
 import { cn } from '../../lib/utils'
+
+let speak = null
+
+// Puts a scene's line in the strip for a while, like a subtitle for what is
+// on screen (the title's tagline, the lamp's "Light the lamp…"). Anything
+// hovered or focused takes over the strip until it is left.
+export function sayLine(text, ms = 6000) {
+  speak?.(text, ms)
+}
 
 // Bottom-centre film subtitles: pale yellow with a thin black outline
 // (spec §2). Anything carrying data-en shows that English here while it is
@@ -9,8 +19,24 @@ import { cn } from '../../lib/utils'
 // It repeats labels that are already accessible names, so it's aria-hidden.
 export function SubtitleStrip() {
   const { subtitles } = usePrefs()
+  const scene = useCurrentScene()
   const [target, setTarget] = useState(null)
   const [text, setText] = useState('')
+  const [line, setLine] = useState('')
+  const [shown, setShown] = useState('')
+
+  useEffect(() => {
+    let clear = 0
+    speak = (next, ms) => {
+      clearTimeout(clear)
+      setLine(next)
+      clear = setTimeout(() => setLine(''), ms)
+    }
+    return () => {
+      speak = null
+      clearTimeout(clear)
+    }
+  }, [])
 
   useEffect(() => {
     let clear = 0
@@ -62,7 +88,11 @@ export function SubtitleStrip() {
     return () => observer.disconnect()
   }, [target])
 
-  const visible = Boolean(target) && (subtitles || target.hasAttribute('data-en-always'))
+  const hovering = Boolean(target) && (subtitles || target.hasAttribute('data-en-always'))
+  const speaking = !hovering && Boolean(line) && subtitles
+  // The last words stay on screen while the strip fades out.
+  const current = hovering ? text : speaking ? line : ''
+  if (current && current !== shown) setShown(current)
 
   return (
     <p
@@ -70,10 +100,12 @@ export function SubtitleStrip() {
       className={cn(
         'pointer-events-none fixed inset-x-4 bottom-20 z-[65] mx-auto max-w-xl text-center font-kn-body text-base font-semibold leading-snug text-[#fff1a8] transition-opacity duration-200 sm:bottom-8 sm:text-xl',
         '[text-shadow:-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000,0_0_6px_rgba(0,0,0,.8)]',
-        visible ? 'opacity-100' : 'opacity-0'
+        // On phones the title's tickets sit where the strip usually goes.
+        scene?.id === 'title' && 'max-sm:bottom-[11.5rem]',
+        hovering || speaking ? 'opacity-100' : 'opacity-0'
       )}
     >
-      {text}
+      {shown}
     </p>
   )
 }

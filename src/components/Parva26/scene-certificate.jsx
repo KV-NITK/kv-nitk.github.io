@@ -217,6 +217,8 @@ function SubtitlesStampBox({ stamps, animate, subtitles, onToggle }) {
       type="button"
       aria-label="English subtitles"
       aria-pressed={subtitles}
+      // Not data-en-always: switching off hides the strip at once, as a live demo.
+      data-en={`English subtitles: ${subtitles ? 'on' : 'off'}`}
       onClick={onToggle}
       className="group ml-auto inline-flex cursor-pointer items-center gap-2 rounded-sm font-kn-serif text-[0.68rem] uppercase tracking-[0.15em] text-print/75 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kumkuma"
     >
