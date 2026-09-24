@@ -5,13 +5,16 @@ import { PERFORATED } from './booking-counter'
 import { gsap } from './fx/gsap'
 import { brass } from './fx/materials'
 import { paper } from './fx/textures'
+import { usePrefersReducedMotion } from './fx/use-reduced-motion'
 import { cn } from '../../lib/utils'
 
 // Parva Angadi (Scene 8): the lobby's glass showcase, used as the Parva
-// shop. The tee hangs on a brass rod and turns slowly on its hanger; drag it
-// to turn it round, or use the button to see the back. The counter in front
+// shop. The tee hangs on a brass rod and turns slowly on its hanger. Tapping
+// the glass (or picking anything on the counter) swings the door open and
+// the tee comes forward; then it can be dragged round. The counter in front
 // holds the colour swatches, the size tokens (a sold-out size gets a tiny
-// HOUSEFULL stamp), the size chart and the Buy now coupon.
+// HOUSEFULL stamp), the size chart, a button to see the back, and the Buy
+// now coupon. The door closes again once the showcase is out of view.
 
 const closesAt = (iso) => new Date(`${iso}T23:59:59+05:30`).getTime()
 
@@ -22,12 +25,21 @@ export function TeeShowcase({ className }) {
   const [back, setBack] = useState(false)
   const [chart, setChart] = useState(false)
   const [hint, setHint] = useState(false)
+  const [open, setOpen] = useState(false)
   const sizesRef = useRef(null)
+  const shopRef = useRef(null)
   const variant = TEE.variants.find((v) => v.id === variantId)
   const closed = Date.now() > closesAt(TEE.closes)
   const early = TEE.earlySold < TEE.earlyQuota
   const price = early ? TEE.earlyPrice : TEE.price
   const closeDay = eventDay(TEE.closes)
+
+  // The door closes behind you once you've walked on.
+  useEffect(() => {
+    const seen = new IntersectionObserver(([entry]) => !entry.isIntersecting && setOpen(false))
+    seen.observe(shopRef.current)
+    return () => seen.disconnect()
+  }, [])
 
   // A size sold out in the new colour can't stay picked.
   useEffect(() => {
@@ -43,7 +55,7 @@ export function TeeShowcase({ className }) {
   const href = TEE.buyLink === '#' ? '#' : `${TEE.buyLink}?variant=${variant.id}&size=${size ?? ''}`
 
   return (
-    <div id="angadi" className={cn('relative flex scroll-mt-20 flex-col items-center', className)}>
+    <div ref={shopRef} id="angadi" className={cn('relative flex scroll-mt-20 flex-col items-center', className)}>
       <h3 className="relative z-10 -mb-1 rounded-t-[6px] bg-kumkuma px-6 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2)]">
         <span lang="kn" className="block font-kn-display text-2xl font-extrabold leading-tight">
           ಪರ್ವ ಅಂಗಡಿ
@@ -52,7 +64,7 @@ export function TeeShowcase({ className }) {
       </h3>
 
       {/* The cabinet */}
-      <div className="relative w-full max-w-[24rem] rounded-t-[6px] p-2.5 shadow-[0_1rem_1.4rem_-0.6rem_rgba(20,30,20,.55)]" style={{ backgroundImage: TEAK }}>
+      <div className="relative w-full max-w-[24rem] rounded-t-[6px] p-2.5 shadow-[0_1rem_1.4rem_-0.6rem_rgba(20,30,20,.55)] [perspective:1800px]" style={{ backgroundImage: TEAK }}>
         <div
           className="relative aspect-[1/1] overflow-hidden rounded-[2px] shadow-[inset_0_0.5rem_1rem_rgba(0,0,0,.5)]"
           style={{ backgroundImage: 'radial-gradient(ellipse 55% 60% at 50% 30%, rgba(255,226,170,.35), transparent 70%), linear-gradient(180deg, #274442, #16302e 70%, #0f2321)' }}
@@ -61,7 +73,7 @@ export function TeeShowcase({ className }) {
           <span aria-hidden className="absolute inset-x-[10%] top-1 h-1 rounded-full bg-[#fff3d0] shadow-[0_0_12px_4px_rgba(255,226,160,.6)]" />
           <span aria-hidden className="absolute inset-x-[6%] top-[7%] h-1.5 rounded-full shadow-[0_2px_2px_rgba(0,0,0,.5)]" style={brass} />
 
-          <Tee3D variant={variant} back={back} onTurn={setBack} />
+          <Tee3D variant={variant} back={back} onTurn={setBack} forward={open} />
 
           <PriceTag price={TEE.price} early={early ? TEE.earlyPrice : null} />
 
@@ -76,29 +88,9 @@ export function TeeShowcase({ className }) {
             {subtitles && <span className="block text-[0.85rem] font-semibold leading-tight">Orders close {closeDay.en}</span>}
           </p>
 
-          <button
-            type="button"
-            onClick={() => setBack((b) => !b)}
-            className="absolute bottom-[4%] right-[4%] z-10 flex min-h-11 items-center gap-2 rounded-full bg-[#10201f]/70 px-3 text-[#f3ead5] ring-1 ring-[#c9a052]/60 transition-colors hover:bg-[#10201f]/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
-          >
-            <span aria-hidden className="size-3 rounded-full shadow-[inset_0_-1px_1px_rgba(0,0,0,.5)]" style={brass} />
-            <span className="text-left leading-tight">
-              <span lang="kn" className="block font-kn-display text-sm font-semibold">
-                {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
-              </span>
-              {subtitles && <span className="block text-xs">{back ? 'See the front' : 'See the back'}</span>}
-            </span>
-          </button>
-
-          {/* The glass: two soft reflections and a brass lock */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ backgroundImage: 'linear-gradient(120deg, transparent 12%, rgba(255,255,255,.14) 16%, transparent 22%, transparent 68%, rgba(255,255,255,.08) 71%, transparent 76%)' }}
-          />
-          <span aria-hidden className="absolute right-0 top-1/2 h-8 w-2 -translate-y-1/2 rounded-l-[2px]" style={brass} />
           {closed && <ClosedBoard subtitles={subtitles} />}
         </div>
+        <GlassDoor open={open} onOpen={() => setOpen(true)} subtitles={subtitles} />
       </div>
 
       {/* The counter top in front, with the choices on it */}
@@ -118,7 +110,10 @@ export function TeeShowcase({ className }) {
                   aria-checked={v.id === variantId}
                   aria-label={v.en}
                   data-en={v.en}
-                  onClick={() => setVariantId(v.id)}
+                  onClick={() => {
+                    setVariantId(v.id)
+                    setOpen(true)
+                  }}
                   className={cn(
                     'relative size-11 rounded-[4px] p-1 shadow-[0_2px_3px_rgba(0,0,0,.45)] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
                     v.id === variantId ? '-translate-y-0.5 ring-2 ring-arishina' : 'hover:-translate-y-0.5'
@@ -154,6 +149,7 @@ export function TeeShowcase({ className }) {
                     onClick={() => {
                       setSize(s.id)
                       setHint(false)
+                      setOpen(true)
                     }}
                     className={cn(
                       'relative grid size-11 place-items-center rounded-full font-poster text-lg leading-none shadow-[0_2px_3px_rgba(0,0,0,.5),inset_0_1px_0_rgba(255,240,210,.35)] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
@@ -182,6 +178,23 @@ export function TeeShowcase({ className }) {
               {subtitles && <span className="font-kn-body"> · Size chart</span>}
             </button>
           </fieldset>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBack((b) => !b)
+              setOpen(true)
+            }}
+            className="flex min-h-11 items-center gap-2 self-end rounded-full bg-black/25 px-3 text-[#f3ead5] ring-1 ring-[#c9a052]/50 transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
+          >
+            <span aria-hidden className="size-3 rounded-full shadow-[inset_0_-1px_1px_rgba(0,0,0,.5)]" style={brass} />
+            <span className="text-left leading-tight">
+              <span lang="kn" className="block font-kn-display text-sm font-semibold">
+                {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
+              </span>
+              {subtitles && <span className="block text-xs">{back ? 'See the front' : 'See the back'}</span>}
+            </span>
+          </button>
         </div>
 
         {chart && <SizeChart subtitles={subtitles} />}
@@ -234,7 +247,7 @@ const COUNTER =
 // The tee on its hanger, drawn in SVG, turning in 3D. It sways gently on
 // its own; a drag turns it by hand and it settles facing front or back.
 // Real photos (variant.photos) replace the drawing when they arrive.
-function Tee3D({ variant, back, onTurn }) {
+function Tee3D({ variant, back, onTurn, forward }) {
   const turnRef = useRef(null)
   const drag = useRef(null)
   const [held, setHeld] = useState(false)
@@ -278,7 +291,11 @@ function Tee3D({ variant, back, onTurn }) {
       onPointerMove={onMove}
       onPointerUp={onUp}
       onPointerCancel={onUp}
-      className={cn('absolute left-1/2 top-[3%] w-[64%] -translate-x-1/2 cursor-grab touch-pan-y select-none [perspective:900px]', held && 'cursor-grabbing')}
+      className={cn(
+        'absolute left-1/2 top-[3%] w-[64%] -translate-x-1/2 cursor-grab touch-pan-y select-none transition-[scale] duration-500 ease-out [perspective:900px]',
+        forward && 'scale-[1.07]',
+        held && 'cursor-grabbing'
+      )}
     >
       <div ref={turnRef} className="relative transform-3d">
         <div className={cn('relative transform-3d origin-top motion-safe:animate-tee-sway', held && '[animation-play-state:paused]')}>
@@ -456,5 +473,39 @@ function ClosedBoard({ subtitles }) {
       </span>
       {subtitles && <span className="block font-poster text-xl leading-none tracking-[0.2em]">Booking closed</span>}
     </p>
+  )
+}
+
+// The showcase's glass door, hinged on the left, with a brass handle. A tap
+// swings it open toward you, with a small overshoot like a stiff hinge; with
+// reduced motion it just fades.
+function GlassDoor({ open, onOpen, subtitles }) {
+  const reduced = usePrefersReducedMotion()
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      inert={open}
+      aria-label="Open the showcase"
+      data-en="Open the showcase"
+      className={cn(
+        'group/door absolute inset-2.5 z-20 origin-left rounded-[2px] border-[5px] border-[#6e4322] shadow-[inset_0_0_0_1px_rgba(255,220,170,.25)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
+        reduced ? 'transition-opacity duration-300' : 'transition-[rotate,opacity] duration-700 ease-[cubic-bezier(.3,1.35,.5,1)]',
+        open ? cn('pointer-events-none', reduced ? 'opacity-0' : '[rotate:y_-100deg]') : 'hover:[rotate:y_-5deg]'
+      )}
+      style={{
+        backgroundImage:
+          'linear-gradient(120deg, transparent 12%, rgba(255,255,255,.16) 16%, transparent 22%, transparent 68%, rgba(255,255,255,.09) 71%, transparent 76%), linear-gradient(rgba(200,235,230,.06), rgba(200,235,230,.06))',
+      }}
+    >
+      {/* Handle, and a small brass plate that says what to do */}
+      <span aria-hidden className="absolute right-1 top-1/2 h-9 w-2.5 -translate-y-1/2 rounded-[3px] shadow-[0_2px_3px_rgba(0,0,0,.5)]" style={brass} />
+      <span aria-hidden className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[2px] px-2 py-0.5 text-center shadow-[0_2px_3px_rgba(0,0,0,.45)]" style={brass}>
+        <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight text-[#4a3208]">
+          ತೆರೆಯಿರಿ
+        </span>
+        {subtitles && <span className="block font-poster text-xs leading-none tracking-widest text-[#4a3208]">Open</span>}
+      </span>
+    </button>
   )
 }

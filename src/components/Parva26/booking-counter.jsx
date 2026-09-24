@@ -52,7 +52,7 @@ export function BookingCounter({ className }) {
             {subtitles && <span className="block text-base font-semibold">All coupons are gone</span>}
           </p>
         ) : (
-          <Coupon price={MEAL.price} href={MEAL.bookLink} subtitles={subtitles} />
+          <Coupon data-coupon price={MEAL.price} href={MEAL.bookLink} subtitles={subtitles} />
         )}
       </div>
 
@@ -171,13 +171,18 @@ function HousefullBoard({ subtitles }) {
 }
 
 // The coupon, pushed out through the hole: the Book button. Arishina paper
-// with a perforated stub; it slides a little further out on hover.
-function Coupon({ price, href, subtitles }) {
+// with a perforated stub; it slides a little further out on hover. The
+// phone's sticky Book button is a second copy of it.
+export function Coupon({ price, href, subtitles, className, ...props }) {
   return (
     <a
       href={href}
       data-en="Book a Bhoori Bhojana coupon"
-      className="group relative z-10 block rotate-[-2deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(40,20,5,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-kumkuma"
+      className={cn(
+        'group relative z-10 block rotate-[-2deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(40,20,5,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-kumkuma',
+        className
+      )}
+      {...props}
     >
       {/* The mask would clip a box shadow, so the shadow is a drop shadow on
           the (small) link instead */}

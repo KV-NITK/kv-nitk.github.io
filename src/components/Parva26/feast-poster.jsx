@@ -56,7 +56,7 @@ export function FeastPoster({ className }) {
   const shown = served || reduced
 
   return (
-    <div className={cn('relative rounded-[6px] p-2.5 shadow-[0_1.2rem_1.6rem_-0.6rem_rgba(20,30,20,.55)]', className)} style={{ backgroundImage: 'linear-gradient(180deg, #6a4424, #4a2c14)' }}>
+    <div data-food className={cn('relative rounded-[6px] p-2.5 shadow-[0_1.2rem_1.6rem_-0.6rem_rgba(20,30,20,.55)]', className)} style={{ backgroundImage: 'linear-gradient(180deg, #6a4424, #4a2c14)' }}>
       {/* Screws of the display frame */}
       {['left-1 top-1', 'right-1 top-1', 'bottom-1 left-1', 'bottom-1 right-1'].map((at) => (
         <span key={at} aria-hidden className={cn('absolute size-1.5 rounded-full bg-[#c9a052] shadow-[0_1px_1px_rgba(0,0,0,.6)]', at)} />

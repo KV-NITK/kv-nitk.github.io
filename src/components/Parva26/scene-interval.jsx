@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePrefs } from './prefs'
 import { sayLine } from './subtitle-strip'
 import { FeastPoster } from './feast-poster'
-import { BookingCounter } from './booking-counter'
+import { BookingCounter, Coupon } from './booking-counter'
+import { MEAL } from './data'
 import { TeeShowcase } from './tee-showcase'
 import { FilmFrame } from './fx/film-frame'
 import { useFilmScreen } from './fx/film-layer'
@@ -145,6 +147,7 @@ export function IntervalScene() {
       </div>
 
       {!reduced && <IntervalMove parts={move.current} />}
+      <StickyBook lobbyRef={lobbyRef} />
     </section>
   )
 }
@@ -296,5 +299,60 @@ function Dado() {
         }}
       />
     </div>
+  )
+}
+
+// On a phone the food station is taller than the screen, so while the
+// poster or the booking window is in view but the coupon itself isn't, a
+// copy of the coupon waits at the bottom of the screen. It's portalled to
+// the page root: the section is pinned during the move, and a fixed element
+// inside a pinned one would move with it.
+function StickyBook({ lobbyRef }) {
+  const { subtitles } = usePrefs()
+  const [show, setShow] = useState(false)
+  const [root, setRoot] = useState(null)
+  const soldOut = MEAL.sold >= MEAL.coupons
+
+  useEffect(() => {
+    const lobby = lobbyRef.current
+    setRoot(lobby.closest('.parva26-page') ?? document.body)
+    const food = new Set()
+    let coupon = false
+    const update = () => setShow(food.size > 0 && !coupon && lobby.hasAttribute('data-lit'))
+    const seenFood = new IntersectionObserver((entries) => {
+      for (const entry of entries) entry.isIntersecting ? food.add(entry.target) : food.delete(entry.target)
+      update()
+    })
+    for (const el of [lobby.querySelector('[data-food]'), lobby.querySelector('#bhoori-bhojana')]) el && seenFood.observe(el)
+    const seenCoupon = new IntersectionObserver(
+      ([entry]) => {
+        coupon = entry.isIntersecting
+        update()
+      },
+      { threshold: 0.6 }
+    )
+    const real = lobby.querySelector('[data-coupon]')
+    real && seenCoupon.observe(real)
+    const lit = new MutationObserver(update)
+    lit.observe(lobby, { attributes: true, attributeFilter: ['data-lit'] })
+    return () => {
+      seenFood.disconnect()
+      seenCoupon.disconnect()
+      lit.disconnect()
+    }
+  }, [lobbyRef])
+
+  if (!root || soldOut) return null
+  return createPortal(
+    <div
+      inert={!show}
+      className={cn(
+        'fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-[60] transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none lg:hidden',
+        show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-[160%] opacity-0'
+      )}
+    >
+      <Coupon price={MEAL.price} href={MEAL.bookLink} subtitles={subtitles} className="rotate-[-3deg]" />
+    </div>,
+    root
   )
 }
