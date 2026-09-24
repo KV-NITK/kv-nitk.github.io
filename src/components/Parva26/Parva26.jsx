@@ -62,7 +62,7 @@ export default function Parva26() {
           <IntervalScene />
           <ReleaseDayScene />
           <TimelineScene />
-          <FilmFrame><EmojiGameScene /></FilmFrame>
+          <EmojiGameScene />
           <FilmFrame><CreditsScene /></FilmFrame>
         </main>
       </div>

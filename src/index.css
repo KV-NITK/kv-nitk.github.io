@@ -237,6 +237,21 @@ code {
     77% { opacity: 0.96; }
     78% { opacity: 1; }
   }
+  /* Projection booth (Scene 11): the bare bulb swings a little, a wrong
+     guess shakes the can */
+  --animate-bulb-sway: p26-bulb-sway 3.4s ease-in-out infinite alternate;
+  --animate-nope: p26-nope 0.4s ease-in-out;
+
+  @keyframes p26-bulb-sway {
+    from { rotate: -2deg; }
+    to { rotate: 2deg; }
+  }
+  @keyframes p26-nope {
+    0%, 100% { translate: 0 0; }
+    20% { translate: -7px 0; }
+    45% { translate: 6px 0; }
+    70% { translate: -3px 0; }
+  }
   @keyframes p26-mote {
     0% { transform: translate(0, 0); opacity: 0; }
     15% { opacity: 0.9; }
