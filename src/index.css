@@ -39,6 +39,8 @@ code {
   --font-poster: 'Bebas Neue', 'Anek Kannada Variable', Impact, sans-serif;
   --font-kn-serif: 'Noto Serif Kannada Variable', Georgia, serif;
   --font-typewriter: 'Special Elite', 'Noto Serif Kannada Variable', 'Courier New', monospace;
+  /* Old film title cards (allscenes.md, Scene 4) */
+  --font-kn-card: 'Akaya Kanadaka', 'Baloo Tamma 2 Variable', serif;
 
   --color-paper: #efe6d2;
   --color-print: #3b2a1a;

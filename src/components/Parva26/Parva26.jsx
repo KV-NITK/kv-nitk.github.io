@@ -3,6 +3,7 @@ import '@fontsource-variable/baloo-tamma-2'
 import '@fontsource/bebas-neue'
 import '@fontsource-variable/noto-serif-kannada'
 import '@fontsource/special-elite'
+import '@fontsource/akaya-kanadaka'
 
 import { useState } from 'react'
 import MetaData from '../MetaData/MetaData'
@@ -54,7 +55,7 @@ export default function Parva26() {
         <main>
           <TitleScene />
           <CertificateScene />
-          <FilmFrame><GandhadaGudiScene /></FilmFrame>
+          <GandhadaGudiScene />
           <FilmFrame><FanPassStub /></FilmFrame>
           <FilmFrame><NowShowingScene /></FilmFrame>
           <FilmFrame><GuestsScene /></FilmFrame>
