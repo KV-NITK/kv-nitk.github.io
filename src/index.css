@@ -185,6 +185,22 @@ code {
     92% { rotate: -1deg; }
     94% { rotate: 0.5deg; }
   }
+  /* Interval (Scene 8): the tee turning a little on its hanger, and the
+     scratches of a worn reel on the ವಿರಾಮ card */
+  --animate-tee-sway: p26-tee-sway 7s ease-in-out infinite alternate;
+  --animate-scratch: p26-scratch 1.3s steps(1) infinite;
+
+  @keyframes p26-tee-sway {
+    from { transform: rotateY(-20deg); }
+    to { transform: rotateY(20deg); }
+  }
+  @keyframes p26-scratch {
+    0%, 100% { opacity: 0.7; translate: 0 0; }
+    23% { opacity: 0.15; translate: 3px 0; }
+    41% { opacity: 0.8; translate: -2px 0; }
+    67% { opacity: 0; }
+    82% { opacity: 0.5; translate: 5px 0; }
+  }
   @keyframes p26-mote {
     0% { transform: translate(0, 0); opacity: 0; }
     15% { opacity: 0.9; }
