@@ -1,12 +1,15 @@
-name: CI/CD Pipeline (PAUSED)
+name: CI/CD Pipeline
 
-# Automatic CI/CD pipeline triggers are paused per administrator request.
+# Every push to master is built and checked, then deployed to the campus
+# server by the self-hosted runner there. Pull requests are only checked.
+# (Paused on 29 Aug 2026 while the deploy step kept failing; the cause was the
+# runner's work folder, which was named "sudo ./svc.sh install" — a path with
+# spaces the runner doesn't quote. It is now "_work" in ~/actions-runner/.runner.)
 on:
-  # Disabled automated triggers on push/PR
-  # push:
-  #   branches: [ master ]
-  # pull_request:
-  #   branches: [ master ]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
 
 permissions:
@@ -44,19 +47,21 @@ jobs:
         run: cd server && node --check src/server.js src/app.js
 
   # ----------------------------------------------------
-  # Job 2: Auto-Deploy on NITK Campus Server (10.14.0.80)
-  # Runs on self-hosted runner on 10.14.0.80
+  # Job 2: Deploy on the NITK campus server (10.14.0.80)
+  # Runs on the self-hosted runner there
   # ----------------------------------------------------
   deploy-to-nitk-server:
-    name: Auto-Deploy to NITK Campus Server
+    name: Deploy to NITK Campus Server
     needs: test-and-verify
     if: (github.ref == 'refs/heads/master' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     runs-on: self-hosted
+    # One deploy at a time; a push that lands mid-deploy waits its turn.
+    concurrency:
+      group: deploy-nitk-server
+      cancel-in-progress: false
     steps:
       - name: Deploy via deploy.sh
         run: |
-          mkdir -p /home/kannadavedike/actions-runner
-          ln -sf /usr/bin/sudo /home/kannadavedike/actions-runner/sudo 2>/dev/null || true
           export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
           cd /home/kannadavedike/kv-nitk.github.io
           bash deploy.sh
