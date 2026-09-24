@@ -8,6 +8,82 @@
 
 ---
 
+## 0. Where the build is (handover, 24 Sep 2026)
+
+Read this section first when picking the work up in a new chat. The rest of this file is the original plan; where the build or a later decision differs, this section wins.
+
+### The documents
+- **`parve26spec.md` (this file):** what is on the page, scene by scene, and the current status.
+- **`parva26-brief.md`:** how it should look and feel: the six rules, the objects that stay on every screen, and Scenes 0–3 in detail.
+- **`allscenes.md`:** Scenes 4 and 6–12 in the same detail, plus shared rules A1–A9. Its "Decisions from review" block at the top overrides its own text.
+- **`100sites.md`:** the quality bar. Every scene should feel like one of those pages: a place or an object, never "a heading and three cards".
+
+### Decisions made along the way
+- **Dates and venue:** 29 and 30 October and 1 November 2026, across the NITK campus. There is no single venue; each event gives its own.
+- **Progress reel labels:** ಮೊದಲಾರ್ಧ First Half (Scenes 2–7), ವಿರಾಮ Interval (8–9), ದ್ವಿತೀಯಾರ್ಧ Second Half (10–11), ಶುಭಂ (12). Not "Climax".
+- **Digits (rule A5):** prices, dates, times, seat counts and stock counts always use normal digits, even with subtitles off. Kannada numerals are decoration only (edge codes, seat plates, the clock face).
+- **Scene 8 has no canteen.** Food is a coupon for the one day there is a meal: people buy it and come to eat. Scene 8 needs a redesign around the coupon and merch before it is built.
+- **Scene 6 posters** are drawn in code as animated SVG, one motif per kind of event. Only singer and guest posters get a real photo, through the `photo` field in `data.js`.
+- **Photos:** until real guest, team and product photos arrive, use dummy details and reuse photos already in the site's gallery.
+- **Scene 7 shows three things on one lobby wall:** this year's guests under velvet veils, the guests of past Parvas (lamps lit, photos cropped from the Parva 2025 guest posters), and the sponsors, credited as a film credits its backers on a "producers' board": ಕಾರ್ಯಕಾರಿ ನಿರ್ಮಾಪಕರು · Executive Producers, ಸಹಯೋಗದೊಂದಿಗೆ · In association with, ಮಾಧ್ಯಮ ಸಹಯೋಗ · Media partner. Logos stay in full colour on ivory enamel plates. The Scene 12 "Special thanks" can repeat them in single-colour cream.
+- **Other scene changes:** the rest of the `allscenes.md` changes are accepted (veiled portraits for Scene 7, the night street for 9, the rewind bench for 10, the projection booth for 11, gallery and policy links inside the credits for 12).
+
+### Status by scene
+
+| Scene | State | Notes |
+|---|---|---|
+| Objects on every screen | Built | Logo disc, brass subtitles plate, speaker grille, Book ticket stub, progress reel, subtitle strip, agarbatti cursor, grain and vignette. Sound itself is not built, so the grille does not pulse. |
+| 0 Lamp, 1 Curtain and countdown | Paused | Pieces built but not wired in: `lamp.jsx`, `fx/smoke.js` (smoke letters), `fx/leader.js` (೫ ೪ ೩ ೨ countdown), `fx/stage-curtain.js` (curtain that shows the projection bent over its folds, opens and closes). Still to do: the darkness overlay, the sequence on the page (camera close on the lamp, lights coming up, curtain, then title), scroll lock, Skip tab, returning-visitor skip, reduced motion. |
+| 1 The hall (set) | Built | Carved arch with crest, parrots and elephants; top drape; tied-back curtains; footlights; name board with chasing bulbs and a dead bulb; pillars, wall lamps, real-time clock, exit sign (left wall); beam, smoke, dust and ceiling fans on one canvas; audience rows that react when the title lands; mouse parallax by depth. |
+| 2 Title (hero) | Built | Curved silver screen, painted forest film, extruded ಪರ್ವ with the opening-credits sequence, flip-tile show board (days, hours, minutes), three tickets in the seat in front, scroll-pinned camera push into the screen. Subtitles sit on the screen while the hall shows. |
+| 3 Certificate | Built | Typed fields, signature, stamp, ON/OFF subtitles stamp, cue-mark cut. Length now reads "Three full days". |
+| 4 Why sandalwood | Built | Film strip pulled sideways by the scroll (pinned, 2 screens): forest, carver's bench, tiny theatre; the agarbatti smoke crosses into frame 3 and becomes its beam. Kannada caption lines still to be written by the club. |
+| 5 Fan pass | Paused | Only `fx/transliterate.js` (rule-based English→Kannada spellings) exists, uncommitted. A placeholder section is on the page. |
+| 6 Now Showing | Built | Poster hoarding with six painted posters (stand-in events from Parva 2025), genre stamps, posters that turn over to time, venue and a Register stamp, "All shows" sign. |
+| 7 Special appearance | Built | The lobby's wall of honour. Laptop: pinned, the camera pans along the wall (1.1 screens) with a velvet rope barrier sliding past in front. Phone: stacked, normal scroll. This year: five arched frames under kumkuma veils with gold cord, wax seal and a date tag; the next guest due gets a countdown stamp and a trembling tag; tapping a veil shakes it and turns the tag over to the PR teaser. The one-time unveiling (seal cracks, cord drops, velvet slides down, lamp flickers on, arishina and kumkuma puff) is remembered in `localStorage`; see it with `/parva-26?unveil`. Then the Parva 2025 guests and the producers' board. Stand-in reveal dates and teasers; no names in the page code. |
+| 8–12 | Not started | First-pass placeholder sections are on the page. Scenes 10, 11, 12 sit inside the on-screen film frame; 8 and 9 do not (the interval steps out of the hall). |
+
+### Where the code lives
+Route `/parva-26`, lazy-loaded from `src/App.jsx`. `/parva` still shows Parva 2025 until launch. Everything is in `src/components/Parva26/`:
+- **Page and data:** `Parva26.jsx` (scene order, which scenes get a `FilmFrame`), `scenes.js` (scene ids and acts), `data.js` (event date and venue, events, genres, guests, meal, merch, timeline, credits; all stand-ins are marked `TODO(content)`), `prefs.jsx` (subtitles and sound preferences, the `Sub` component).
+- **Always on:** `top-bar.jsx`, `film-reel.jsx`, `subtitle-strip.jsx` (`sayLine()` for scene lines, `anchorStrip()` to sit on the screen), `agarbatti-cursor.jsx`.
+- **The hall and hero:** `scene-title.jsx` (composition, silver screen, forest canvas, air canvas, parallax, camera push), `title-card.jsx`, `show-board.jsx`, `seat-tickets.jsx`, `name-board.jsx` (exports `Bulbs`), `proscenium.jsx`, `theatre-walls.jsx`, `audience.jsx`.
+- **Other built scenes:** `scene-certificate.jsx`, `scene-gandhada-gudi.jsx`, `scene-now-showing.jsx`, `poster-art.jsx`, `scene-guests.jsx` (the lobby wall, pan, producers' board) and `honour-frame.jsx` (one frame: lamp, veil, tag, nameplate, unveiling).
+- **Images:** `assets/guests/` (past guests' portraits as small WebP), `assets/sandal-panel.webp` (the lobby wall's grain tile). Sponsor logos are still read from `public/sponsors/`.
+- **Shared effects (`fx/`):** `film-layer.jsx` (grain and flicker canvas; `useFilmScreen`, `useFilmTick`), `film-frame.jsx` (the on-screen frame and cue mark), `forest.js`, `air.js`, `sandal-strip.js`, `carving.js`, `materials.js` and `textures.js` (materials as style objects), `gsap.js` (GSAP with ScrollTrigger and DrawSVG registered), `ink-defs.jsx` (the rubber-stamp SVG filter).
+- **Styling:** Tailwind v4 utilities only. Palette, fonts and keyframes are tokens in the `@theme` block of `src/index.css`. Fonts are self-hosted with `@fontsource` (Anek Kannada, Baloo Tamma 2, Noto Serif Kannada, Bebas Neue, Special Elite, Akaya Kanadaka).
+- **Gotchas:** don't use `<figure>`/`<figcaption>` in the page: `src/components/Cards/Cards.css` styles every `figure` on the site (white box, padding). `position: sticky` does not work on this site (html, body and #root have `overflow-x: hidden`), so use GSAP pinning or `fixed`. SVG `textPath` breaks Kannada shaping, so lay aksharas out one by one with `graphemes()` from `text.js`. `src/App.css` has a global Poppins rule, scoped away from `.parva26-page`. In React 19 development mode refs are already null in effect cleanups, so capture DOM elements when the effect starts.
+
+### Performance: rules for every new scene
+Measured problems and the fixes that worked. Follow these in Scenes 7–12 and the opening.
+1. **One canvas per scene for anything that moves all the time,** on the shared 12 fps tick (`useFilmTick`), paused when off screen with an IntersectionObserver. Paint still parts once into offscreen canvases and only composite them each frame (see `forest.js`, `sandal-strip.js`). Cap each canvas's pixel count (the hero forest uses about 480k pixels; the air canvas runs at half resolution).
+2. **Never scale or fade a big DOM subtree without promoting it.** Scaling the hall repainted everything at every zoom step: about 5.4 s of painting in a 3 s scroll. Give the moving parts `will-change` only while they move and remove it about 200 ms after they stop, so they repaint once, sharp. The pattern is in `useCameraPush` in `scene-title.jsx`. The interval walk-out (Scene 8) and the ending pull-back (Scene 12) must reuse it. The exception is something that only slides and never scales (the Scene 7 wall): keep its layer for as long as it is near the screen, or every new scroll re-rasters it.
+3. **Never write a CSS custom property on `:root` (or `html`/`body`) per frame.** It restyles the whole page. Set it on the one element that uses it (see `anchorStrip`).
+4. **Full-screen canvases redraw on their tick, not on every scroll frame.**
+5. **No CSS `filter`, `backdrop-filter` or `mix-blend-mode` on large areas, and no live SVG noise textures.** Small elements are fine (stamps use the ink filter). Bake textures to small WebP tiles (`assets/`). On big moving surfaces, bake the grain and grooves too: tiles of a textured wall are painted the first time they slide into view, which is most of the Scene 7 pan's cost.
+6. **Small SVG motifs animate with CSS keyframes on transform and opacity only,** and are paused (`animation-play-state`) when off screen (see Scene 6).
+7. **Turn mouse parallax off during scroll-driven moves.**
+8. **Read layout (`getBoundingClientRect`) once per frame in one place,** after writes, never in a read-write-read loop.
+9. **Scroll-driven scenes:** pin with ScrollTrigger and scrub 0.5–0.6; drive drawing from a proxy tween's `onUpdate`. Keep holds under about 1.5 screens (A4).
+10. **Every scene needs a reduced-motion path:** no scrubbing, shaking or camera moves; short fades are fine; all content and actions still work.
+11. **Page weight:** the Parva chunk is about 57 kB gzipped (through Scene 7) and fonts about 0.6 MB. Keep the first load under 3 MB and load each later scene's images and sound just before it (A8).
+12. **Measuring:** profile a production build (`npx vite build && npx vite preview`) with Playwright's headless Chromium, and use a trace to see raster, style and compositing time. The developer's laptop has no GPU (`nomodeset`), so frame rates there are a worst case; compositing that a GPU does for free shows up as CPU time. Judge by raster and style time. Before the push fix: 24 fps; after: raster 5.4 s → 0.25 s and style 0.8 s → 0.1 s.
+
+### Deploying
+The live site is nginx on the NITK campus server (10.14.0.80), not GitHub Pages. Every push to `master` is built on GitHub and deployed by the self-hosted runner on that server (`deploy.sh`), and is live within about a minute. Anything pushed to `master` is public, so consider a branch for unfinished work, and add `noindex` to the page until launch. `/events` on the live site returns 403 (nginx `try_files` hitting the real `public/events/` folder).
+
+### What is left
+- **Scenes:** 8 interval (redesign first: food coupon and merch, walk-out move); 9 release-day cutout; 10 rewind bench; 11 projection booth game; 12 credits and ಶುಭಂ; then resume the opening (0–1) and the fan pass (5).
+- **Features:** sound (music loop, effects, ducking, pause when hidden), word meanings (glossary), phone tilt parallax (optional).
+- **Backend, separate from payments:** counters (lamps, flowers), guest reveals by date, emoji game (daily set, answer checking in Kannada and English, leaderboard with a name filter), optional spelling server for the fan pass.
+- **Decision:** booking and payment for the food coupon and merch.
+- **Content from the team:** the real event list (the board shows last year's events as stand-ins); food day, menu, price and capacity; merch items, prices, sizes, photos and pickup; guests with photos, permission, reveal dates and teaser lines; this year's sponsors and their tiers (and single-colour logos for the credits); singer and guest poster photos; Scene 4 Kannada captions; 40+ emoji puzzles; 30–50 glossary words; credits with confirmed Kannada spellings; social links and contact; policy texts; music and whistle recordings; the Parva Hero cutout art; a proofread of every Kannada line (including the stand-in event titles and genre stamps) and a check of the timeline years.
+- **Launch:** `noindex` until launch, link-preview image and favicon, page-weight check, testing on a cheap Android phone and slow data, reduced motion and accessibility, then point `/parva` to the new page.
+- **Leftovers:** "coming soon" placeholders in unbuilt scenes, the dead meal Book button, Register links that go nowhere, timeline film names tagged as Kannada.
+- **Server:** fix `/events` 403, merge the two scripts pasted into `deploy.sh`, change the server password if not done.
+
+---
+
 ## 1. Look and feel
 
 **Palette.** Keep the theatre warm and dark so the screen glows. Use yellow and red only as accents so the flag colours stay special.
@@ -30,7 +106,7 @@
 - **English poster headings:** Bebas Neue or Oswald. Condensed letters like old posters.
 - **Ticket and pass numbers:** any monospace font.
 
-**Kannada numerals.** Use Kannada numerals (೦-೯) for decoration, and show normal digits in the English subtitles. Many Kannada speakers don't read Kannada numerals quickly.
+**Kannada numerals.** Use Kannada numerals (೦-೯) for decoration only. Prices, dates, times, seat counts and stock counts always use normal digits, even with subtitles off (rule A5 in `allscenes.md`). Many Kannada speakers don't read Kannada numerals quickly.
 
 **The ಬೆಳ್ಳಿ ಪರದೆ effect (the hero visual).**
 - **Screen:**
@@ -54,7 +130,7 @@
   - **Subtitles switch** ("ಉಪಶೀರ್ಷಿಕೆ · Subtitles: ON/OFF").
   - Sound on/off.
   - A sticky **"Book"** button for coupons and merch. The actions that bring in money should always be one tap away.
-- **Reel progress:** a small film reel in the corner that unwinds as you scroll, with labels First Half / ವಿರಾಮ / Second Half / Climax. It shows people where they are and how much is left.
+- **Reel progress:** a small film reel in the corner that unwinds as you scroll, with labels ಮೊದಲಾರ್ಧ First Half / ವಿರಾಮ Interval / ದ್ವಿತೀಯಾರ್ಧ Second Half / ಶುಭಂ. It shows people where they are and how much is left.
 
 ---
 
@@ -90,7 +166,7 @@
 - **Big hand-lettered ಪರ್ವ**, then "Parva 2026."
 - **Tagline:** "ಗಂಧದ ಗುಡಿಯ ಹಬ್ಬ · A festival for the land of sandalwood: its forests, its craft and its cinema"
 - **Date and venue.**
-- **Countdown to Parva** in days and hours.
+- **Countdown to Parva** in days, hours and minutes (flip tiles, normal digits).
 - **Three buttons:**
   - "ಭೂರಿ ಭೋಜನ · Get food coupon"
   - "ಪರ್ವ ಅಂಗಡಿ · Merch"
@@ -101,7 +177,7 @@
   - "ಪ್ರಮಾಣ ಪತ್ರ · Certificate"
   - Title: ಪರ್ವ
   - Category: ಸರ್ವರಿಗೂ (for everyone)
-  - Length: one full day
+  - Length: three full days (Parva runs on 29 and 30 October and 1 November)
   - Language: ಕನ್ನಡ, with English subtitles
   - Certified by: Kannada Vedike
 - **The Subtitles switch sits right next to it.** This introduces the language toggle through a joke everyone understands.
@@ -110,7 +186,7 @@
 ### Scene 4: Why sandalwood, "ಗಂಧದ ಗುಡಿ"
 Three film-strip frames:
 1. **ಕಾಡು · The forest:** "Karnataka has long been called ಗಂಧದ ಗುಡಿ, the temple of sandalwood, home to some of the world's most prized sandalwood trees."
-2. **ಕಲೆ · The craft:** "Carvers turned the wood into boxes and figures. In 1916, Mysuru built a factory that turned sandalwood oil into the famous Mysore Sandal soap."
+2. **ಕಲೆ · The craft:** "Carvers turned the wood into boxes and figures. In 1916, the Mysore kingdom set up a factory to make soap from sandalwood oil, the start of Mysore Sandal soap."
 3. **ಸಿನಿಮಾ · The cinema:** "The fragrance became a name. Kannada cinema is called Sandalwood. In 1973, the same year Mysore State became Karnataka, Dr. Rajkumar starred in *Gandhada Gudi*."
 
 **Visual:** smoke rises from an agarbatti in frame 2 and turns into the projector beam that lights frame 3. This is a small version of the "smoke to screen" trick. It explains the theme to people who don't know why it's called Sandalwood.
@@ -148,7 +224,10 @@ Three film-strip frames:
 - **Revealed cards** show the name, the role (Chief Guest / Speaker / Playback Singer) and one line about them.
 - **The server sends each guest only after their reveal date.** If the names sit in the page's code, your CTF crowd will find them early.
 
-### Scene 8: ವಿರಾಮ · Interval (the canteen)
+### Scene 8: ವಿರಾಮ · Interval
+
+**Changed (24 Sep 2026): there is no canteen.** Food is a coupon for the one day there is a meal. Redesign this scene around buying that coupon and merch before building it (see section 0).
+
 - **Screen:** a vintage "ವಿರಾಮ" card, with an interval bell.
 - **Bhoori Bhojana card:**
   - Heading: "ಬಾಳೆ ಎಲೆ ಊಟ · A full meal on a banana leaf."

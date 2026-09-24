@@ -1,6 +1,15 @@
 # Parva 2026 design brief: a place, not a page
 
-Companion to `parve26spec.md`. The spec says *what* is on the page; this brief says *how it should look and feel*. It currently covers the always-on objects and Scenes 0–3; Scenes 4–12 are still to be written in the same detail.
+Companion to `parve26spec.md`. The spec says *what* is on the page; this brief says *how it should look and feel*. It covers the always-on objects and Scenes 0–3. **Scenes 4 and 6–12 are in `allscenes.md`**, and the current build status, decisions and performance rules are in section 0 of `parve26spec.md`.
+
+## As built (24 Sep 2026): where the build differs from this brief
+- **Objects on every screen:** all built. The speaker grille does not pulse and the subtitles switch does not click yet, because sound is not built. The logo is not lit by the scene's light (it has fixed shading).
+- **Subtitle strip:** besides English for whatever is hovered, it also carries scene lines (`sayLine()`), and while the hall is on screen it sits on the foot of the silver screen, like a film's subtitles (`anchorStrip()`), so it never covers the tickets.
+- **Scenes 0 and 1 (lamp, curtain, countdown):** paused. The lamp, smoke letters, countdown leader and curtain are built as separate pieces but not wired into the page yet. The hall itself (Scene 1's set) is built and shown straight away.
+- **Scene 1 set:** as described, with these changes. The exit sign is low on the left wall, because the show board takes the right pillar. There is one wall lamp on each side. The ceiling fans are drawn in the same canvas as the beam. Audience: seven figures plus a child, in rows 5–7.
+- **Scene 2:** the show board uses normal digits for the countdown and the date (rule A5). The golden fan-pass ticket sits in the middle of the three, because it is the main promotion. The camera push scales the hall until the screen fills the page width, and everything else fades to dark. The lamp does not stand at the stage edge yet (it arrives with Scene 0).
+- **Scene 3:** the constant sepia tint and shake were left out for performance (a scene-sized filter repainted every frame). The flicker, dust and grain stay. The certificate's Length reads "Three full days".
+
 
 Look again at the 100 pages in `100sites.md`. None of them is "a heading and three cards." Each one is a **place or an object**: a typewriter on a desk, a turntable on felt, a museum plate. Their buttons belong to the object. Parva should work the same way. Here are the rules first, then the first four scenes in detail.
 
@@ -243,8 +252,9 @@ The joke teaches the feature, so nobody needs a "how to use this site" note.
 
 ## How to make the hardest parts
 
-- **Flame:** stack 3–4 soft blurred shapes (blue, yellow, orange, glow) and move their edges with a small noise wobble. A single flame drawing always looks fake.
-- **Carved arch:** draw the carving once as a greyscale "height" image, where lighter means raised. Then light it with an SVG lighting filter or a small WebGL shader, so the light can move across the relief.
-- **Velvet:** vertical gradient bands for the folds, plus fine noise, plus a slow sideways shift for the sway.
-- **Beam, smoke, dust and grain:** draw them all on **one** canvas layer with glowing (additive) blending, and pause it when it's off-screen. One canvas is much lighter on phones than many animated elements.
-- **Extruded title:** draw it as a finished SVG in a design tool rather than building the 3D effect live. It looks better and loads faster.
+What was planned, and what the build does (with the reason when it differs):
+- **Flame:** stack 3–4 soft shapes (blue root, yellow core, orange edge, glow) and give each its own flicker. Built this way in `lamp.jsx`, with CSS keyframes on small elements.
+- **Carved arch:** the plan was a height image lit by an SVG lighting filter or a shader. The build draws each carving three times instead (a dark copy nudged up, a pale copy nudged down, then the sandalwood face), which reads as relief lit from below and costs nothing per frame (`fx/carving.js`). The "someone walking past with a lamp" effect is a soft warm gradient that slides across the carving with the mouse. A lighting filter recomputes on every change and was too slow.
+- **Velvet:** vertical gradient bands for the folds plus a slow sway, done with CSS gradients and a small skew animation.
+- **Beam, smoke, dust and grain:** one canvas for the air of the hall (`fx/air.js`: beam, smoke, dust, fans, at half resolution) and one for grain, flicker and vignette (`fx/film-layer.jsx`), both on the same 12 fps tick and paused off screen.
+- **Extruded title:** built live from four stacked text layers (a brown extrusion from a stack of text shadows, a kumkuma outline, a gold gradient face, and a shine), so it stays real text. It is cheap as long as the hall is promoted to its own layer while it scales (see the performance rules in `parve26spec.md`).
