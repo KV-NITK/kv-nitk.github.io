@@ -155,7 +155,6 @@ export function FilmLayer() {
     let grain = { pattern: tiles[0], ox: 0, oy: 0 }
     let raf = 0
     let lastTick = 0
-    let scrolled = false
 
     const resize = () => {
       canvas.width = Math.ceil(window.innerWidth * SCALE)
@@ -193,35 +192,29 @@ export function FilmLayer() {
       if (vignette) ctx.drawImage(vignette, 0, 0)
     }
 
-    // State advances at 12 fps. While scrolling, the same state is redrawn
-    // every frame so flicker and dust stay pinned to their scene.
+    // Everything advances and redraws at 12 fps, scrolling or not. (Redrawing
+    // on every scroll frame kept the flicker glued to its scene, but cost a
+    // full-screen canvas upload per frame; at this low opacity a lag of one
+    // tick can't be seen.)
     const loop = (now) => {
       raf = requestAnimationFrame(loop)
-      if (now - lastTick >= TICK_MS) {
-        lastTick = now
-        for (const tick of tickers) tick(now)
-        advance()
-        render()
-      } else if (scrolled) {
-        render()
-      }
-      scrolled = false
+      if (now - lastTick < TICK_MS) return
+      lastTick = now
+      for (const tick of tickers) tick(now)
+      advance()
+      render()
     }
-
-    const onScroll = () => { scrolled = true }
 
     resize()
     window.addEventListener('resize', resize)
     if (!reduced) {
       advance()
       raf = requestAnimationFrame(loop)
-      window.addEventListener('scroll', onScroll, { passive: true })
     }
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
-      window.removeEventListener('scroll', onScroll)
     }
   }, [reduced])
 

@@ -6,6 +6,7 @@ import { NameBoard } from './name-board'
 import { Proscenium } from './proscenium'
 import { TheatreWalls } from './theatre-walls'
 import { Audience } from './audience'
+import { anchorStrip } from './subtitle-strip'
 import { createForest } from './fx/forest'
 import { createAir } from './fx/air'
 import { useFilmScreen, useFilmTick } from './fx/film-layer'
@@ -263,7 +264,8 @@ function useMouseParallax(sectionRef, layers) {
     seen.observe(section)
 
     const onMove = (e) => {
-      if (!inView) return
+      // Not during the camera push: moving layers would repaint the hall.
+      if (!inView || window.scrollY > 4) return
       const nx = e.clientX / window.innerWidth - 0.5
       const ny = e.clientY / window.innerHeight - 0.5
       for (const m of movers) {
@@ -282,20 +284,18 @@ function useMouseParallax(sectionRef, layers) {
   }, [reduced, sectionRef])
 }
 
-// Publishes how far the screen's foot is from the bottom of the window as
-// --p26-screen-bottom, so the subtitle strip can sit on the screen.
-// Measured every frame while the hall is in view, because the camera push
-// keeps easing after the scroll events stop.
+// Tells the subtitle strip how far the screen's foot is from the bottom of
+// the window, so lines sit on the screen. Measured every frame while the hall
+// is in view, because the camera push keeps easing after scrolling stops.
 function useScreenBottom(maskRef) {
   useEffect(() => {
-    const root = document.documentElement
     const mask = maskRef.current
     let inView = true
     let last = null
     const update = () => {
       if (!inView) return
       const value = Math.round(window.innerHeight - mask.getBoundingClientRect().bottom + 14)
-      if (value !== last) root.style.setProperty('--p26-screen-bottom', `${(last = value)}px`)
+      if (value !== last) anchorStrip((last = value))
     }
     const seen = new IntersectionObserver(([entry]) => {
       inView = entry.isIntersecting
@@ -306,7 +306,7 @@ function useScreenBottom(maskRef) {
     return () => {
       gsap.ticker.remove(update)
       seen.disconnect()
-      root.style.removeProperty('--p26-screen-bottom')
+      anchorStrip(null)
     }
   }, [maskRef])
 }
@@ -333,9 +333,31 @@ function useCameraPush({ sectionRef, roomRef, maskRef, seatsRef }) {
         return { w, cx, cy }
       }
 
+      // While the push is moving, the hall, the seats and everything that fades
+      // get their own compositor layers, so each frame only scales and fades
+      // pictures already painted instead of repainting the whole hall at the
+      // new size. Shortly after it stops they drop back, and the hall is
+      // repainted once, sharp, at whatever size it stopped.
+      const seats = seatsRef.current
+      const fades = [...room.querySelectorAll('[data-fade]')]
+      let promoted = false
+      let settle = 0
+      const promote = (on) => {
+        promoted = on
+        room.style.willChange = on ? 'transform' : ''
+        seats.style.willChange = on ? 'transform, opacity' : ''
+        for (const el of fades) el.style.willChange = on ? 'opacity' : ''
+      }
+      const moving = () => {
+        if (!promoted) promote(true)
+        clearTimeout(settle)
+        settle = setTimeout(() => promote(false), 220)
+      }
+
       gsap
         .timeline({
           scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=80%', pin: true, scrub: 0.5, invalidateOnRefresh: true },
+          onUpdate: moving,
         })
         .to(
           room,
@@ -351,9 +373,10 @@ function useCameraPush({ sectionRef, roomRef, maskRef, seatsRef }) {
           },
           0
         )
-        .to(seatsRef.current, { yPercent: 130, ease: 'power2.in' }, 0)
-        .to(seatsRef.current, { autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0.5)
-        .to(room.querySelectorAll('[data-fade]'), { autoAlpha: 0, ease: 'power1.in', duration: 0.8 }, 0.1)
+        .to(seats, { yPercent: 130, ease: 'power2.in' }, 0)
+        .to(seats, { autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0.5)
+        .to(fades, { autoAlpha: 0, ease: 'power1.in', duration: 0.8 }, 0.1)
+      return () => clearTimeout(settle)
     },
     { dependencies: [reduced] }
   )

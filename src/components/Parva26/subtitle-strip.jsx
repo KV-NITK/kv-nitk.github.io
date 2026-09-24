@@ -4,6 +4,14 @@ import { useCurrentScene } from './use-current-scene'
 import { cn } from '../../lib/utils'
 
 let speak = null
+let strip = null
+
+// While the hall is on screen, lines are subtitled on the screen itself: the
+// title scene tells the strip how far the screen's foot is from the bottom of
+// the window. Set on the strip alone, so it restyles one element, not the page.
+export function anchorStrip(px) {
+  strip?.style.setProperty('--p26-screen-bottom', px === null ? '' : `${px}px`)
+}
 
 // Puts a scene's line in the strip for a while, like a subtitle for what is
 // on screen (the title's tagline, the lamp's "Light the lamp…"). Anything
@@ -96,6 +104,7 @@ export function SubtitleStrip() {
 
   return (
     <p
+      ref={(el) => (strip = el)}
       aria-hidden
       className={cn(
         'pointer-events-none fixed inset-x-4 bottom-20 z-[65] mx-auto max-w-xl text-center font-kn-body text-base font-semibold leading-snug text-[#fff1a8] transition-opacity duration-200 sm:bottom-8 sm:text-xl',
