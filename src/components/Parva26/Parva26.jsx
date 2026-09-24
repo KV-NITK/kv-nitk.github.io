@@ -58,7 +58,7 @@ export default function Parva26() {
           <GandhadaGudiScene />
           <FilmFrame><FanPassStub /></FilmFrame>
           <FilmFrame><NowShowingScene /></FilmFrame>
-          <FilmFrame><GuestsScene /></FilmFrame>
+          <GuestsScene />
           <IntervalScene />
           <ReleaseDayScene />
           <FilmFrame><TimelineScene /></FilmFrame>

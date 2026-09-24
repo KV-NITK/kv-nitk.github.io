@@ -7,6 +7,7 @@ Every scene follows the six rules from the brief: one place, no plain cards, lig
 Each scene is written in the same order: Job, Where we are, the object and its look (materials, light, colour grade), Type, Motion, Interaction, Sound, Transition out, Phone layout, Reduced motion, and Assets. "Why" notes explain choices that aren't obvious.
 
 ### Decisions from review (23 Sep 2026) — these override the text below
+- **Scene 7 (24 Sep 2026):** the lobby wall also carries the guests of past Parvas (revealed, lamps lit) and the sponsors on a producers' board (Executive Producers, In association with, Media partner), logos in full colour on enamel plates. The wall pans on a laptop; a velvet rope barrier in front gives depth.
 - **Dates and venue:** Parva runs on three days, 29 and 30 October and 1 November 2026, across the NITK campus. There is no single venue: each event gives its own venue in its details.
 - **Scene 8 has no canteen.** Food is a **coupon** for the one day there is a meal: people buy the coupon and come and eat. Redesign Scene 8 around buying that coupon (and merch) before building it.
 - **The ending stays ಶುಭಂ.** The progress reel reads First Half → ವಿರಾಮ (Scenes 8–9) → Second Half → ಶುಭಂ. It does not use "Climax".

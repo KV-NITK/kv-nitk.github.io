@@ -165,6 +165,32 @@ code {
     78% { opacity: 0.2; }
     80% { opacity: 1; }
   }
+
+  /* Wall of honour (Scene 7): the veils stir in the lobby's draught, the next
+     guest's tag trembles now and then, and dust drifts down through the
+     picture lamps' light */
+  --animate-veil-sway: p26-veil-sway 7s ease-in-out infinite;
+  --animate-tremble: p26-tremble 5s ease-in-out infinite;
+  --animate-mote: p26-mote 6s linear infinite;
+
+  @keyframes p26-veil-sway {
+    0%, 100% { transform: skewX(0deg); }
+    50% { transform: skewX(0.8deg); }
+  }
+  @keyframes p26-tremble {
+    0%, 84%, 100% { rotate: 0deg; }
+    86% { rotate: 3deg; }
+    88% { rotate: -2.5deg; }
+    90% { rotate: 2deg; }
+    92% { rotate: -1deg; }
+    94% { rotate: 0.5deg; }
+  }
+  @keyframes p26-mote {
+    0% { transform: translate(0, 0); opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.7; }
+    100% { transform: translate(6px, 44px); opacity: 0; }
+  }
 }
 
 @theme inline {
