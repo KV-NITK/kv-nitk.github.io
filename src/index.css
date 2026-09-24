@@ -114,6 +114,57 @@ code {
     40% { opacity: 1; }
     70% { opacity: 0.75; }
   }
+
+  /* Poster motifs (Scene 6): small loops on a few shapes each */
+  --animate-ring: p26-ring 2.1s ease-out infinite;
+  --animate-wobble: p26-wobble 1.7s ease-in-out infinite alternate;
+  --animate-blink: p26-blink 1.1s ease-in-out infinite alternate;
+  --animate-quill: p26-quill 1.9s ease-in-out infinite;
+  --animate-tilt: p26-tilt 2.6s ease-in-out infinite alternate;
+  --animate-swing: p26-swing 1.3s ease-in-out infinite alternate;
+  --animate-rise: p26-rise 2.6s ease-out infinite;
+  /* A marquee bulb with a bad contact: on, with sudden drop-outs */
+  --animate-bulb-flicker: p26-bulb-flicker 3.7s step-end infinite;
+
+  @keyframes p26-ring {
+    0% { transform: scale(0.55); opacity: 0.9; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  @keyframes p26-wobble {
+    from { transform: rotate(-7deg); }
+    to { transform: rotate(7deg); }
+  }
+  @keyframes p26-blink {
+    from { opacity: 1; }
+    to { opacity: 0.25; }
+  }
+  @keyframes p26-quill {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    30% { transform: translate(6px, 1px) rotate(3deg); }
+    55% { transform: translate(12px, 0) rotate(-2deg); }
+    75% { transform: translate(16px, 1px) rotate(2deg); }
+  }
+  @keyframes p26-tilt {
+    from { transform: rotate(-6deg); }
+    to { transform: rotate(6deg); }
+  }
+  @keyframes p26-swing {
+    from { transform: rotate(-12deg); }
+    to { transform: rotate(12deg); }
+  }
+  @keyframes p26-rise {
+    0% { transform: translateY(0); opacity: 0.75; }
+    100% { transform: translateY(-14px); opacity: 0; }
+  }
+  @keyframes p26-bulb-flicker {
+    0%, 100% { opacity: 1; }
+    31% { opacity: 0.15; }
+    33% { opacity: 1; }
+    34% { opacity: 0.3; }
+    36% { opacity: 1; }
+    78% { opacity: 0.2; }
+    80% { opacity: 1; }
+  }
 }
 
 @theme inline {

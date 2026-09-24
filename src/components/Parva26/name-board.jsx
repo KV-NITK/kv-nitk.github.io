@@ -10,7 +10,7 @@ const LIT = 'radial-gradient(circle, #fffbea 0 2.2px, #ffd98a 3.4px, rgba(255,19
 
 // A row of bulbs along one edge. Bulbs are 1.125rem apart; the lit layer's
 // pattern is three bulbs long and steps one bulb at a time.
-function Bulbs({ edge }) {
+export function Bulbs({ edge }) {
   const across = edge === 'top' || edge === 'bottom'
   const backwards = edge === 'bottom' || edge === 'left'
 
