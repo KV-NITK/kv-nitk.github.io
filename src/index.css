@@ -201,6 +201,24 @@ code {
     67% { opacity: 0; }
     82% { opacity: 0.5; translate: 5px 0; }
   }
+  /* Release day (Scene 9): the garland stirs, serial lights twinkle, the
+     thank-you banner unrolls */
+  --animate-garland-sway: p26-garland-sway 5s ease-in-out infinite alternate;
+  --animate-twinkle: p26-twinkle 1.6s ease-in-out infinite alternate;
+  --animate-unroll: p26-unroll 0.9s ease-out both;
+
+  @keyframes p26-garland-sway {
+    from { rotate: -1.2deg; }
+    to { rotate: 1.2deg; }
+  }
+  @keyframes p26-twinkle {
+    from { opacity: 1; }
+    to { opacity: 0.45; }
+  }
+  @keyframes p26-unroll {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
   @keyframes p26-mote {
     0% { transform: translate(0, 0); opacity: 0; }
     15% { opacity: 0.9; }

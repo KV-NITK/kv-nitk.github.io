@@ -160,6 +160,16 @@ export const TEE = {
   ],
 }
 
+// Scene 9: ಹೂಮಳೆ, the flowers thrown at the Parva Hero cutout.
+// TODO(backend): `base` becomes the server's shared count; taps are sent in
+// batches every few seconds and the server enforces the per-minute cap too.
+export const HOOMALE = {
+  base: 4213,
+  perMinute: 150,
+  milestone: 1000,
+  goal: 10000,
+}
+
 export const TIMELINE = [
   { year: 1934, film: 'Sati Sulochana', line: 'The first Kannada talkie' },
   { year: 1954, film: 'Bedara Kannappa', line: "Dr. Rajkumar's first film as hero" },

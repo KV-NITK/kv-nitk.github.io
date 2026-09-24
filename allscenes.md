@@ -14,6 +14,7 @@ Each scene is written in the same order: Job, Where we are, the object and its l
 - **Photos:** until real guest, team and product photos arrive, use dummy details and reuse photos already in the site's gallery.
 - **Digits:** the show board's countdown tiles and every date use normal digits (rule A5).
 - The other scene changes listed at the end of this file are accepted.
+- **Scene 9 (24 Sep 2026):** the Parva Hero is drawn in code (SVG) as a stand-in until the painted cutout arrives. Counts use normal digits, milestone flags included (A5). On a phone the 10,000 thank-you sits on the fan banner, clear of the hero. The walk back into the hall is the lit "ದ್ವಿತೀಯಾರ್ಧ ಆರಂಭ" sign over the entrance; the fast push into the screen is not built yet.
 - **Scene 6 poster art:** posters are drawn in code as animated SVG from one template (a motif per kind of event). Only singer and guest posters get a real image later, in a photo slot the template keeps. Until the real list arrives, the events are last year's, moved to this year's dates.
 
 ---
