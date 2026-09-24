@@ -78,7 +78,8 @@ export function IntervalScene() {
         // The worn reel jumps once
         .to(card, { yPercent: -2.5, duration: 0.015, ease: 'none' }, 0.12)
         .to(card, { yPercent: 0, duration: 0.015, ease: 'none' }, 0.135)
-        .call(() => performance.now() > jumpingRef.current && sayLine('[Interval bell rings]', 3500), null, 0.16)
+        // The bell only for someone scrolling through, not for a page flying past
+        .call(() => performance.now() > jumpingRef.current && Math.abs(tl.scrollTrigger?.getVelocity() ?? 0) < 2500 && sayLine('[Interval bell rings]', 3500), null, 0.16)
         // House lights up, the screen dims
         .to(house, { opacity: 1, duration: 0.22, ease: 'power1.inOut' }, 0.18)
         .to(dim, { opacity: 0.55, duration: 0.22, ease: 'power1.inOut' }, 0.18)
@@ -217,7 +218,7 @@ function IntervalCard() {
   )
 }
 
-function Flourish({ className }) {
+export function Flourish({ className }) {
   return (
     <svg viewBox="0 0 60 60" aria-hidden className={className} fill="none" stroke="#c9a052" strokeWidth="1.6" strokeLinecap="round">
       <path d="M4 56 C4 26 26 4 56 4" />
