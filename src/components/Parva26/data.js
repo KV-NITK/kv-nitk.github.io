@@ -3,10 +3,14 @@
 // TODO(content): confirm date, venue and every item below with the team.
 
 export const EVENT = {
-  date: '2026-11-21T10:00:00+05:30', // TODO(content): confirm actual date
-  dateLabel: 'ನವೆಂಬರ್ ೨೧, ೨೦೨೬ · November 21, 2026', // TODO(content)
-  venue: 'Sir M. Visvesvaraya Auditorium (SJA) · NITK Surathkal', // TODO(content)
-  venueShort: 'SJA · NITK Surathkal', // TODO(content): as painted on the show board
+  // Opening day; the countdown runs to this. TODO(content): confirm the start time
+  date: '2026-10-29T10:00:00+05:30',
+  // Three days: 29 and 30 October, then 1 November. Dates always use normal
+  // digits, even in Kannada (allscenes.md A5).
+  dateKn: 'ಅಕ್ಟೋಬರ್ 29, 30 ಮತ್ತು ನವೆಂಬರ್ 1',
+  dateEn: '29 & 30 Oct and 1 Nov 2026',
+  // Events run all over the campus; each event gives its own venue.
+  venue: 'NITK Surathkal',
 }
 
 // Scene 6: ಇಂದೇ ನೋಡಿ · Now Showing
@@ -16,7 +20,7 @@ export const EVENTS = [
     title: 'ಕ್ವಿಜ್ ರಾಜ',
     titleEn: 'Kannada Quiz',
     genre: 'Thriller',
-    time: 'Nov 21 · 10:00 AM',
+    time: 'Oct 29 · 10:00 AM',
     venue: 'CH-1',
     registerLink: '#',
   },
@@ -25,7 +29,7 @@ export const EVENTS = [
     title: 'ಗುಪ್ತ ಕೋಡ್',
     titleEn: 'CTF',
     genre: 'Mystery',
-    time: 'Nov 21 · 11:00 AM',
+    time: 'Oct 30 · 11:00 AM',
     venue: 'CSE Lab',
     registerLink: '#',
   },
@@ -34,7 +38,7 @@ export const EVENTS = [
     title: 'ನಿರ್ಮಾಣ',
     titleEn: 'Build Challenge',
     genre: 'Action',
-    time: 'Nov 21 · 1:00 PM',
+    time: 'Oct 30 · 2:00 PM',
     venue: 'Workshop',
     registerLink: '#',
   },
@@ -43,7 +47,7 @@ export const EVENTS = [
     title: 'ಸಂಗೀತ ಸಂಜೆ',
     titleEn: 'Music Night',
     genre: 'Musical',
-    time: 'Nov 21 · 7:00 PM',
+    time: 'Nov 1 · 7:00 PM',
     venue: 'SJA',
     registerLink: '#',
   },

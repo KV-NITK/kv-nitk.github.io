@@ -13,6 +13,7 @@ import { FilmReel } from './film-reel'
 import { SubtitleStrip } from './subtitle-strip'
 import { AgarbattiCursor } from './agarbatti-cursor'
 import { FilmLayer } from './fx/film-layer'
+import { FilmFrame } from './fx/film-frame'
 import { InkDefs } from './fx/ink-defs'
 import { ACTS } from './scenes'
 import { TitleScene } from './scene-title'
@@ -48,18 +49,20 @@ export default function Parva26() {
         <FilmReel />
         <SubtitleStrip />
         <AgarbattiCursor onActiveChange={setCustomCursor} />
+        {/* After the title, the show plays on screen (in a FilmFrame), except
+            for the interval, when you step out of the hall (allscenes.md A1). */}
         <main>
           <TitleScene />
           <CertificateScene />
-          <GandhadaGudiScene />
-          <FanPassStub />
-          <NowShowingScene />
-          <GuestsScene />
+          <FilmFrame><GandhadaGudiScene /></FilmFrame>
+          <FilmFrame><FanPassStub /></FilmFrame>
+          <FilmFrame><NowShowingScene /></FilmFrame>
+          <FilmFrame><GuestsScene /></FilmFrame>
           <IntervalScene />
           <ReleaseDayScene />
-          <TimelineScene />
-          <EmojiGameScene />
-          <CreditsScene />
+          <FilmFrame><TimelineScene /></FilmFrame>
+          <FilmFrame><EmojiGameScene /></FilmFrame>
+          <FilmFrame><CreditsScene /></FilmFrame>
         </main>
       </div>
     </PrefsProvider>

@@ -100,8 +100,9 @@ export function SubtitleStrip() {
       className={cn(
         'pointer-events-none fixed inset-x-4 bottom-20 z-[65] mx-auto max-w-xl text-center font-kn-body text-base font-semibold leading-snug text-[#fff1a8] transition-opacity duration-200 sm:bottom-8 sm:text-xl',
         '[text-shadow:-1px_-1px_0_#000,1px_-1px_0_#000,-1px_1px_0_#000,1px_1px_0_#000,0_0_6px_rgba(0,0,0,.8)]',
-        // On phones the title's tickets sit where the strip usually goes.
-        scene?.id === 'title' && 'max-sm:bottom-[11.5rem]',
+        // In the hall, the seats and tickets fill the bottom of the view, so
+        // lines are subtitled on the screen itself, as a film's would be.
+        scene?.id === 'title' && 'bottom-[var(--p26-screen-bottom,11.5rem)] sm:bottom-[var(--p26-screen-bottom,2rem)]',
         hovering || speaking ? 'opacity-100' : 'opacity-0'
       )}
     >

@@ -52,6 +52,7 @@ export function TitleCard() {
           { autoAlpha: 1, scale: 1, yPercent: 0, filter: 'blur(0px)', duration: 0.85, ease: 'back.out(2.2)', stagger: 0.32, clearProps: 'filter' },
           '+=0.15'
         )
+        .call(() => window.dispatchEvent(new Event('p26:title-landed')), null, '-=0.35')
         .fromTo(q('[data-shine]'), { backgroundPositionX: '100%' }, { backgroundPositionX: '0%', duration: 1.1, ease: 'power2.inOut' }, '-=0.1')
         .fromTo(
           q('[data-parva-en]'),
@@ -71,7 +72,7 @@ export function TitleCard() {
   return (
     <div
       ref={rootRef}
-      className="absolute inset-0 flex flex-col items-center justify-center pb-[9cqh] text-center [text-shadow:0_2px_10px_rgba(20,8,0,.55)]"
+      className="absolute inset-0 flex flex-col items-center justify-center pb-[15cqh] text-center sm:pb-[9cqh] [text-shadow:0_2px_10px_rgba(20,8,0,.55)]"
     >
       <p data-presents lang="kn" data-en="Kannada Vedike presents" className="font-kn-body text-[max(0.8rem,4.2cqh)] font-medium text-[#fbf0d8]">
         ಕನ್ನಡ ವೇದಿಕೆ ಅರ್ಪಿಸುವ

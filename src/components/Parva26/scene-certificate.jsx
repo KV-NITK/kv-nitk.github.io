@@ -16,7 +16,7 @@ import { cn } from '../../lib/utils'
 const FIELDS = [
   { label: 'Title', value: 'ಪರ್ವ', lang: 'kn', gloss: 'Parva' },
   { label: 'Category', value: 'ಸರ್ವರಿಗೂ', lang: 'kn', gloss: 'for everyone' },
-  { label: 'Length', value: 'One full day' },
+  { label: 'Length', value: 'Three full days' },
   { label: 'Language', value: 'ಕನ್ನಡ', lang: 'kn', gloss: 'Kannada', subtitlesBox: true },
   { label: 'Certified by', value: 'Kannada Vedike' },
 ]
@@ -29,7 +29,8 @@ const LANGUAGE = FIELDS.findIndex((f) => f.subtitlesBox)
 const releaseDate = (() => {
   const d = new Date(EVENT.date)
   const pad = (n) => String(n).padStart(2, '0')
-  return toKannadaDigits(`${pad(d.getDate())}·${pad(d.getMonth() + 1)}·${d.getFullYear()}`)
+  // A date, so normal digits (allscenes.md A5)
+  return `${pad(d.getDate())}·${pad(d.getMonth() + 1)}·${d.getFullYear()}`
 })()
 
 const rand = (min, max) => min + Math.random() * (max - min)

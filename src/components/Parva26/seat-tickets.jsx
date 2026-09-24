@@ -5,6 +5,7 @@ import { gsap } from './fx/gsap'
 import { brass, velvet } from './fx/materials'
 import { paper, wood } from './fx/textures'
 import { usePrefersReducedMotion } from './fx/use-reduced-motion'
+import { RowSevenNeighbour } from './audience'
 import { cn } from '../../lib/utils'
 
 // The row in front of you (brief, Scene 2). The three main actions are
@@ -18,18 +19,15 @@ const TICKETS = [
   { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 
-// --seat is how much of the seat shows below its rail, --peek how far the
-// tickets stand above it.
+// Sized by --seat (how much of the seat shows below its rail) and --peek (how
+// far the tickets stand above it), set by the scene.
 export function SeatRow({ className }) {
   return (
-    <div
-      className={cn(
-        'relative h-[calc(var(--seat)+var(--peek))] [--peek:5.25rem] [--seat:5.25rem] sm:[--peek:6.75rem] sm:[--seat:clamp(8rem,24svh,13rem)]',
-        className
-      )}
-    >
+    <div className={cn('relative h-[calc(var(--seat)+var(--peek))]', className)}>
       <SeatBack className="left-[calc(50%-min(94vw,40rem)*1.5-1.5rem)]" plate="೧೫" />
-      <SeatBack className="left-[calc(50%+min(94vw,40rem)*0.5+0.75rem)]" plate="೧೭" />
+      <SeatBack className="left-[calc(50%+min(94vw,40rem)*0.5+0.75rem)]" plate="೧೭">
+        <RowSevenNeighbour />
+      </SeatBack>
       <SeatBack className="left-1/2 -translate-x-1/2" plate="೧೬">
         <Tickets />
       </SeatBack>

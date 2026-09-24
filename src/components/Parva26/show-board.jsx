@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { usePrefs } from './prefs'
 import { EVENT } from './data'
-import { toKannadaDigits } from './text'
 import { useCountdown } from './use-countdown'
 import { gsap, useGSAP } from './fx/gsap'
 import { brass } from './fx/materials'
@@ -9,19 +8,18 @@ import { wood } from './fx/textures'
 import { usePrefersReducedMotion } from './fx/use-reduced-motion'
 import { cn } from '../../lib/utils'
 
-const [DATE_KN, DATE_EN] = EVENT.dateLabel.split(' · ')
-
 // The show-timing board (brief, Scene 2): a black board in a wooden frame
 // under a small brass lamp, with the time left to Parva on split-flap tiles
-// that flip every minute. The headings are painted on. On the pillar (lg) it
+// that flip every minute. The headings are painted on; the tiles and date use
+// normal digits, since times and dates must read at a glance (allscenes.md A5). On the pillar (lg) it
 // is tall and narrow; below the screen on phones it lies wide and low.
 export function ShowBoard({ className }) {
   const { days, hours, minutes } = useCountdown(EVENT.date)
   const { subtitles } = usePrefs()
-  const en = `${days} days, ${hours} hours and ${minutes} minutes to go · ${DATE_EN}`
+  const en = `${days} days, ${hours} hours and ${minutes} minutes to go`
 
   return (
-    <div className={cn('relative pt-7', className)} data-en={`Parva releases in ${en} · ${EVENT.venue}`}>
+    <div className={cn('relative pt-7', className)} data-en={`Parva releases in ${en} · ${EVENT.dateEn} · ${EVENT.venue}`}>
       <BoardLamp />
       <div className="rounded-[3px] p-[7px] shadow-[inset_0_1px_0_rgba(255,220,170,.35),0_12px_24px_rgba(0,0,0,.6)]" style={wood}>
         <div className="relative overflow-hidden rounded-[2px] bg-[#15120f] px-3 pb-2.5 pt-2.5 text-center shadow-[inset_0_2px_10px_rgba(0,0,0,.9)] sm:px-4">
@@ -32,7 +30,7 @@ export function ShowBoard({ className }) {
             >
               ಪರ್ವ ಬಿಡುಗಡೆಗೆ ಇನ್ನು
             </p>
-            <div className="flex items-start justify-center gap-2.5 sm:gap-3">
+            <div className="flex items-start justify-center gap-2.5 sm:gap-3 lg:gap-2">
               <TileGroup value={days} minDigits={2} label="ದಿನ" />
               <TileGroup value={hours} minDigits={2} label="ಗಂಟೆ" />
               <TileGroup value={minutes} minDigits={2} label="ನಿಮಿಷ" />
@@ -43,9 +41,9 @@ export function ShowBoard({ className }) {
           <div aria-hidden className="mx-auto my-1.5 h-px w-4/5 bg-linear-to-r from-transparent via-[#c9a45a]/50 to-transparent lg:my-2" />
           <p className="flex flex-wrap items-baseline justify-center gap-x-2 lg:flex-col lg:items-center">
             <span lang="kn" className="rotate-[0.4deg] font-kn-display text-sm font-semibold text-[#efe2c4] [text-shadow:0_1px_0_rgba(0,0,0,.7)]">
-              {DATE_KN}
+              {EVENT.dateKn}
             </span>
-            <span className="font-poster text-sm leading-tight tracking-wider text-[#e3c98f]">{EVENT.venueShort}</span>
+            <span className="font-poster text-sm leading-tight tracking-wider text-[#e3c98f]">{EVENT.venue}</span>
           </p>
 
           {/* The lamp above lights the top of the board */}
@@ -69,11 +67,11 @@ function BoardLamp() {
 }
 
 function TileGroup({ value, minDigits, label }) {
-  const digits = Array.from(toKannadaDigits(String(value).padStart(minDigits, '0')))
+  const digits = Array.from(String(value).padStart(minDigits, '0'))
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="flex gap-[3px] font-kn-body text-2xl font-semibold text-[#f3e6c8] sm:text-[1.75rem]">
+      <div className="flex gap-[3px] font-poster text-[1.7rem] text-[#f3e6c8] sm:text-[1.95rem] lg:text-[1.4rem]">
         {digits.map((digit, i) => (
           // Keyed from the right, so the units tile keeps its place when the count loses a digit.
           <FlipTile key={digits.length - i} digit={digit} />

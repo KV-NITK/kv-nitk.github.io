@@ -53,6 +53,31 @@ code {
     65% { rotate: -4deg; }
     100% { rotate: 0deg; }
   }
+
+  /* Name board bulbs: every third bulb is lit and the pattern steps one bulb
+     along (bulbs are 1.125rem apart, so the pattern repeats every 3.375rem) */
+  --animate-bulb-chase-x: p26-bulb-chase-x 0.54s steps(3) infinite;
+  --animate-bulb-chase-y: p26-bulb-chase-y 0.54s steps(3) infinite;
+  /* The dead bulb: dark, with the odd stutter as if it almost catches */
+  --animate-dead-bulb: p26-dead-bulb 7s step-end infinite;
+  /* Gathered curtains stirred by the ceiling fans */
+  --animate-curtain-sway: p26-curtain-sway 9s ease-in-out infinite;
+
+  @keyframes p26-bulb-chase-x {
+    to { background-position-x: 3.375rem; }
+  }
+  @keyframes p26-bulb-chase-y {
+    to { background-position-y: 3.375rem; }
+  }
+  @keyframes p26-dead-bulb {
+    0%, 70%, 71.5%, 73%, 100% { opacity: 0; }
+    70.5% { opacity: 0.8; }
+    72% { opacity: 0.5; }
+  }
+  @keyframes p26-curtain-sway {
+    0%, 100% { transform: skewX(0deg); }
+    50% { transform: skewX(0.7deg); }
+  }
 }
 
 @theme inline {
