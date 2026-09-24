@@ -13,8 +13,8 @@ import ironGate from './assets/iron-gate.webp'
 
 // Scene 9, ಬಿಡುಗಡೆ ದಿನ · Release Day (allscenes.md). Still the interval:
 // out through the theatre's folding iron gate onto the street at night,
-// where a giant painted cutout of the Parva Hero stands against the front
-// wall on bamboo scaffolding, lit from below. Everyone throws flowers at
+// where a giant painted cutout of Samudrappa, our police-officer hero,
+// stands against the front wall on bamboo scaffolding, lit from below. Everyone throws flowers at
 // it: tap the cutout, or the basket. A fan-club banner counts the flowers
 // everyone has thrown, and your own. Every 1,000 the garland grows and a
 // flag goes up; more serial lights come on as the count climbs; at 10,000
@@ -239,7 +239,7 @@ export function ReleaseDayScene() {
   return (
     <section id="release-day" aria-labelledby="release-day-title" className="relative scroll-mt-14 overflow-hidden bg-[#1b1530]">
       <h2 id="release-day-title" className="sr-only">
-        <span lang="kn">ಬಿಡುಗಡೆ ದಿನ</span> · Release day: throw flowers at the Parva Hero
+        <span lang="kn">ಬಿಡುಗಡೆ ದಿನ</span> · Release day: throw flowers at {HOOMALE.hero.en}
       </h2>
       <div ref={stageRef} className={cn('relative h-[100svh] min-h-[38rem] overflow-hidden', !live && '[&_*]:[animation-play-state:paused]')}>
         <NightStreet subtitles={subtitles} />
@@ -377,13 +377,13 @@ function BaseBoard({ ref, subtitles }) {
         className="relative rounded-[3px] border-[3px] border-[#1d1a17] bg-arishina px-3 py-1.5 text-center shadow-[0_8px_14px_rgba(0,0,0,.5)]"
         style={{ backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 32%, rgba(0,0,0,.12) 32% 33.5%, transparent 33.5% 66%)' }}
       >
-        <p lang="kn" className="font-kn-display text-xl font-extrabold leading-tight text-kumkuma sm:text-2xl">
-          ಪರ್ವ · ಬಿಡುಗಡೆ ದಿನ
+        <p lang="kn" className="font-kn-display text-2xl font-extrabold leading-tight text-kumkuma sm:text-3xl">
+          {HOOMALE.hero.kn}
         </p>
         <p lang="kn" className="font-kn-display text-sm font-bold leading-tight text-[#1d1a17] sm:text-base">
-          ಅಭಿಮಾನಿಗಳ ಹಾರ್ದಿಕ ಸ್ವಾಗತ
+          ಪರ್ವ ಬಿಡುಗಡೆ ದಿನ · ಅಭಿಮಾನಿಗಳ ಹಾರ್ದಿಕ ಸ್ವಾಗತ
         </p>
-        {subtitles && <p className="font-poster text-sm leading-tight tracking-wider text-[#1d1a17]/80">Parva · Release day · A warm welcome from the fans</p>}
+        {subtitles && <p className="font-poster text-sm leading-tight tracking-wider text-[#1d1a17]/80">{HOOMALE.hero.en} · Parva release day · A warm welcome from the fans</p>}
       </div>
       {/* Legs */}
       <span aria-hidden className="absolute -bottom-3 left-[12%] h-3 w-2 bg-[#4a2c14]" />
@@ -431,8 +431,9 @@ function FanBanner({ shared, mine, flag, done, subtitles, onThrowStart, onThrowE
           style={{ ...paper, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 75% 97%, 50% 100%, 25% 97%, 0 100%)' }}
         >
           <p lang="kn" className="font-kn-display text-sm font-bold leading-tight text-kumkuma">
-            ಪರ್ವ ಅಭಿಮಾನಿಗಳ ಸಂಘ
+            {HOOMALE.hero.kn} ಅಭಿಮಾನಿಗಳ ಸಂಘ
           </p>
+          {subtitles && <p className="font-poster text-xs leading-tight tracking-[0.2em] text-kumkuma/80">{HOOMALE.hero.en} fans’ association</p>}
           <p className="flex items-baseline justify-center gap-3 sm:block">
             <span lang="kn" className="font-kn-display text-2xl font-extrabold leading-tight sm:block sm:text-4xl">
               ಹೂಮಳೆ
