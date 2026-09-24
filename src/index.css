@@ -219,6 +219,24 @@ code {
     from { transform: scaleY(0); }
     to { transform: scaleY(1); }
   }
+  /* Rewind bench (Scene 10): a jump cut when the projected frame changes,
+     and the light box's faint mains hum */
+  --animate-jump-cut: p26-jump-cut 0.35s linear both;
+  --animate-hum: p26-hum 3.3s steps(1) infinite;
+
+  @keyframes p26-jump-cut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    35% { opacity: 0.55; }
+    50%, 100% { opacity: 1; }
+  }
+  @keyframes p26-hum {
+    0%, 100% { opacity: 1; }
+    41% { opacity: 0.93; }
+    43% { opacity: 1; }
+    77% { opacity: 0.96; }
+    78% { opacity: 1; }
+  }
   @keyframes p26-mote {
     0% { transform: translate(0, 0); opacity: 0; }
     15% { opacity: 0.9; }

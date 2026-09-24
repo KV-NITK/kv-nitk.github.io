@@ -10,7 +10,7 @@ const AKSHARAS = graphemes('ಪರ್ವ')
 
 // A 70s–80s Kannada film title: deep brown block extrusion down and to the
 // right, from the lit front face to the dark back.
-const EXTRUSION = (() => {
+export const EXTRUSION = (() => {
   const steps = 12
   const step = 0.0072
   const shades = ['#7a3710', '#6a2e0c', '#5a270a', '#4b2008', '#3e1a06', '#331505']

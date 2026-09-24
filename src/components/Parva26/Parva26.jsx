@@ -61,7 +61,7 @@ export default function Parva26() {
           <GuestsScene />
           <IntervalScene />
           <ReleaseDayScene />
-          <FilmFrame><TimelineScene /></FilmFrame>
+          <TimelineScene />
           <FilmFrame><EmojiGameScene /></FilmFrame>
           <FilmFrame><CreditsScene /></FilmFrame>
         </main>
