@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { MEAL, MENU, eventDay } from '@p26/content/data'
+import { MEAL, MENU, eventDay } from '@p26/content'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { cn } from '@/lib/utils'
 

@@ -1,5 +1,5 @@
 import { usePrefs } from '@p26/lib/prefs'
-import { MEAL, eventDay } from '@p26/content/data'
+import { MEAL, eventDay } from '@p26/content'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'

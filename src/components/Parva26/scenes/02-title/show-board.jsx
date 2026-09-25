@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { EVENT } from '@p26/content/data'
+import { EVENT } from '@p26/content'
 import { useCountdown } from '@p26/scenes/02-title/use-countdown'
 import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'

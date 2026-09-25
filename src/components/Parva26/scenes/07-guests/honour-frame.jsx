@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { eventDay } from '@p26/content/data'
+import { eventDay } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { EVENT } from '@p26/content/data'
+import { EVENT } from '@p26/content'
 import { graphemes, toKannadaDigits } from '@p26/lib/text'
 import { FilmFrame } from '@p26/film/film-frame'
 import { gsap, ScrollTrigger, useGSAP } from '@p26/lib/gsap'

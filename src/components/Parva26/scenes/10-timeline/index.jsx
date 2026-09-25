@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { TIMELINE } from '@p26/content/data'
+import { TIMELINE } from '@p26/content'
 import { toKannadaDigits } from '@p26/lib/text'
 import { EraCard } from '@p26/scenes/10-timeline/era-cards'
 import { FilmFrame } from '@p26/film/film-frame'

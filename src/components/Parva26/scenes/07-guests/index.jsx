@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { GUESTS, PAST_GUESTS, SPONSORS, SPONSOR_TIERS } from '@p26/content/data'
+import { GUESTS, PAST_GUESTS, SPONSORS, SPONSOR_TIERS } from '@p26/content'
 import { GuestFrame, revealTime } from '@p26/scenes/07-guests/honour-frame'
 import { FilmFrame } from '@p26/film/film-frame'
 import { gsap, useGSAP } from '@p26/lib/gsap'

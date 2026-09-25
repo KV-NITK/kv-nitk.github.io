@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { EMOJI_PUZZLES, DUTY_CHART } from '@p26/content/data'
+import { EMOJI_PUZZLES, DUTY_CHART } from '@p26/content'
 import { FilmCan, MAX_TRIES, MAX_HINTS } from '@p26/scenes/11-emoji-game/film-can'
 import { Projector, PortWindow, BareBulb, ReelShelf, DutyChart } from '@p26/scenes/11-emoji-game/projection-booth'
 import { isRight } from '@p26/scenes/11-emoji-game/answers'

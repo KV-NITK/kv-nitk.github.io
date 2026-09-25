@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SCENES } from '@p26/content/scenes'
+import { SCENES } from '@p26/content'
 
 // The scene crossing the middle of the viewport.
 export function useCurrentScene() {

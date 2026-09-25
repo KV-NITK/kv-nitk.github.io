@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { ACTS } from '@p26/content/scenes'
+import { ACTS } from '@p26/content'
 import { useCurrentScene } from '@p26/lib/use-current-scene'
 import { filmSprockets } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'

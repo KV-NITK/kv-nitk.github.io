@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { HOOMALE } from '@p26/content/data'
+import { HOOMALE } from '@p26/content'
 import { sayLine } from '@p26/chrome/subtitle-strip'
 import { ParvaHero, Garland } from '@p26/scenes/09-release-day/samudrappa'
 import { createPetalThrower } from '@p26/scenes/09-release-day/petals'

@@ -1,5 +1,5 @@
 import { Sub } from '@p26/lib/prefs'
-import { ACTS } from '@p26/content/scenes'
+import { ACTS } from '@p26/content'
 
 // Scene 5, ನಿಮ್ಮ ಪಾಸ್ · Fan Pass: build order puts this after the theatre
 // effects and transliteration work (build plan step 11), so it stays a

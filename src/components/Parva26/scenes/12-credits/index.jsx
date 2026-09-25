@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { CREDITS, ASSET_CREDITS, CONTACT, SPONSORS, MEAL, HOOMALE } from '@p26/content/data'
+import { CREDITS, ASSET_CREDITS, CONTACT, SPONSORS, MEAL, HOOMALE } from '@p26/content'
 import { Flourish } from '@p26/scenes/08-interval'
 import { Coupon } from '@p26/scenes/08-interval/booking-counter'
 import { FilmFrame } from '@p26/film/film-frame'

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { EVENTS, GENRES, eventDay } from '@p26/content/data'
+import { EVENTS, GENRES, eventDay } from '@p26/content'
 import { Bulbs } from '@p26/scenes/02-title/name-board'
 import { PosterMotif, POSTER_STYLES } from '@p26/scenes/06-now-showing/poster-art'
 import { brass } from '@p26/styles/materials'
