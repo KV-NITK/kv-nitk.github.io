@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["src/*"],
+      "@p26/*": ["src/components/Parva26/*"]
+    }
+  },
+  "include": ["src"]
+}
