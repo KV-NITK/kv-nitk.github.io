@@ -26,3 +26,5 @@ yarn-error.log*
 
 
 certs/
+# Parva 2026 visual check screenshots
+.parva26-check/
