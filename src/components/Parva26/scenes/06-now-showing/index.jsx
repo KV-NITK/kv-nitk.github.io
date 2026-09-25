@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { EVENTS, GENRES, eventDay } from '@p26/content'
 import { Bulbs } from '@p26/ui/bulbs'
 import { PosterMotif, POSTER_STYLES } from '@p26/scenes/06-now-showing/poster-art'
@@ -301,7 +301,7 @@ function PosterFront({ event, style, genre, day, subtitles }) {
         </span>
         <span className="block font-kn-display text-[max(1rem,7.6cqw)] font-semibold leading-tight">
           {event.time}
-          {subtitles && <span className="opacity-75"> · {day.en}</span>}
+          <En className="opacity-75"> · {day.en}</En>
         </span>
       </span>
     </>
@@ -320,7 +320,7 @@ function GenreStamp({ genre, ink, subtitles }) {
         <span lang="kn" className="block whitespace-nowrap font-kn-display text-[5cqw] font-bold">
           {genre.kn}
         </span>
-        {subtitles && <span className="mt-[1cqw] block font-poster text-[4.4cqw] tracking-wider">{genre.en}</span>}
+        <En className="mt-[1cqw] block font-poster text-[4.4cqw] tracking-wider">{genre.en}</En>
       </span>
     </span>
   )

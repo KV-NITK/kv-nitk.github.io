@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { MEAL, MENU, eventDay } from '@p26/content'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { cn } from '@/lib/utils'
@@ -119,11 +119,9 @@ export function FeastPoster({ className }) {
           <span lang="kn" className="block font-kn-display text-base font-semibold leading-tight">
             {MEAL.venue.kn}
           </span>
-          {subtitles && (
-            <span className="mt-0.5 block text-base font-semibold leading-tight opacity-85">
+          <En className="mt-0.5 block text-base font-semibold leading-tight opacity-85">
               {day.en}, {MEAL.time.en} · {MEAL.venue.en}
-            </span>
-          )}
+            </En>
         </p>
       </div>
       {/* Glass of the display frame */}

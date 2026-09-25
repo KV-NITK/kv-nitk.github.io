@@ -37,3 +37,14 @@ export function Sub({ as: Tag = 'div', kn, en, className, knClassName, enClassNa
     </Tag>
   )
 }
+
+// The English subtitle of a Kannada label: shown while subtitles are on,
+// kept for screen readers when they're off (spec §4).
+export function En({ as: Tag = 'span', className, children, ...props }) {
+  const { subtitles } = usePrefs()
+  return (
+    <Tag lang="en" className={cn(className, !subtitles && 'sr-only')} {...props}>
+      {children}
+    </Tag>
+  )
+}

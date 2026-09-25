@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { ACTS } from '@p26/content'
 import { useCurrentScene } from '@p26/lib/use-current-scene'
 import { filmSprockets } from '@p26/styles/materials'
@@ -83,7 +83,7 @@ export function FilmReel() {
       >
         <span aria-hidden className="absolute left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-theatre shadow-[inset_0_1px_1px_rgba(0,0,0,.6)]" />
         <span lang="kn" className="block font-kn-serif text-xs font-bold leading-tight sm:text-sm">{act.kn}</span>
-        {subtitles && <span className="block font-typewriter text-[0.6rem] leading-tight text-print/70">{act.en}</span>}
+        <En className="block font-typewriter text-[0.6rem] leading-tight text-print/70">{act.en}</En>
       </div>
     </div>
   )

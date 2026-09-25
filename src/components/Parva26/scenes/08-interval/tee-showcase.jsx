@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { TEE, eventDay } from '@p26/content'
 import { PERFORATED } from '@p26/ui/coupon'
 import { gsap } from '@p26/lib/gsap'
@@ -85,7 +85,7 @@ export function TeeShowcase({ className }) {
             <span lang="kn" className="block font-kn-display text-base font-bold leading-tight">
               {closeDay.kn}
             </span>
-            {subtitles && <span className="block text-[0.85rem] font-semibold leading-tight">Orders close {closeDay.en}</span>}
+            <En className="block text-[0.85rem] font-semibold leading-tight">Orders close {closeDay.en}</En>
           </p>
 
           {closed && <ClosedBoard subtitles={subtitles} />}
@@ -99,7 +99,7 @@ export function TeeShowcase({ className }) {
           <fieldset>
             <legend className="mb-1.5 font-kn-display text-base font-semibold text-[#f3ead5]">
               <span lang="kn">ಬಣ್ಣ</span>
-              {subtitles && <span className="font-kn-body"> · Colour</span>}
+              <En className="font-kn-body"> · Colour</En>
             </legend>
             <div role="radiogroup" className="flex gap-2.5">
               {TEE.variants.map((v) => (
@@ -126,14 +126,14 @@ export function TeeShowcase({ className }) {
             </div>
             <p lang="kn" className="mt-1 font-kn-display text-sm font-semibold text-[#f3ead5]/85">
               {variant.kn}
-              {subtitles && <span className="font-kn-body"> · {variant.en}</span>}
+              <En className="font-kn-body"> · {variant.en}</En>
             </p>
           </fieldset>
 
           <fieldset>
             <legend className="mb-1.5 font-kn-display text-base font-semibold text-[#f3ead5]">
               <span lang="kn">ಅಳತೆ</span>
-              {subtitles && <span className="font-kn-body"> · Size</span>}
+              <En className="font-kn-body"> · Size</En>
             </legend>
             <div ref={sizesRef} role="radiogroup" className="flex gap-1.5">
               {TEE.sizes.map((s) => {
@@ -175,7 +175,7 @@ export function TeeShowcase({ className }) {
               className="mt-1 min-h-8 font-kn-display text-sm font-semibold text-arishina underline decoration-arishina/40 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
             >
               <span lang="kn">ಅಳತೆ ಪಟ್ಟಿ</span>
-              {subtitles && <span className="font-kn-body"> · Size chart</span>}
+              <En className="font-kn-body"> · Size chart</En>
             </button>
           </fieldset>
 
@@ -192,7 +192,7 @@ export function TeeShowcase({ className }) {
               <span lang="kn" className="block font-kn-display text-sm font-semibold">
                 {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
               </span>
-              {subtitles && <span className="block text-xs">{back ? 'See the front' : 'See the back'}</span>}
+              <En className="block text-xs">{back ? 'See the front' : 'See the back'}</En>
             </span>
           </button>
         </div>
@@ -204,7 +204,7 @@ export function TeeShowcase({ className }) {
           {closed ? (
             <p className="font-kn-display text-lg font-bold text-[#f3ead5]">
               <span lang="kn">ಬುಕಿಂಗ್ ಮುಗಿದಿದೆ</span>
-              {subtitles && <span className="block font-kn-body text-base">Booking closed</span>}
+              <En className="block font-kn-body text-base">Booking closed</En>
             </p>
           ) : (
             <a
@@ -231,7 +231,7 @@ export function TeeShowcase({ className }) {
           {hint && (
             <>
               <span lang="kn">ಮೊದಲು ಅಳತೆ ಆರಿಸಿ</span>
-              {subtitles && <span className="font-kn-body"> · Pick a size first</span>}
+              <En className="font-kn-body"> · Pick a size first</En>
             </>
           )}
         </p>
@@ -419,7 +419,7 @@ function EarlyFlag({ subtitles }) {
       <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight">
         ಮೊದಲ ದಿನ ಮೊದಲ ಆಟ
       </span>
-      {subtitles && <span className="block text-[0.8rem] font-semibold leading-tight">First Day First Show price</span>}
+      <En className="block text-[0.8rem] font-semibold leading-tight">First Day First Show price</En>
       <span className="block text-base font-bold leading-tight">
         {TEE.earlySold}/{TEE.earlyQuota} <span lang="kn">ಮಾರಾಟ</span>
         {subtitles && ' · sold'}
@@ -434,7 +434,7 @@ function SizeChart({ subtitles }) {
       <table className="w-full text-center text-base">
         <caption className="text-left font-kn-display text-sm font-semibold">
           <span lang="kn">ಅಳತೆ (ಇಂಚುಗಳಲ್ಲಿ)</span>
-          {subtitles && <span className="font-kn-body"> · Size, in inches</span>}
+          <En className="font-kn-body"> · Size, in inches</En>
         </caption>
         <thead>
           <tr className="font-kn-display text-sm">
@@ -471,7 +471,7 @@ function ClosedBoard({ subtitles }) {
       <span lang="kn" className="block font-kn-display text-2xl font-extrabold leading-none">
         ಬುಕಿಂಗ್ ಮುಗಿದಿದೆ
       </span>
-      {subtitles && <span className="block font-poster text-xl leading-none tracking-[0.2em]">Booking closed</span>}
+      <En className="block font-poster text-xl leading-none tracking-[0.2em]">Booking closed</En>
     </p>
   )
 }
@@ -504,7 +504,7 @@ function GlassDoor({ open, onOpen, subtitles }) {
         <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight text-[#4a3208]">
           ತೆರೆಯಿರಿ
         </span>
-        {subtitles && <span className="block font-poster text-xs leading-none tracking-widest text-[#4a3208]">Open</span>}
+        <En className="block font-poster text-xs leading-none tracking-widest text-[#4a3208]">Open</En>
       </span>
     </button>
   )

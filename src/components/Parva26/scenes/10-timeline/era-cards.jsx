@@ -1,6 +1,7 @@
 import { EXTRUSION } from '@p26/ui/lettering'
 import { graphemes } from '@p26/lib/text'
 import { paper } from '@p26/styles/textures'
+import { En } from '@p26/lib/prefs'
 import { cn } from '@/lib/utils'
 
 // Title cards for the rewind bench (Scene 10, allscenes.md), each lettered
@@ -92,11 +93,9 @@ export function EraCard({ entry, subtitles, className }) {
           {entry.kn}
         </p>
         {era.rule && <span aria-hidden className="mt-[2.5cqw] block h-[0.5cqw] w-[16cqw] bg-kumkuma" />}
-        {subtitles && (
-          <p className={cn('mt-[2cqw] font-poster text-[5cqw] tracking-[0.25em]', entry.era === 'modern' || entry.era === 'gloss' || entry.era === 'talkie' ? 'text-white/70' : 'text-[#1d1a17]/75')}>
+        <En as="p" className={cn('mt-[2cqw] font-poster text-[5cqw] tracking-[0.25em]', entry.era === 'modern' || entry.era === 'gloss' || entry.era === 'talkie' ? 'text-white/70' : 'text-[#1d1a17]/75')}>
             {entry.film}
-          </p>
-        )}
+          </En>
       </div>
     </div>
   )
@@ -121,7 +120,7 @@ function NowCard({ entry, subtitles, className }) {
         <p lang="kn" className="mt-[3cqw] font-kn-display text-[6.5cqw] font-bold leading-tight text-[#f1dfc0]">
           ನೀವು ಇಲ್ಲಿದ್ದೀರಿ
         </p>
-        {subtitles && <p className="font-poster text-[5cqw] tracking-[0.3em] text-[#f1dfc0]/70">You are here</p>}
+        <En as="p" className="font-poster text-[5cqw] tracking-[0.3em] text-[#f1dfc0]/70">You are here</En>
       </div>
     </div>
   )

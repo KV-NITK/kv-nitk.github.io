@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { graphemes } from '@p26/lib/text'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
@@ -102,7 +102,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
           {phase === 'failed' ? (
             <p className="flex-1 truncate font-kn-display text-base font-bold leading-tight text-kumkuma">
               <span lang="kn">ಉತ್ತರ: {first.kn}</span>
-              {subtitles && <span className="block text-sm font-semibold">Answer: {first.en}</span>}
+              <En className="block text-sm font-semibold">Answer: {first.en}</En>
             </p>
           ) : (
             <input
@@ -147,7 +147,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
             <span lang="kn" className="block font-kn-display text-base font-bold leading-none">
               ಸುಳಿವು
             </span>
-            {subtitles && <span className="block text-xs font-semibold">Hint</span>}
+            <En className="block text-xs font-semibold">Hint</En>
             {hints > 0 && <span className="block font-typewriter text-xs text-kumkuma">−{hints * 5}</span>}
           </span>
         </button>
@@ -172,7 +172,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
         className="mt-4 min-h-11 -rotate-2 rounded-[3px] border-[2.5px] border-arishina px-4 font-kn-display text-lg font-bold text-arishina transition-opacity disabled:opacity-40 enabled:hover:bg-arishina/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
       >
         <span lang="kn">ಲೇಬಲ್ ಹಚ್ಚಿ</span>
-        {subtitles && <span className="font-kn-body text-base"> · Label it</span>}
+        <En className="font-kn-body text-base"> · Label it</En>
       </button>
     </form>
   )

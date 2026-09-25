@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { HOOMALE } from '@p26/content'
 import { sayLine } from '@p26/chrome/subtitle-strip'
 import { ParvaHero, Garland } from '@p26/scenes/09-release-day/samudrappa'
@@ -290,7 +290,7 @@ function NightStreet({ subtitles }) {
         <span lang="kn" className="block font-kn-card text-[clamp(1.6rem,3vw,2.6rem)] leading-none text-[#ffe6a8] [text-shadow:0_0_6px_rgba(255,200,90,.9),0_0_18px_rgba(255,170,60,.5)]">
           ಶ್ರೀ ಗಂಧದ ಗುಡಿ ಚಿತ್ರಮಂದಿರ
         </span>
-        {subtitles && <span className="mt-1 block font-poster text-lg tracking-[0.3em] text-[#ffe6a8]/70">Sri Gandhada Gudi Chitramandira</span>}
+        <En className="mt-1 block font-poster text-lg tracking-[0.3em] text-[#ffe6a8]/70">Sri Gandhada Gudi Chitramandira</En>
       </p>
       {/* Street and kerb, under an orange street light */}
       <div
@@ -369,7 +369,7 @@ function BaseBoard({ ref, subtitles }) {
         <p lang="kn" className="font-kn-display text-sm font-bold leading-tight text-[#1d1a17] sm:text-base">
           ಪರ್ವ ಬಿಡುಗಡೆ ದಿನ · ಅಭಿಮಾನಿಗಳ ಹಾರ್ದಿಕ ಸ್ವಾಗತ
         </p>
-        {subtitles && <p className="font-poster text-sm leading-tight tracking-wider text-[#1d1a17]/80">{HOOMALE.hero.en} · Parva release day · A warm welcome from the fans</p>}
+        <En as="p" className="font-poster text-sm leading-tight tracking-wider text-[#1d1a17]/80">{HOOMALE.hero.en} · Parva release day · A warm welcome from the fans</En>
       </div>
       {/* Legs */}
       <span aria-hidden className="absolute -bottom-3 left-[12%] h-3 w-2 bg-[#4a2c14]" />
@@ -419,7 +419,7 @@ function FanBanner({ shared, mine, flag, done, subtitles, onThrowStart, onThrowE
           <p lang="kn" className="font-kn-display text-sm font-bold leading-tight text-kumkuma">
             {HOOMALE.hero.kn} ಅಭಿಮಾನಿಗಳ ಸಂಘ
           </p>
-          {subtitles && <p className="font-poster text-xs leading-tight tracking-[0.2em] text-kumkuma/80">{HOOMALE.hero.en} fans’ association</p>}
+          <En as="p" className="font-poster text-xs leading-tight tracking-[0.2em] text-kumkuma/80">{HOOMALE.hero.en} fans’ association</En>
           <p className="flex items-baseline justify-center gap-3 sm:block">
             <span lang="kn" className="font-kn-display text-2xl font-extrabold leading-tight sm:block sm:text-4xl">
               ಹೂಮಳೆ
@@ -433,7 +433,7 @@ function FanBanner({ shared, mine, flag, done, subtitles, onThrowStart, onThrowE
             <span lang="kn" className="font-kn-display">
               ನಿಮ್ಮ ಹೂವು
             </span>
-            {subtitles && <span> · Your flowers</span>}: <span className="font-bold">{fmt(mine)}</span>
+            <En> · Your flowers</En>: <span className="font-bold">{fmt(mine)}</span>
           </p>
           {/* On a phone the thank-you goes on the banner, clear of the hero */}
           {done && (
@@ -441,7 +441,7 @@ function FanBanner({ shared, mine, flag, done, subtitles, onThrowStart, onThrowE
               <span lang="kn" className="font-kn-display text-base font-bold">
                 ಧನ್ಯವಾದ ಅಭಿಮಾನಿಗಳೇ!
               </span>
-              {subtitles && <span className="block text-sm font-semibold">10,000 flowers! Thank you, fans</span>}
+              <En className="block text-sm font-semibold">10,000 flowers! Thank you, fans</En>
             </p>
           )}
           {flag && (
@@ -470,7 +470,7 @@ function FanBanner({ shared, mine, flag, done, subtitles, onThrowStart, onThrowE
           <span lang="kn" className="block font-kn-display text-xl font-extrabold leading-none">
             ಹೂ ಎಸೆಯಿರಿ
           </span>
-          {subtitles && <span className="mt-0.5 block font-poster text-base leading-none tracking-wider">Throw flowers</span>}
+          <En className="mt-0.5 block font-poster text-base leading-none tracking-wider">Throw flowers</En>
         </span>
       </button>
     </div>
@@ -517,7 +517,7 @@ function ThankYouBanner({ subtitles, reduced }) {
         <span lang="kn" className="block font-kn-display text-xl font-extrabold leading-tight lg:text-2xl">
           10,000 ಹೂವು! ಧನ್ಯವಾದ ಅಭಿಮಾನಿಗಳೇ
         </span>
-        {subtitles && <span className="block font-poster text-base tracking-[0.2em] lg:text-lg">10,000 flowers! Thank you, fans</span>}
+        <En className="block font-poster text-base tracking-[0.2em] lg:text-lg">10,000 flowers! Thank you, fans</En>
       </p>
     </div>
   )

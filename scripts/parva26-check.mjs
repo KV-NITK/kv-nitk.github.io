@@ -2,6 +2,7 @@
 //
 //   node scripts/parva26-check.mjs baseline   save reference screenshots
 //   node scripts/parva26-check.mjs            shoot again and compare
+//   P26_SUBTITLES=off node scripts/…          the same, with subtitles off
 //
 // Serve a production build first: `npx vite build && npx vite preview --port 5198`
 // (or set P26_URL). Shots are taken with reduced motion, so nothing is
@@ -17,7 +18,9 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 const URL = process.env.P26_URL ?? 'http://localhost:5198/parva-26'
-const OUT = '.parva26-check'
+// P26_SUBTITLES=off checks the page with the subtitles switch off.
+const SUBTITLES_OFF = process.env.P26_SUBTITLES === 'off'
+const OUT = SUBTITLES_OFF ? '.parva26-check/subtitles-off' : '.parva26-check'
 const mode = process.argv[2] === 'baseline' ? 'baseline' : 'current'
 // Share of pixels allowed to differ before a shot is reported (clocks and
 // countdowns tick between runs).
@@ -41,7 +44,8 @@ function chromePath() {
 // the day's puzzles), and no passing subtitle lines.
 async function steady(page) {
   await page.clock.setFixedTime(new Date('2026-09-25T10:00:00+05:30'))
-  await page.addInitScript(() => {
+  await page.addInitScript((off) => {
+    if (off) localStorage.setItem('parva26:subtitles', 'false')
     let seed = 20260925
     Math.random = () => {
       seed = (seed + 0x6d2b79f5) | 0
@@ -54,7 +58,7 @@ async function steady(page) {
       style.textContent = 'p[aria-hidden].fixed { visibility: hidden !important }'
       document.head.append(style)
     })
-  })
+  }, SUBTITLES_OFF)
 }
 
 async function shoot(browser, dir) {

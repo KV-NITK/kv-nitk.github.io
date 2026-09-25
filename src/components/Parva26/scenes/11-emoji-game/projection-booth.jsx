@@ -1,4 +1,4 @@
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { paper } from '@p26/styles/textures'
 import { brass } from '@p26/styles/materials'
 import { cn } from '@/lib/utils'
@@ -151,7 +151,7 @@ export function DutyChart({ rows, className }) {
         <span lang="kn" className="block font-kn-display text-base font-bold">
           ಆಪರೇಟರ್ ಡ್ಯೂಟಿ ಚಾರ್ಟ್
         </span>
-        {subtitles && <span className="block font-typewriter text-xs">Operators’ duty chart · today’s top 10</span>}
+        <En className="block font-typewriter text-xs">Operators’ duty chart · today’s top 10</En>
       </h3>
       <ol className="mt-2 space-y-0.5 font-typewriter text-sm">
         {rows.map((row, i) => (

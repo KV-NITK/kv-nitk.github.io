@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { eventDay } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
@@ -391,7 +391,7 @@ function Tag({ guest, day, next, now, hinted, subtitles }) {
           {left && (
             <span className="mt-1 -rotate-3 rounded-[2px] border-2 border-kumkuma px-1.5 font-kn-display text-base font-bold leading-snug text-kumkuma [filter:url(#p26-ink)]">
               <span lang="kn">{left.kn}</span>
-              {subtitles && <span> · {left.en}</span>}
+              <En> · {left.en}</En>
             </span>
           )}
         </div>
@@ -400,7 +400,7 @@ function Tag({ guest, day, next, now, hinted, subtitles }) {
           <span lang="kn" className="font-kn-display text-[0.95rem] font-semibold leading-snug">
             {teaser.kn}
           </span>
-          {subtitles && <span className="mt-1 text-[0.85rem] leading-snug text-pen/80">{teaser.en}</span>}
+          <En className="mt-1 text-[0.85rem] leading-snug text-pen/80">{teaser.en}</En>
         </div>
       </div>
     </div>
@@ -546,7 +546,7 @@ function InfoCard({ card, subtitles }) {
       <p lang="kn" className="font-kn-display text-base font-bold leading-snug">
         {card.when.kn}
       </p>
-      {subtitles && <p className="text-base font-semibold leading-snug">{card.when.en}</p>}
+      <En as="p" className="text-base font-semibold leading-snug">{card.when.en}</En>
       {card.line && <p className="mt-1 text-[0.9rem] leading-snug text-pen/85">{card.line}</p>}
       {card.link && (
         <a
@@ -554,7 +554,7 @@ function InfoCard({ card, subtitles }) {
           className="mt-2 flex min-h-11 flex-col justify-center font-kn-display text-base font-bold leading-tight text-kumkuma underline decoration-kumkuma/40 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kumkuma"
         >
           <span lang="kn">ಕಾರ್ಯಕ್ರಮ ನೋಡಿ →</span>
-          {subtitles && <span className="font-kn-body text-[0.9rem] font-semibold">See the event</span>}
+          <En className="font-kn-body text-[0.9rem] font-semibold">See the event</En>
         </a>
       )}
     </div>

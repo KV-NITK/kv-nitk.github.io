@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { EMOJI_PUZZLES, DUTY_CHART } from '@p26/content'
 import { FilmCan, MAX_TRIES, MAX_HINTS } from '@p26/scenes/11-emoji-game/film-can'
 import { Projector, PortWindow, BareBulb, ReelShelf, DutyChart } from '@p26/scenes/11-emoji-game/projection-booth'
@@ -153,7 +153,7 @@ export function EmojiGameScene() {
                 <span lang="kn" className="block font-kn-display text-base font-semibold leading-snug">
                   ಆಪರೇಟರ್ ಇಂದಿನ ರೀಲ್‌ಗಳನ್ನು ಗೊಂದಲ ಮಾಡಿಕೊಂಡಿದ್ದಾರೆ! ಹೆಸರು ಬರೆದು ಸಹಾಯ ಮಾಡಿ.
                 </span>
-                {subtitles && <span className="block text-sm leading-snug">The operator has mixed up today’s reels! Help label them.</span>}
+                <En className="block text-sm leading-snug">The operator has mixed up today’s reels! Help label them.</En>
               </p>
 
               <ReelShelf results={results} total={PER_DAY} className="mt-4 w-full max-w-xs lg:hidden" />
@@ -164,7 +164,7 @@ export function EmojiGameScene() {
                 <>
                   <p className="mt-4 font-kn-display text-base font-semibold text-[#f1dfc0]/85">
                     <span lang="kn">ರೀಲ್ {results.length + 1} / {PER_DAY}</span>
-                    {subtitles && <span className="font-kn-body"> · Reel {results.length + 1} of {PER_DAY}</span>}
+                    <En className="font-kn-body"> · Reel {results.length + 1} of {PER_DAY}</En>
                     <span className="ml-3 rounded-[2px] bg-black/60 px-1.5 py-0.5 font-poster tracking-[0.2em] text-[#f2e6c8] lg:hidden">{String(seconds).padStart(4, '0')}</span>
                   </p>
                   <FilmCan
@@ -192,7 +192,7 @@ export function EmojiGameScene() {
                 className="mt-6 min-h-11 rounded-full bg-black/35 px-4 font-kn-display text-base font-semibold text-[#f1dfc0] ring-1 ring-[#c9a052]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina lg:hidden"
               >
                 <span lang="kn">ಡ್ಯೂಟಿ ಚಾರ್ಟ್</span>
-                {subtitles && <span className="font-kn-body"> · Duty chart</span>}
+                <En className="font-kn-body"> · Duty chart</En>
               </button>
               {chartOpen && <DutyChart rows={chartRows} className="mt-4 w-full max-w-sm lg:hidden" />}
             </div>
@@ -263,7 +263,7 @@ function LogSheet({ results, reels, total, solved, now, day, name, setName, subt
           className="min-h-11 -rotate-1 rounded-[3px] bg-arishina px-4 font-kn-display text-lg font-bold text-theatre shadow-[0_3px_5px_rgba(0,0,0,.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pen"
         >
           <span lang="kn">ಹಂಚಿಕೊಳ್ಳಿ</span>
-          {subtitles && <span className="font-kn-body text-base"> · Share</span>}
+          <En className="font-kn-body text-base"> · Share</En>
         </button>
         <p aria-live="polite" className="font-typewriter text-sm">
           {copied && (subtitles ? 'ನಕಲಾಯಿತು · Copied' : 'ನಕಲಾಯಿತು')}
@@ -273,7 +273,7 @@ function LogSheet({ results, reels, total, solved, now, day, name, setName, subt
       <label className="mt-4 block">
         <span className="block font-kn-display text-sm font-semibold">
           <span lang="kn">ಚಾರ್ಟ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಹೆಸರು</span>
-          {subtitles && <span className="font-kn-body"> · Your name on the chart</span>}
+          <En className="font-kn-body"> · Your name on the chart</En>
         </span>
         <input
           value={name}
@@ -288,11 +288,9 @@ function LogSheet({ results, reels, total, solved, now, day, name, setName, subt
         <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight">
           ಹೊಸ ರೀಲ್‌ಗಳು {h} ಗಂ {m} ನಿ ನಲ್ಲಿ
         </span>
-        {subtitles && (
-          <span className="block text-sm font-semibold leading-tight">
+        <En className="block text-sm font-semibold leading-tight">
             New reels in {h}h {m}m
-          </span>
-        )}
+          </En>
       </p>
     </div>
   )

@@ -1,4 +1,4 @@
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { MEAL, eventDay } from '@p26/content'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
@@ -44,7 +44,7 @@ export function BookingCounter({ className }) {
         {full ? (
           <p className="mt-6 text-center font-kn-display text-lg font-bold text-[#2b3a2e]">
             <span lang="kn">ಕೂಪನ್‌ಗಳು ಮುಗಿದಿವೆ</span>
-            {subtitles && <span className="block text-base font-semibold">All coupons are gone</span>}
+            <En className="block text-base font-semibold">All coupons are gone</En>
           </p>
         ) : (
           <Coupon data-coupon price={MEAL.price} href={MEAL.bookLink} subtitles={subtitles} />
@@ -138,11 +138,11 @@ function LeftPlate({ left, few, subtitles }) {
       <p className="font-kn-display text-base font-bold leading-tight">
         <span lang="kn">ಇನ್ನು {left} ಕೂಪನ್</span>
       </p>
-      {subtitles && <p className="text-[0.95rem] font-semibold leading-tight">{left} coupons left</p>}
+      <En as="p" className="text-[0.95rem] font-semibold leading-tight">{left} coupons left</En>
       {few && (
         <p className="absolute -bottom-7 -left-4 rotate-[-6deg] bg-[#fdf6c9] px-2 py-0.5 font-kn-display text-base font-bold text-kumkuma shadow-[0_2px_3px_rgba(0,0,0,.35)]">
           <span lang="kn">ಕೆಲವೇ ಕೂಪನ್</span>
-          {subtitles && <span className="font-kn-body"> · Few left</span>}
+          <En className="font-kn-body"> · Few left</En>
         </p>
       )}
     </div>
@@ -159,7 +159,7 @@ function HousefullBoard({ subtitles }) {
         <span lang="kn" className="block font-kn-display text-3xl font-extrabold leading-none">
           ಹೌಸ್‌ಫುಲ್
         </span>
-        {subtitles && <span className="block font-poster text-2xl leading-none tracking-[0.25em]">Housefull</span>}
+        <En className="block font-poster text-2xl leading-none tracking-[0.25em]">Housefull</En>
       </p>
     </div>
   )
@@ -176,18 +176,16 @@ function Slate({ day, subtitles }) {
       >
         <p className={cn('font-kn-display text-lg font-semibold leading-tight', chalk)}>
           <span lang="kn">ಒಂದು ಕೂಪನ್</span>
-          {subtitles && <span className="font-kn-body text-base"> · one coupon</span>}
+          <En className="font-kn-body text-base"> · one coupon</En>
         </p>
         <p className={cn('font-kn-display text-5xl font-bold leading-none', chalk)}>₹{MEAL.price}</p>
         <p className={cn('mt-1 font-kn-display text-base font-semibold leading-snug', chalk)}>
           <span lang="kn">
             {day.kn} · {MEAL.time.kn}
           </span>
-          {subtitles && (
-            <span className="block font-kn-body">
+          <En className="block font-kn-body">
               {day.en}, {MEAL.time.en}, one meal
-            </span>
-          )}
+            </En>
         </p>
       </div>
     </div>

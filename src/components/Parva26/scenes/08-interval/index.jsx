@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { sayLine } from '@p26/chrome/subtitle-strip'
 import { FeastPoster } from '@p26/scenes/08-interval/feast-poster'
 import { BookingCounter } from '@p26/scenes/08-interval/booking-counter'
@@ -253,7 +253,7 @@ function SwingDoor({ side, ref }) {
         <span lang="kn" className="font-kn-display text-[clamp(0.9rem,1.6vw,1.3rem)] font-extrabold leading-none text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.6)]">
           ತಳ್ಳಿ
         </span>
-        {subtitles && <span className="font-poster text-[clamp(0.8rem,1.3vw,1.1rem)] leading-none tracking-widest text-[#4a3208]">PUSH</span>}
+        <En className="font-poster text-[clamp(0.8rem,1.3vw,1.1rem)] leading-none tracking-widest text-[#4a3208]">PUSH</En>
       </span>
       {/* Kick plate */}
       <span className="absolute inset-x-[5%] bottom-[3%] h-[9%] rounded-[3px] shadow-[0_-2px_4px_rgba(0,0,0,.35)]" style={brass} />

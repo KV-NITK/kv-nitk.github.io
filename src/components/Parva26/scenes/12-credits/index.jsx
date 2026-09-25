@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { usePrefs } from '@p26/lib/prefs'
+import { En, usePrefs } from '@p26/lib/prefs'
 import { CREDITS, ASSET_CREDITS, CONTACT, SPONSORS, MEAL, HOOMALE } from '@p26/content'
 import { Flourish } from '@p26/ui/flourish'
 import { Coupon } from '@p26/ui/coupon'
@@ -81,7 +81,7 @@ export function CreditsScene() {
                 <p lang="kn" className={cn('font-kn-display text-lg font-semibold', GLOW)}>
                   ಕನ್ನಡ ವೇದಿಕೆ ಅರ್ಪಿಸುವ
                 </p>
-                {subtitles && <p className={cn('font-poster text-base tracking-[0.3em] opacity-80', GLOW)}>Kannada Vedike presents</p>}
+                <En as="p" className={cn('font-poster text-base tracking-[0.3em] opacity-80', GLOW)}>Kannada Vedike presents</En>
                 <h2 id="credits-title" className="mt-4">
                   <span lang="kn" className={cn('block font-kn-card text-6xl leading-tight sm:text-7xl', GLOW)}>
                     ಪರ್ವ 2026
@@ -116,7 +116,7 @@ export function CreditsScene() {
                 <p lang="kn" className={cn('font-kn-display text-lg font-semibold', GLOW)}>
                   ವಿಶೇಷ ಕೃತಜ್ಞತೆ
                 </p>
-                {subtitles && <p className={cn('font-poster text-sm tracking-[0.2em] opacity-75', GLOW)}>Special thanks</p>}
+                <En as="p" className={cn('font-poster text-sm tracking-[0.2em] opacity-75', GLOW)}>Special thanks</En>
                 <p className={cn('mt-3 max-w-md font-kn-body text-lg leading-relaxed', GLOW)}>{SPONSORS.map((s) => s.name).join(' · ')}</p>
               </div>
 
@@ -125,7 +125,7 @@ export function CreditsScene() {
                 <p lang="kn" className={cn('font-kn-display text-3xl font-bold leading-snug sm:text-4xl', GLOW)}>
                   ಅಭಿಮಾನಿ ದೇವರುಗಳಿಗೆ ಧನ್ಯವಾದ
                 </p>
-                {subtitles && <p className={cn('mt-2 font-kn-body text-lg', GLOW)}>Thank you to our fans, who are our gods</p>}
+                <En as="p" className={cn('mt-2 font-kn-body text-lg', GLOW)}>Thank you to our fans, who are our gods</En>
               </div>
 
               <SmallPrint subtitles={subtitles} />
@@ -265,14 +265,14 @@ function MakingOf({ ref, reduced, subtitles }) {
       </div>
       <p className={cn('mt-3 text-center font-kn-display text-sm', GLOW)}>
         <span lang="kn">ಚಿತ್ರೀಕರಣದ ಕ್ಷಣಗಳು</span>
-        {subtitles && <span className="font-kn-body opacity-80"> · The making of</span>}
+        <En className="font-kn-body opacity-80"> · The making of</En>
       </p>
       <a
         href={CONTACT.gallery}
         className={cn('mx-auto mt-1 flex min-h-11 w-fit items-center font-kn-display text-base font-semibold underline decoration-[#f1dfc0]/40 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina', GLOW)}
       >
         <span lang="kn">ಗ್ಯಾಲರಿ</span>
-        {subtitles && <span className="font-kn-body"> · Full gallery →</span>}
+        <En className="font-kn-body"> · Full gallery →</En>
       </a>
     </div>
   )
@@ -297,7 +297,7 @@ function SmallPrint({ subtitles }) {
 
       <div>
         <p lang="kn" className={cn('font-kn-display text-base font-semibold', GLOW)}>
-          ಸಂಪರ್ಕ{subtitles && <span className="font-kn-body"> · Contact</span>}
+          ಸಂಪರ್ಕ<En className="font-kn-body"> · Contact</En>
         </p>
         <ul className="mt-2 space-y-1">
           {CONTACT.people.map((p) => (
@@ -407,7 +407,7 @@ function StageFront({ reduced, subtitles }) {
           <span lang="kn" className="block font-kn-display text-xl font-bold leading-tight">
             ಮತ್ತೊಮ್ಮೆ ನೋಡಿ
           </span>
-          {subtitles && <span className="block font-poster text-base tracking-[0.2em]">Watch again</span>}
+          <En className="block font-poster text-base tracking-[0.2em]">Watch again</En>
         </button>
         <Coupon price={MEAL.price} href="#interval" subtitles={subtitles} className="rotate-[2deg]" />
       </div>
