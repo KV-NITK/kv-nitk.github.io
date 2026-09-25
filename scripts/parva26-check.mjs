@@ -61,6 +61,10 @@ async function steady(page) {
   }, SUBTITLES_OFF)
 }
 
+// The hero's painted forest and air sway with the animation clock, which
+// can't be fixed without stalling everything else; they are masked.
+const MASK = (page) => [page.locator('#title canvas')]
+
 async function shoot(browser, dir) {
   const errors = []
   for (const [name, options] of Object.entries(VIEWPORTS)) {
@@ -76,11 +80,11 @@ async function shoot(browser, dir) {
         window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY)
       }, id)
       await page.waitForTimeout(700)
-      await page.screenshot({ path: join(dir, `${name}-${id}.png`) })
+      await page.screenshot({ path: join(dir, `${name}-${id}.png`), mask: MASK(page) })
     }
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page.waitForTimeout(700)
-    await page.screenshot({ path: join(dir, `${name}-end.png`) })
+    await page.screenshot({ path: join(dir, `${name}-end.png`), mask: MASK(page) })
     await page.close()
   }
 
