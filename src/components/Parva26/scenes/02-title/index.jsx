@@ -12,6 +12,7 @@ import { createAir } from '@p26/scenes/02-title/air'
 import { useFilmScreen, useFilmTick } from '@p26/film/film-layer'
 import { gsap, useGSAP } from '@p26/lib/gsap'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { willChange } from '@p26/lib/layers'
 
 // Scene 2, the title card, inside the theatre of Scene 1 (brief, Scenes 1–2).
 // You sit about eight rows back: the silver screen plays the title film inside
@@ -344,9 +345,9 @@ function useCameraPush({ sectionRef, roomRef, maskRef, seatsRef }) {
       let settle = 0
       const promote = (on) => {
         promoted = on
-        room.style.willChange = on ? 'transform' : ''
-        seats.style.willChange = on ? 'transform, opacity' : ''
-        for (const el of fades) el.style.willChange = on ? 'opacity' : ''
+        willChange([room], on && 'transform')
+        willChange([seats], on && 'transform, opacity')
+        willChange(fades, on && 'opacity')
       }
       const moving = () => {
         if (!promoted) promote(true)

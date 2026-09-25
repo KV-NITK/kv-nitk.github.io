@@ -36,10 +36,32 @@ function chromePath() {
   return join(cache, shell, 'chrome-headless-shell-linux64', 'chrome-headless-shell')
 }
 
+// Make every run draw the same picture: the same random numbers (the
+// painted forest, petals), the same moment in time (clocks, countdowns,
+// the day's puzzles), and no passing subtitle lines.
+async function steady(page) {
+  await page.clock.setFixedTime(new Date('2026-09-25T10:00:00+05:30'))
+  await page.addInitScript(() => {
+    let seed = 20260925
+    Math.random = () => {
+      seed = (seed + 0x6d2b79f5) | 0
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+    addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style')
+      style.textContent = 'p[aria-hidden].fixed { visibility: hidden !important }'
+      document.head.append(style)
+    })
+  })
+}
+
 async function shoot(browser, dir) {
   const errors = []
   for (const [name, options] of Object.entries(VIEWPORTS)) {
     const page = await browser.newPage({ ...options, reducedMotion: 'reduce' })
+    await steady(page)
     page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`))
     await page.goto(URL, { waitUntil: 'networkidle' })
     await page.evaluate(() => document.fonts.ready)

@@ -1,4 +1,4 @@
-import { EXTRUSION } from '@p26/scenes/02-title/title-card'
+import { EXTRUSION } from '@p26/ui/lettering'
 import { graphemes } from '@p26/lib/text'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'

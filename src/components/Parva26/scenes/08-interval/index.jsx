@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom'
 import { usePrefs } from '@p26/lib/prefs'
 import { sayLine } from '@p26/chrome/subtitle-strip'
 import { FeastPoster } from '@p26/scenes/08-interval/feast-poster'
-import { BookingCounter, Coupon } from '@p26/scenes/08-interval/booking-counter'
+import { BookingCounter } from '@p26/scenes/08-interval/booking-counter'
+import { Coupon } from '@p26/ui/coupon'
+import { Flourish } from '@p26/ui/flourish'
 import { MEAL } from '@p26/content'
 import { TeeShowcase } from '@p26/scenes/08-interval/tee-showcase'
 import { FilmFrame } from '@p26/film/film-frame'
@@ -11,6 +13,7 @@ import { useFilmScreen } from '@p26/film/film-layer'
 import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 import paperMottle from '@p26/assets/textures/paper-mottle.webp'
 import doorQuilt from '@p26/assets/textures/door-quilt.webp'
@@ -56,8 +59,8 @@ export function IntervalScene() {
       // The doors, card and light layers are screen-sized, so they get their
       // own layers while the move plays and give them up after.
       const promote = (on) => {
-        for (const el of [screen, doors, left, right]) el.style.willChange = on ? 'transform' : ''
-        for (const el of [dim, house]) el.style.willChange = on ? 'opacity' : ''
+        willChange([screen, doors, left, right], on && 'transform')
+        willChange([dim, house], on && 'opacity')
       }
 
       const tl = gsap.timeline({
@@ -215,17 +218,6 @@ function IntervalCard() {
         <p className={cn('font-poster text-[clamp(1.4rem,4.5vw,2.8rem)] leading-none tracking-[0.6em] text-[#f3ead5]', !subtitles && 'opacity-0')}>INTERVAL</p>
       </div>
     </div>
-  )
-}
-
-export function Flourish({ className }) {
-  return (
-    <svg viewBox="0 0 60 60" aria-hidden className={className} fill="none" stroke="#c9a052" strokeWidth="1.6" strokeLinecap="round">
-      <path d="M4 56 C4 26 26 4 56 4" />
-      <path d="M11 56 C11 31 31 11 56 11" strokeOpacity=".6" />
-      <path d="M4 38 C14 36 20 30 22 20 C24 12 32 8 38 12 C42 15 40 21 35 21 C31 21 30 17 33 16" />
-      <circle cx="21" cy="21" r="2.4" fill="#c9a052" stroke="none" />
-    </svg>
   )
 }
 

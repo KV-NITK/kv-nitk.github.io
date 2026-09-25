@@ -6,6 +6,7 @@ import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { reliefLayers } from '@p26/styles/carving'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { load, save } from '@p26/lib/storage'
 import { cn } from '@/lib/utils'
 
 // One portrait on the lobby's wall of honour (Scene 7, allscenes.md): a
@@ -22,21 +23,12 @@ const HEARTWOOD =
 
 const SEEN_KEY = 'parva26:unveiled'
 
-function hasSeen(id) {
-  try {
-    return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '[]').includes(id)
-  } catch {
-    return false
-  }
-}
+const hasSeen = (id) => load(SEEN_KEY, []).includes(id)
 
+// If storage is unavailable, the unveiling just plays again next time.
 function markSeen(id) {
-  try {
-    const seen = JSON.parse(localStorage.getItem(SEEN_KEY) ?? '[]')
-    if (!seen.includes(id)) localStorage.setItem(SEEN_KEY, JSON.stringify([...seen, id]))
-  } catch {
-    // ignore: the unveiling will just play again next time
-  }
+  const seen = load(SEEN_KEY, [])
+  if (!seen.includes(id)) save(SEEN_KEY, [...seen, id])
 }
 
 export const revealTime = (iso) => new Date(`${iso}T00:00:00+05:30`).getTime()

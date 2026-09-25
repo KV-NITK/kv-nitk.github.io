@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
 import { CREDITS, ASSET_CREDITS, CONTACT, SPONSORS, MEAL, HOOMALE } from '@p26/content'
-import { Flourish } from '@p26/scenes/08-interval'
-import { Coupon } from '@p26/scenes/08-interval/booking-counter'
+import { Flourish } from '@p26/ui/flourish'
+import { Coupon } from '@p26/ui/coupon'
 import { FilmFrame } from '@p26/film/film-frame'
 import { gsap, ScrollTrigger, useGSAP } from '@p26/lib/gsap'
 import { velvet } from '@p26/styles/materials'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useOnScreen } from '@p26/lib/on-screen'
+import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 
 // Scene 12, the credits and ಶುಭಂ (allscenes.md). After a silent black beat,
@@ -51,7 +53,7 @@ export function CreditsScene() {
             end: '+=90%',
             pin: true,
             scrub: 0.6,
-            onToggle: (self) => [left, right].forEach((el) => (el.style.willChange = self.isActive ? 'transform' : '')),
+            onToggle: (self) => willChange([left, right], self.isActive && 'transform'),
           },
         })
         .to({}, { duration: 0.35 })
@@ -226,15 +228,10 @@ function useCreditsDrift({ listRef, stops, endRef, reduced }) {
 // also the way to the full gallery.
 function MakingOf({ ref, reduced, subtitles }) {
   const [i, setI] = useState(0)
-  const [live, setLive] = useState(false)
   const [developed, setDeveloped] = useState(false)
   const boxRef = useRef(null)
 
-  useEffect(() => {
-    const seen = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    seen.observe(boxRef.current)
-    return () => seen.disconnect()
-  }, [])
+  const live = useOnScreen(boxRef)
   useEffect(() => {
     if (!live) return
     const id = setInterval(() => setI((n) => (n + 1) % photos.length), 4200)

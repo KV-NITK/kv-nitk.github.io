@@ -7,6 +7,8 @@ import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { vineAcross, vineDown } from '@p26/styles/carving'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useOnScreen, PAUSED } from '@p26/lib/on-screen'
+import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 import sandalPanel from '@p26/assets/textures/sandal-panel.webp'
 
@@ -66,7 +68,6 @@ export function GuestsScene() {
   const wallRef = useRef(null)
   const railRef = useRef(null)
   const [open, setOpen] = useState(null)
-  const [live, setLive] = useState(false)
   const now = useNow()
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
@@ -86,11 +87,7 @@ export function GuestsScene() {
   const pastYears = [...new Set(PAST_GUESTS.map((g) => g.year))].sort((a, b) => b - a)
 
   // Veils and lamps only move while the wall is on screen.
-  useEffect(() => {
-    const seen = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    seen.observe(stageRef.current)
-    return () => seen.disconnect()
-  }, [])
+  const live = useOnScreen(stageRef)
 
   // Tapping anywhere else, or Escape, closes the open card or hint.
   useEffect(() => {
@@ -123,7 +120,7 @@ export function GuestsScene() {
         const distance = () => Math.max(0, wall.offsetWidth - stageRef.current.clientWidth)
         const near = new IntersectionObserver(
           ([entry]) => {
-            wall.style.willChange = rail.style.willChange = entry.isIntersecting ? 'transform' : ''
+            willChange([wall, rail], entry.isIntersecting && 'transform')
           },
           { rootMargin: '50% 0px' }
         )
@@ -138,7 +135,7 @@ export function GuestsScene() {
           .to({}, { duration: 0.1 })
         return () => {
           near.disconnect()
-          wall.style.willChange = rail.style.willChange = ''
+          willChange([wall, rail], false)
         }
       })
       return () => mm.revert()
@@ -153,7 +150,7 @@ export function GuestsScene() {
       <FilmFrame>
         <div
           ref={stageRef}
-          className={cn('relative overflow-hidden bg-sandal lg:h-[calc(100svh-1.5rem)] lg:[container-type:size]', !live && '[&_*]:[animation-play-state:paused]')}
+          className={cn('relative overflow-hidden bg-sandal lg:h-[calc(100svh-1.5rem)] lg:[container-type:size]', !live && PAUSED)}
         >
           <div ref={wallRef} className="relative flex flex-col lg:h-full lg:w-max lg:flex-row" style={WALL}>
             <Cornice />

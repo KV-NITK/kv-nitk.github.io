@@ -8,6 +8,9 @@ import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useOnScreen, PAUSED } from '@p26/lib/on-screen'
+import { useStoredState } from '@p26/lib/storage'
+import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 import ironGate from '@p26/assets/textures/iron-gate.webp'
 
@@ -41,23 +44,9 @@ function useHoomale() {
     return Number.isFinite(preview) && preview > 0 ? preview : HOOMALE.base
   })
   const [session, setSession] = useState(0)
-  const [mine, setMine] = useState(() => {
-    try {
-      return Number(localStorage.getItem('parva26:flowers')) || 0
-    } catch {
-      return 0
-    }
-  })
+  const [mine, setMine] = useStoredState('parva26:flowers', 0)
   const recent = useRef([])
   const pending = useRef(0)
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('parva26:flowers', String(mine))
-    } catch {
-      // ignore: your count just won't be remembered
-    }
-  }, [mine])
 
   // TODO(backend): send `pending` to the server in one batch every few
   // seconds; until then the flowers are only counted here.
@@ -90,10 +79,10 @@ export function ReleaseDayScene() {
   const gateRef = useRef(null)
   const thrower = useRef(null)
   const holding = useRef(0)
+  const live = useOnScreen(stageRef)
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
   const { shared, mine, add } = useHoomale()
-  const [live, setLive] = useState(false)
   const [flag, setFlag] = useState(null)
   const sections = Math.max(1, Math.min(10, Math.floor(shared / HOOMALE.milestone)))
   const strings = Math.min(STRINGS.length, 1 + Math.floor(shared / 2500))
@@ -124,12 +113,9 @@ export function ReleaseDayScene() {
       timer = setTimeout(layout, 150)
     })
     sized.observe(stage)
-    const seen = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    seen.observe(stage)
     return () => {
       clearTimeout(timer)
       sized.disconnect()
-      seen.disconnect()
       thrower.current.stop()
     }
   }, [])
@@ -228,7 +214,7 @@ export function ReleaseDayScene() {
             start: 'top 85%',
             end: 'top 10%',
             scrub: 0.4,
-            onToggle: (self) => (gate.style.willChange = self.isActive ? 'transform' : ''),
+            onToggle: (self) => willChange([gate], self.isActive && 'transform'),
           },
         }
       )
@@ -241,7 +227,7 @@ export function ReleaseDayScene() {
       <h2 id="release-day-title" className="sr-only">
         <span lang="kn">ಬಿಡುಗಡೆ ದಿನ</span> · Release day: throw flowers at {HOOMALE.hero.en}
       </h2>
-      <div ref={stageRef} className={cn('relative h-[100svh] min-h-[38rem] overflow-hidden', !live && '[&_*]:[animation-play-state:paused]')}>
+      <div ref={stageRef} className={cn('relative h-[100svh] min-h-[38rem] overflow-hidden', !live && PAUSED)}>
         <NightStreet subtitles={subtitles} />
 
         {/* The cutout's box: scaffolding, its shadow on the wall, the hero */}

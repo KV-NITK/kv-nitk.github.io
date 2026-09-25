@@ -7,6 +7,8 @@ import { isRight } from '@p26/scenes/11-emoji-game/answers'
 import { FilmFrame } from '@p26/film/film-frame'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useOnScreen, PAUSED } from '@p26/lib/on-screen'
+import { useStoredState } from '@p26/lib/storage'
 import { cn } from '@/lib/utils'
 
 // Scene 11, ಯಾವ ಸಿನಿಮಾ? · Which film? (allscenes.md). The projection booth:
@@ -35,21 +37,6 @@ function scoreFor({ solved, wrong, hints, seconds }) {
   return Math.max(10, 60 + Math.max(0, 40 - Math.floor(seconds / 3)) - 10 * wrong - 5 * hints)
 }
 
-function readJSON(key, fallback) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback
-  } catch {
-    return fallback
-  }
-}
-function writeJSON(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // ignore: progress just won't survive a reload
-  }
-}
-
 export function EmojiGameScene() {
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
@@ -58,33 +45,23 @@ export function EmojiGameScene() {
   const day = dayNumber(now)
   const reels = useMemo(() => todaysReels(day), [day])
   const key = `parva26:reels:${day}`
-  const [results, setResults] = useState(() => readJSON(key, []))
+  // Today's progress; at midnight the key changes and a new day starts.
+  const [results, setResults] = useStoredState(key, [])
   const [wrong, setWrong] = useState(0)
   const [hints, setHints] = useState(0)
   const [seconds, setSeconds] = useState(0)
   const [phase, setPhase] = useState('play')
-  const [live, setLive] = useState(false)
   const [status, setStatus] = useState('')
   const [chartOpen, setChartOpen] = useState(false)
-  const [name, setName] = useState(() => readJSON('parva26:name', ''))
+  const [name, setName] = useStoredState('parva26:name', '')
 
   const finished = results.length >= PER_DAY
   const puzzle = reels[Math.min(results.length, PER_DAY - 1)]
   const total = results.reduce((sum, r) => sum + r.score, 0)
   const solved = results.filter((r) => r.solved).length
 
-  // A new day brings new reels.
-  useEffect(() => {
-    setResults(readJSON(key, []))
-  }, [key])
-  useEffect(() => writeJSON(key, results), [key, results])
-  useEffect(() => writeJSON('parva26:name', name), [name])
 
-  useEffect(() => {
-    const seen = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    seen.observe(stageRef.current)
-    return () => seen.disconnect()
-  }, [])
+  const live = useOnScreen(stageRef)
 
   // The footage counter runs while a can is on the bench and you can see it.
   useEffect(() => {
@@ -153,7 +130,7 @@ export function EmojiGameScene() {
       <FilmFrame>
         <div
           ref={stageRef}
-          className={cn('relative min-h-[calc(100svh-0.75rem)] overflow-hidden sm:min-h-[calc(100svh-1.5rem)]', !live && '[&_*]:[animation-play-state:paused]')}
+          className={cn('relative min-h-[calc(100svh-0.75rem)] overflow-hidden sm:min-h-[calc(100svh-1.5rem)]', !live && PAUSED)}
           style={{ backgroundImage: 'radial-gradient(ellipse 70% 60% at 55% 20%, #3a3b33, #22241f 60%, #171814)' }}
         >
           <BareBulb className="left-1/2 top-0 lg:left-[52%]" />

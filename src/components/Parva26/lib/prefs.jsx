@@ -1,39 +1,20 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext } from 'react'
+import { useStoredState } from '@p26/lib/storage'
 import { cn } from '@/lib/utils'
 
-// Visitor preferences shared across the page. Both are remembered between
-// visits (spec §2, §4); storage can be unavailable (private mode), so every
-// access is guarded and the defaults still work without it.
+// Visitor preferences shared across the page, remembered between visits
+// (spec §2, §4).
 const PrefsContext = createContext(null)
-
-function usePersistentFlag(key, initial) {
-  const [value, setValue] = useState(() => {
-    try {
-      const stored = localStorage.getItem(key)
-      return stored === null ? initial : stored === '1'
-    } catch {
-      return initial
-    }
-  })
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, value ? '1' : '0')
-    } catch {
-      // ignore: preference just won't persist
-    }
-  }, [key, value])
-
-  return [value, setValue]
-}
 
 export function PrefsProvider({ children }) {
   // Subtitles default ON so non-Kannada visitors aren't lost (spec §4).
-  const [subtitles, setSubtitles] = usePersistentFlag('parva26:subtitles', true)
-  const [sound, setSound] = usePersistentFlag('parva26:sound', true)
+  const [subtitles, setSubtitles] = useStoredState('parva26:subtitles', true)
+  const [sound, setSound] = useStoredState('parva26:sound', true)
 
+  // Older visits stored these as 1 and 0; keep them booleans so a stored 0
+  // never renders as text.
   return (
-    <PrefsContext.Provider value={{ subtitles, setSubtitles, sound, setSound }}>
+    <PrefsContext.Provider value={{ subtitles: Boolean(subtitles), setSubtitles, sound: Boolean(sound), setSound }}>
       {children}
     </PrefsContext.Provider>
   )

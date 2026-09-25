@@ -7,6 +7,7 @@ import { FilmFrame } from '@p26/film/film-frame'
 import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 
 // Scene 10, ಬೆಳ್ಳಿ ಪರದೆಯ ಪಯಣ · Sandalwood through the years (allscenes.md).
@@ -70,7 +71,7 @@ export function TimelineScene() {
           // several frames on, or all the way to the end.
           snap: { snapTo: 1 / (N - 1), inertia: false, duration: { min: 0.2, max: 0.4 }, delay: 0.08, ease: 'power1.inOut' },
           invalidateOnRefresh: true,
-          onToggle: (self) => moving.forEach((el) => el && (el.style.willChange = self.isActive ? 'transform' : '')),
+          onToggle: (self) => willChange(moving, self.isActive && 'transform'),
           onRefresh: () => place(proxy.at),
         },
       })

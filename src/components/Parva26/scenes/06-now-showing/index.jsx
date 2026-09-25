@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
 import { EVENTS, GENRES, eventDay } from '@p26/content'
-import { Bulbs } from '@p26/scenes/02-title/name-board'
+import { Bulbs } from '@p26/ui/bulbs'
 import { PosterMotif, POSTER_STYLES } from '@p26/scenes/06-now-showing/poster-art'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useOnScreen, PAUSED } from '@p26/lib/on-screen'
 import { cn } from '@/lib/utils'
 
 // Scene 6, ಇಂದೇ ನೋಡಿ · Now Showing (allscenes.md). The theatre's poster
@@ -21,17 +22,12 @@ const POSTERS = EVENTS.filter((e) => e.headline).slice(0, 6)
 export function NowShowingScene() {
   const [open, setOpen] = useState(null)
   const [lifted, setLifted] = useState(null)
-  const [live, setLive] = useState(false)
   const boardRef = useRef(null)
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
 
   // Motifs only animate while the board is on screen.
-  useEffect(() => {
-    const seen = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    seen.observe(boardRef.current)
-    return () => seen.disconnect()
-  }, [])
+  const live = useOnScreen(boardRef)
 
   // Every so often a poster's corner lifts in the breeze and settles.
   useEffect(() => {
@@ -196,7 +192,7 @@ function Poster({ event, tilt, open, lifted, live, reduced, subtitles, onToggle 
       className={cn(
         'group/poster relative aspect-[2/3] w-[44vw] max-w-[13rem] transition-[translate] duration-300 [perspective:1000px] sm:w-[12rem] lg:w-[min(11.6rem,13.6vw)]',
         open ? 'z-30' : 'hover:-translate-y-1.5 hover:z-20',
-        !live && '[&_*]:[animation-play-state:paused]'
+        !live && PAUSED
       )}
       style={{ rotate: `${tilt}deg` }}
     >
