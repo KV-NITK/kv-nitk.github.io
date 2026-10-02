@@ -10,11 +10,11 @@ try {
     customerEmail: "test@example.com",
     customerPhone: "9999999999",
 
-    amount: 1,
+    // Needs a row in payment_products (see sql/create_payment_catalog.sql)
+    items: [{ productId: process.env.TEST_PRODUCT_ID, quantity: 1 }],
+    couponCode: process.env.TEST_COUPON_CODE || null,
 
-    purpose: "TEST",
-
-    referenceId: "test-payment-001",
+    idempotencyKey: `test-${Date.now()}`,
 
     returnUrl: process.env.CASHFREE_RETURN_URL,
   });

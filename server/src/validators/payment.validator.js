@@ -1,22 +1,38 @@
 import { z } from "zod";
 
-export const createPaymentSchema = z.object({
-  purpose: z
+const cartItemSchema = z.object({
+  productId: z
     .string()
     .trim()
-    .min(1, "Payment purpose is required")
-    .max(50, "Payment purpose is too long"),
+    .min(1, "Product is required")
+    .max(100, "Product id is too long"),
 
-  referenceId: z
+  quantity: z
+    .number()
+    .int("Quantity must be a whole number")
+    .min(1, "Quantity must be at least 1")
+    .max(100, "Quantity is too large"),
+});
+
+// The client never sends a price: only what it wants and an optional coupon.
+const cartFields = {
+  items: z
+    .array(cartItemSchema)
+    .min(1, "Cart is empty")
+    .max(20, "Too many items in cart"),
+
+  couponCode: z
     .string()
     .trim()
-    .max(100, "Reference ID is too long")
+    .max(32, "Coupon code is too long")
     .optional()
     .nullable(),
+};
 
-  amount: z
-    .number()
-    .positive("Amount must be greater than 0"),
+export const quoteOrderSchema = z.object(cartFields);
+
+export const createPaymentSchema = z.object({
+  ...cartFields,
 
   customerPhone: z
     .string()
@@ -26,9 +42,8 @@ export const createPaymentSchema = z.object({
   idempotencyKey: z
     .string()
     .trim()
-    .max(128, "Idempotency key is too long")
-    .optional()
-    .nullable(),
+    .min(1, "Idempotency key is required")
+    .max(128, "Idempotency key is too long"),
 });
 
 export const refundPaymentSchema = z.object({
