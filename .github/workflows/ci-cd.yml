@@ -46,6 +46,9 @@ jobs:
       - name: Check Backend Syntax
         run: cd server && node --check src/server.js src/app.js
 
+      - name: Run Backend Unit Tests
+        run: cd server && npm test
+
   # ----------------------------------------------------
   # Job 2: Deploy on the NITK campus server (10.14.0.80)
   # Runs on the self-hosted runner there
