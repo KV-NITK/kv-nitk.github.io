@@ -18,12 +18,30 @@ const getCookieOptions = (maxAge) => ({
   ...(maxAge ? { maxAge } : {}),
 });
 
+// Only same-site paths are allowed as a post-login destination
+const safeRedirectPath = (value) =>
+  typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
+    ? value
+    : "/team-registration";
+
+// A failed login sends the browser back to the site (not a raw JSON page),
+// with ?login_error=<reason> so the page can tell the user to try again.
+const redirectLoginFailure = (req, res, reason) => {
+  const redirectTo = safeRedirectPath(req.cookies.iris_redirect_to);
+
+  res.clearCookie("iris_oauth_state", getCookieOptions());
+  res.clearCookie("iris_redirect_to", getCookieOptions());
+
+  const separator = redirectTo.includes("?") ? "&" : "?";
+
+  return res.redirect(
+    `${process.env.FRONTEND_URL}${redirectTo}${separator}login_error=${reason}`
+  );
+};
+
 export const irisLogin = (req, res) => {
   const state = crypto.randomBytes(32).toString("hex");
-  const redirectPath =
-    typeof req.query.redirect === "string" && req.query.redirect.startsWith("/")
-      ? req.query.redirect
-      : "/team-registration";
+  const redirectPath = safeRedirectPath(req.query.redirect);
 
   res.cookie("iris_oauth_state", state, getCookieOptions(10 * 60 * 1000));
   res.cookie("iris_redirect_to", redirectPath, getCookieOptions(10 * 60 * 1000));
@@ -38,10 +56,8 @@ export const irisCallback = async (req, res) => {
     const { code, state } = req.query;
 
     if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Authorization code missing",
-      });
+      // IRIS sends ?error=access_denied (and no code) when the user declines
+      return redirectLoginFailure(req, res, "denied");
     }
 
     // Verify OAuth state
@@ -51,21 +67,18 @@ export const irisCallback = async (req, res) => {
       state !== req.cookies.iris_oauth_state
     ) {
       console.error("OAuth State Mismatch:", {
-        queryState: state,
-        cookieState: req.cookies.iris_oauth_state,
-        cookies: req.cookies,
+        hasStateCookie: Boolean(req.cookies.iris_oauth_state),
+        hasRedirectCookie: Boolean(req.cookies.iris_redirect_to),
+        hasSessionCookie: Boolean(req.cookies.session_id),
       });
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OAuth state",
-      });
+      return redirectLoginFailure(req, res, "state");
     }
 
     res.clearCookie("iris_oauth_state", getCookieOptions());
 
     // Get IRIS profile
     const profile = await getIrisProfile(code);
-    console.log("IRIS Profile received successfully:", profile);
+    
 
     const userProfile = profile.user || profile;
     const user = {
@@ -83,14 +96,14 @@ export const irisCallback = async (req, res) => {
       user
     );
 
-    console.log("Created session for user:", user.email, "Session ID:", sessionId);
+    
 
     // Send session ID and user metadata cookies
     res.cookie("session_id", sessionId, getCookieOptions(24 * 60 * 60 * 1000));
     const encodedUser = Buffer.from(JSON.stringify(user)).toString("base64");
     res.cookie("user_meta", encodedUser, getCookieOptions(24 * 60 * 60 * 1000));
 
-    const redirectTo = req.cookies.iris_redirect_to || "/team-registration";
+    const redirectTo = safeRedirectPath(req.cookies.iris_redirect_to);
     res.clearCookie("iris_redirect_to", getCookieOptions());
 
     const separator = redirectTo.includes("?") ? "&" : "?";
@@ -104,10 +117,7 @@ export const irisCallback = async (req, res) => {
       error.response?.data || error.message
     );
 
-    return res.status(401).json({
-      success: false,
-      message: "IRIS authentication failed",
-    });
+    return redirectLoginFailure(req, res, "failed");
   }
 };
 

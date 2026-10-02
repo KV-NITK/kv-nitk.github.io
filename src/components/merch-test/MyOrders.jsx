@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import API_URL from "../../api/api";
 import { getMyPayments, getPayment } from "../../api/payments";
 import { STATUS_STYLES, itemLabel, rupees } from "./orderFormat";
@@ -23,6 +23,8 @@ const StatusBadge = ({ status }) => {
 };
 
 const MyOrders = () => {
+  const [searchParams] = useSearchParams();
+  const loginFailed = searchParams.has("login_error");
   const [user, setUser] = useState(undefined); // undefined = checking, null = logged out
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState("");
@@ -101,6 +103,7 @@ const MyOrders = () => {
 
         {user === null && (
           <div>
+            {loginFailed && <p className="mb-3 text-red-600">Login failed. Please try again.</p>}
             <p className="mb-4 text-neutral-700">Login with your NITK IRIS account to see your orders.</p>
             <button
               type="button"
