@@ -27,6 +27,9 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://kannadavedike.dev.local:5173",
   "https://kannadavedike.dev.local:5173",
+  "http://localhost:5174",
+  "http://kannadavedike.dev.local:5174",
+  "https://kannadavedike.dev.local:5174",
 ].filter(Boolean);
 
 app.use(

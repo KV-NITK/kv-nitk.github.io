@@ -40,7 +40,7 @@ export const getIrisProfile = async (code) => {
   const { access_token } = tokenResponse.data;
 
   const profileResponse = await axios.get(
-    process.env.IRIS_PROFILE_URL || "https://iris.nitk.ac.in/oauth/userinfo",
+    process.env.IRIS_PROFILE_URL || "https://iris.nitk.ac.in/api/v1/users/me.json",
     {
       params: {
         access_token,
