@@ -9,6 +9,7 @@ import {
 } from "../services/payment.service.js";
 import { quoteOrder, listProducts } from "../services/pricing.service.js";
 import { PaymentError } from "../services/payment.error.js";
+import { getPaymentReturnUrl } from "../config/urls.js";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -80,7 +81,7 @@ export const createPaymentController = async (req, res) => {
       items,
       couponCode,
 
-      returnUrl: process.env.CASHFREE_RETURN_URL,
+      returnUrl: getPaymentReturnUrl(),
       idempotencyKey,
     });
 

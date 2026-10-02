@@ -1,4 +1,4 @@
-import { cashfree } from "../config/cashfree.js";
+import { getCashfree } from "../config/cashfree.js";
 import crypto from "crypto";
 
 export const createCashfreeOrder = async ({
@@ -33,7 +33,7 @@ export const createCashfreeOrder = async ({
     try {
         const requestId = crypto.randomUUID();
 
-        const response = await cashfree.PGCreateOrder(
+        const response = await getCashfree().PGCreateOrder(
             request,
             requestId,
             idempotencyKey
@@ -52,7 +52,7 @@ export const createCashfreeOrder = async ({
 
 export const getCashfreeOrder = async (orderId) => {
     try {
-        const response = await cashfree.PGFetchOrder(orderId);
+        const response = await getCashfree().PGFetchOrder(orderId);
 
         return response.data;
     } catch (error) {
@@ -67,7 +67,7 @@ export const getCashfreeOrder = async (orderId) => {
 
 export const getCashfreePayments = async (orderId) => {
     try {
-        const response = await cashfree.PGOrderFetchPayments(orderId);
+        const response = await getCashfree().PGOrderFetchPayments(orderId);
 
         return response.data;
     } catch (error) {
@@ -97,7 +97,7 @@ export const verifyCashfreeWebhook = ({
         throw new Error("Missing webhook raw body");
     }
 
-    return cashfree.PGVerifyWebhookSignature(
+    return getCashfree().PGVerifyWebhookSignature(
         signature,
         rawBody,
         timestamp

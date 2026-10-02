@@ -1,11 +1,128 @@
 import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
-import { quoteOrder } from "./pricing.service.js";
+import { claimCouponSlot, normalizeCouponCode, quoteOrder } from "./pricing.service.js";
 import { PaymentError } from "./payment.error.js";
-import {
-    createCashfreeOrder,
-    getCashfreePayments,
-} from "./cashfree.service.js";
+import { createCashfreeOrder, getCashfreePayments } from "./cashfree.service.js";
+
+// A CREATED order younger than this may still be getting its Cashfree session
+const IN_FLIGHT_SECONDS = 60;
+
+const paymentResult = (payment) => ({
+    paymentId: payment.id,
+    orderId: payment.provider_order_id,
+    paymentSessionId: payment.provider_payment_session_id,
+    status: payment.status,
+    amount: payment.amount,
+    currency: payment.currency,
+});
+
+const markFailed = async (paymentId, reason) => {
+    const { error } = await supabase
+        .from("payments")
+        .update({
+            status: "FAILED",
+            failure_reason: reason,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", paymentId);
+
+    if (error) {
+        console.error("Failed to mark payment as failed:", error);
+    }
+};
+
+// productId -> quantity, with duplicate lines merged
+const cartMap = (items) => {
+    const map = new Map();
+
+    for (const item of items || []) {
+        const id = String(item.productId).trim();
+        map.set(id, (map.get(id) || 0) + Number(item.quantity));
+    }
+
+    return map;
+};
+
+const sameCart = (existing, items, couponCode) => {
+    // Orders stored before items were recorded cannot be compared
+    if (!Array.isArray(existing.items)) {
+        return true;
+    }
+
+    const stored = cartMap(existing.items);
+    const requested = cartMap(items);
+
+    if (stored.size !== requested.size) {
+        return false;
+    }
+
+    for (const [id, quantity] of requested) {
+        if (stored.get(id) !== quantity) {
+            return false;
+        }
+    }
+
+    // A coupon that gave no discount is stored as null, so only compare when one was applied
+    const storedCoupon = existing.coupon_code ?? null;
+
+    return storedCoupon === null || storedCoupon === normalizeCouponCode(couponCode);
+};
+
+// Same idempotency key seen again: hand back the same order, but never for a
+// different user, a different cart, or an order that can no longer be paid.
+const replayExisting = (existing, { userIrisId, items, couponCode }) => {
+    if (existing.user_iris_id !== userIrisId) {
+        throw new PaymentError("Invalid payment request");
+    }
+
+    if (!sameCart(existing, items, couponCode)) {
+        throw new PaymentError(
+            "This checkout was already used for a different order. Please start a new checkout.",
+            409
+        );
+    }
+
+    // The first request of a double click is still talking to Cashfree
+    const inFlight =
+        existing.status === "CREATED" &&
+        !existing.provider_payment_session_id &&
+        Date.now() - new Date(existing.created_at).getTime() < IN_FLIGHT_SECONDS * 1000;
+
+    if (inFlight) {
+        throw new PaymentError(
+            "This payment is already being created. Please wait a moment.",
+            409
+        );
+    }
+
+    const payable =
+        existing.status === "SUCCESS" ||
+        ((existing.status === "CREATED" || existing.status === "PENDING") &&
+            existing.provider_payment_session_id);
+
+    if (!payable) {
+        throw new PaymentError(
+            "This payment attempt is no longer valid. Please start a new checkout.",
+            409
+        );
+    }
+
+    return paymentResult(existing);
+};
+
+const findByIdempotencyKey = async (idempotencyKey) => {
+    const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+
+    if (error) {
+        throw new Error("Failed to check existing payment");
+    }
+
+    return data;
+};
 
 export const createPayment = async ({
     userIrisId,
@@ -19,10 +136,6 @@ export const createPayment = async ({
     returnUrl,
     idempotencyKey,
 }) => {
-    // -----------------------------------------
-    // 1. Basic validation
-    // -----------------------------------------
-
     if (!idempotencyKey) {
         throw new PaymentError("Idempotency key is required");
     }
@@ -47,52 +160,22 @@ export const createPayment = async ({
         throw new PaymentError("Payment purpose is required");
     }
 
-    // -----------------------------------------
-    // 2. Create our internal payment ID
-    // -----------------------------------------
-    const { data: existingPayment, error: existingPaymentError } =
-        await supabase
-            .from("payments")
-            .select("*")
-            .eq("idempotency_key", idempotencyKey)
-            .maybeSingle();
+    const replayContext = { userIrisId, items, couponCode };
 
-    if (existingPaymentError) {
-        throw new Error("Failed to check existing payment");
-    }
+    const existingPayment = await findByIdempotencyKey(idempotencyKey);
 
     if (existingPayment) {
-        if (existingPayment.user_iris_id !== userIrisId) {
-            throw new PaymentError("Invalid payment request");
-        }
-
-        return {
-            paymentId: existingPayment.id,
-            orderId: existingPayment.provider_order_id,
-            paymentSessionId:
-                existingPayment.provider_payment_session_id,
-            status: existingPayment.status,
-            amount: existingPayment.amount,
-            currency: existingPayment.currency,
-        };
+        return replayExisting(existingPayment, replayContext);
     }
 
-    // -----------------------------------------
-    // Price the order on the server. The amount is never taken from the client.
-    // -----------------------------------------
+    // The amount is always computed here, never taken from the client
     const quote = await quoteOrder({ items, couponCode, userIrisId });
     const amount = quote.total;
 
     const paymentId = crypto.randomUUID();
-
-    // Cashfree order ID
     const providerOrderId = `pay_${paymentId}`;
 
-    // -----------------------------------------
-    // 3. Create payment record in our database
-    // -----------------------------------------
-
-    const { data: payment, error: insertError } = await supabase
+    const { error: insertError } = await supabase
         .from("payments")
         .insert({
             id: paymentId,
@@ -118,24 +201,34 @@ export const createPayment = async ({
             customer_name: customerName,
             customer_email: customerEmail,
             customer_phone: customerPhone,
-        })
-        .select()
-        .single();
+        });
 
     if (insertError) {
+        // Two requests with the same key at once: the loser returns the winner's order
+        if (insertError.code === "23505") {
+            const winner = await findByIdempotencyKey(idempotencyKey);
+
+            if (winner) {
+                return replayExisting(winner, replayContext);
+            }
+        }
+
         console.error("Failed to create payment record:", insertError);
 
         throw new Error("Failed to create payment");
     }
 
-    // -----------------------------------------
-    // 4. Create Cashfree order
-    // -----------------------------------------
-
     try {
+        if (quote.couponCode) {
+            await claimCouponSlot({
+                code: quote.couponCode,
+                paymentId,
+                userIrisId,
+            });
+        }
+
         const cashfreeOrder = await createCashfreeOrder({
             orderId: providerOrderId,
-
             amount,
 
             customerId: userIrisId,
@@ -149,18 +242,13 @@ export const createPayment = async ({
             idempotencyKey,
         });
 
-        // -----------------------------------------
-        // 5. Save Cashfree response in our DB
-        // -----------------------------------------
-
         const { data: updatedPayment, error: updateError } = await supabase
             .from("payments")
             .update({
                 provider_order_id: cashfreeOrder.order_id,
-                provider_payment_session_id:
-                    cashfreeOrder.payment_session_id,
+                provider_payment_session_id: cashfreeOrder.payment_session_id,
 
-                // Order exists, but user has NOT paid yet.
+                // The order exists, but the user has NOT paid yet
                 status: "PENDING",
 
                 updated_at: new Date().toISOString(),
@@ -180,32 +268,11 @@ export const createPayment = async ({
             );
         }
 
-        // -----------------------------------------
-        // 6. Return only what application needs
-        // -----------------------------------------
-
-        return {
-            paymentId: updatedPayment.id,
-            orderId: updatedPayment.provider_order_id,
-            paymentSessionId:
-                updatedPayment.provider_payment_session_id,
-            status: updatedPayment.status,
-            amount: updatedPayment.amount,
-            currency: updatedPayment.currency,
-        };
+        return paymentResult(updatedPayment);
     } catch (error) {
-        // -----------------------------------------
-        // 7. Cashfree failed
-        // -----------------------------------------
-
-        await supabase
-            .from("payments")
-            .update({
-                status: "FAILED",
-                failure_reason: error.message,
-                updated_at: new Date().toISOString(),
-            })
-            .eq("id", paymentId);
+        // A failed attempt keeps its row (for the record) but is never reused:
+        // replaying its key tells the client to start a new checkout.
+        await markFailed(paymentId, error.message);
 
         throw error;
     }
@@ -353,7 +420,7 @@ export const getPaymentStatus = async (paymentId, userIrisId) => {
 
     if (updateError) {
         console.error("Failed to update payment status:", updateError);
-        return toPaymentView(payment);
+        throw new Error("Failed to update payment status");
     }
 
     return toPaymentView(updated ?? payment, updated ? newStatus : "SUCCESS");

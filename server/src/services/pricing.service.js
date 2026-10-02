@@ -17,36 +17,37 @@ const formatRupees = (paise) => `₹${(paise / 100).toFixed(2)}`;
 export const normalizeCouponCode = (code) =>
     typeof code === "string" && code.trim() ? code.trim().toUpperCase() : null;
 
-// Counts coupon uses: paid orders, plus recent unpaid ones (so an abandoned
-// checkout does not burn a use forever).
-const countCouponUses = async (code, userIrisId = null) => {
-    const holdSince = new Date(
-        Date.now() - PENDING_HOLD_MINUTES * 60 * 1000
-    ).toISOString();
+// Orders that currently hold one use of a coupon: paid ones, plus unpaid ones
+// younger than PENDING_HOLD_MINUTES (so an abandoned checkout does not burn a
+// use forever). Returned in a fixed order: oldest first, ties broken by id.
+const listCouponUses = async (code) => {
+    const holdSince = Date.now() - PENDING_HOLD_MINUTES * 60 * 1000;
 
-    let query = supabase
+    const { data, error } = await supabase
         .from("payments")
-        .select("id", { count: "exact", head: true })
+        .select("id, user_iris_id, status, created_at")
         .eq("coupon_code", code)
-        .or(
-            `status.eq.SUCCESS,and(status.in.(CREATED,PENDING),created_at.gte.${holdSince})`
-        );
-
-    if (userIrisId) {
-        query = query.eq("user_iris_id", userIrisId);
-    }
-
-    const { count, error } = await query;
+        .in("status", ["SUCCESS", "CREATED", "PENDING"]);
 
     if (error) {
-        console.error("Failed to count coupon uses:", error);
+        console.error("Failed to fetch coupon uses:", error);
         throw new Error("Failed to check coupon usage");
     }
 
-    return count ?? 0;
+    return data
+        .filter(
+            (row) =>
+                row.status === "SUCCESS" ||
+                new Date(row.created_at).getTime() >= holdSince
+        )
+        .sort(
+            (a, b) =>
+                new Date(a.created_at) - new Date(b.created_at) ||
+                String(a.id).localeCompare(String(b.id))
+        );
 };
 
-const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
+const fetchCoupon = async (code) => {
     const { data: coupon, error } = await supabase
         .from("payment_coupons")
         .select("*")
@@ -57,6 +58,48 @@ const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
         console.error("Failed to fetch coupon:", error);
         throw new Error("Failed to check coupon");
     }
+
+    return coupon;
+};
+
+/**
+ * Called right AFTER the payment row is inserted. Two requests that pass the
+ * pre-check at the same moment would both be allowed, so the limits are
+ * re-checked against the stored rows: every request sees the same ordered list,
+ * and only the first max_uses (and per_user_limit) rows keep their place.
+ */
+export const claimCouponSlot = async ({ code, paymentId, userIrisId }) => {
+    const coupon = await fetchCoupon(code);
+
+    if (!coupon) {
+        throw new PaymentError("Invalid coupon code");
+    }
+
+    const uses = await listCouponUses(code);
+    const position = uses.findIndex((row) => row.id === paymentId);
+
+    if (position === -1) {
+        throw new Error("Coupon usage could not be confirmed");
+    }
+
+    if (
+        coupon.max_uses !== null &&
+        coupon.max_uses !== undefined &&
+        position + 1 > coupon.max_uses
+    ) {
+        throw new PaymentError("Coupon usage limit reached");
+    }
+
+    const ownUses = uses.filter((row) => row.user_iris_id === userIrisId);
+    const ownPosition = ownUses.findIndex((row) => row.id === paymentId);
+
+    if (ownPosition + 1 > coupon.per_user_limit) {
+        throw new PaymentError("You have already used this coupon");
+    }
+};
+
+const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
+    const coupon = await fetchCoupon(code);
 
     // Same message for unknown / inactive so codes cannot be enumerated
     if (!coupon || !coupon.active) {
@@ -81,15 +124,18 @@ const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
         );
     }
 
-    if (coupon.max_uses !== null && coupon.max_uses !== undefined) {
-        const totalUses = await countCouponUses(code);
+    // Early rejection for a good error message; claimCouponSlot is the real guard
+    const uses = await listCouponUses(code);
 
-        if (totalUses >= coupon.max_uses) {
-            throw new PaymentError("Coupon usage limit reached");
-        }
+    if (
+        coupon.max_uses !== null &&
+        coupon.max_uses !== undefined &&
+        uses.length >= coupon.max_uses
+    ) {
+        throw new PaymentError("Coupon usage limit reached");
     }
 
-    const userUses = await countCouponUses(code, userIrisId);
+    const userUses = uses.filter((row) => row.user_iris_id === userIrisId).length;
 
     if (userUses >= coupon.per_user_limit) {
         throw new PaymentError("You have already used this coupon");
