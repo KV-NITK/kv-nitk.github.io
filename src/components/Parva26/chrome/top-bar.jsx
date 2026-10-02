@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { usePrefs } from '@p26/lib/prefs'
 import { toKannadaDigits } from '@p26/lib/text'
 import { gsap } from '@p26/lib/gsap'
@@ -12,16 +13,20 @@ import { cn } from '@/lib/utils'
 // for booking. Each carries data-en, which the subtitle strip shows on hover.
 // Fixed rather than sticky: the site sets overflow-x: hidden on html, body and
 // #root, which stops position: sticky from working.
-export function TopBar() {
+//
+// `home` sends the logo to another page (the market's back to the theatre);
+// without it the logo scrolls to the top. `ticket={false}` leaves the booking
+// stub off a page that has no counter to go to.
+export function TopBar({ home, ticket = true }) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
       <div aria-hidden className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/60 to-transparent" />
       <div className="relative mx-auto flex max-w-6xl items-center gap-2.5 px-3 pt-2.5 sm:gap-3.5 sm:px-5 sm:pt-3">
-        <LogoDisc />
+        <LogoDisc home={home} />
         <div className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
           <SubtitlesPlate />
           <SpeakerGrille />
-          <TicketStub />
+          {ticket && <TicketStub />}
         </div>
       </div>
     </header>
@@ -32,12 +37,13 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-
 
 // ಪರ್ವ carved into a sandalwood disc: the letters sit in a recess, so their
 // top edge is in shadow and their bottom edge catches the light.
-function LogoDisc() {
+function LogoDisc({ home }) {
+  const Tag = home ? Link : 'a'
   return (
-    <a
-      href="#title"
-      aria-label="Parva 2026, back to the top"
-      data-en="Parva 2026 · back to the top"
+    <Tag
+      {...(home ? { to: home } : { href: '#title' })}
+      aria-label={home ? 'Parva 2026, back to the theatre' : 'Parva 2026, back to the top'}
+      data-en={home ? 'Parva 2026 · back to the theatre' : 'Parva 2026 · back to the top'}
       className={cn(
         'pointer-events-auto grid size-12 shrink-0 place-items-center rounded-full ring-1 ring-heartwood sm:size-14',
         'shadow-[inset_0_2px_2px_rgba(255,236,200,.5),inset_0_-3px_5px_rgba(60,30,10,.6),0_4px_10px_rgba(0,0,0,.6)]',
@@ -51,7 +57,7 @@ function LogoDisc() {
       >
         ಪರ್ವ
       </span>
-    </a>
+    </Tag>
   )
 }
 

@@ -1,0 +1,184 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: transparent; }
+  #sheet { display: grid; grid-template-columns: repeat(4, 192px); grid-auto-rows: 288px; width: max-content; }
+  #sheet svg { width: 192px; height: 288px; display: block; }
+  #big svg { width: 480px; height: 720px; display: block; }
+</style>
+<body>
+<!-- shared paint: gradients and the soft painted edge -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#efbd93"/><stop offset="1" stop-color="#c98a5e"/></linearGradient>
+    <linearGradient id="skinS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efbd93"/><stop offset="1" stop-color="#d09566"/></linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a261d"/><stop offset="1" stop-color="#150b08"/></linearGradient>
+    <linearGradient id="kurta" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdf4dc"/><stop offset="1" stop-color="#d9c593"/></linearGradient>
+    <linearGradient id="kurtaD" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6d6aa"/><stop offset="1" stop-color="#bba777"/></linearGradient>
+    <linearGradient id="shawl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d11d36"/><stop offset="1" stop-color="#8a0a1f"/></linearGradient>
+    <linearGradient id="trouser" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#53413a"/><stop offset="1" stop-color="#271c19"/></linearGradient>
+    <linearGradient id="trouserD" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a2d28"/><stop offset="1" stop-color="#1b1311"/></linearGradient>
+    <radialGradient id="ground"><stop offset="0" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <!-- wobbly edge + paper grain, baked once into the sheet -->
+    <filter id="paint" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="7" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="11" result="grain"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 .30  0 0 0 0 .17  0 0 0 0 .08  1.1 0 0 0 -0.5" result="speck"/>
+      <feComposite in="speck" in2="d" operator="in" result="speckIn"/>
+      <feMerge><feMergeNode in="d"/><feMergeNode in="speckIn"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+<div id="sheet"></div>
+<div id="big"></div>
+<script>
+const O = '#3a2214'            // warm brown ink, never black
+const ink = (w = 1.2) => `stroke="${O}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`
+
+// ---- parts shared by the views ------------------------------------------
+const sandal = (cx, cy, rx = 5) =>
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="2.7" fill="#8a5a30" ${ink(1)}/>
+   <path d="M${cx - rx + 1.5} ${cy - 0.6} q${rx - 1.5} -2.4 ${2 * rx - 3} 0" fill="none" stroke="#e4b25a" stroke-width="1" stroke-linecap="round"/>`
+
+const hand = (cx, cy, r = 2.9) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#skin)" ${ink(1)}/>`
+
+const fringe = (x, y, w) =>
+  Array.from({ length: Math.round(w / 1.6) }, (_, i) => `<path d="M${x + i * 1.6 + 0.4} ${y} v2.4" stroke="#f2c12e" stroke-width=".9" stroke-linecap="round"/>`).join('')
+
+// ---- FRONT --------------------------------------------------------------
+function front(s, b) {
+  const liftA = Math.max(0, s) * 3, liftB = Math.max(0, -s) * 3
+  const armA = -s * 2.4, armB = s * 2.4
+  const leg = (x, lift) => `<g transform="translate(0 ${-lift})">
+      <path d="M${x} 59 h9 l-.7 25 h-7.6 z" fill="url(#trouser)" ${ink()}/>
+      <path d="M${x + 6.2} 62 l-.3 20" stroke="#1b1311" stroke-opacity=".35" stroke-width="1.6" stroke-linecap="round"/>
+      ${sandal(x + 4.5, 86.2)}</g>`
+  const sleeve = (x, dy, left) => `<g transform="translate(0 ${dy})">
+      <path d="${left ? `M${x} 39 q-4.8 0 -5.4 5.5 l-.6 12 q3.4 1.8 6.4 0 l.8 -12.6 z` : `M${x} 39 q4.8 0 5.4 5.5 l.6 12 q-3.4 1.8 -6.4 0 l-.8 -12.6 z`}" fill="url(#kurta)" ${ink()}/>
+      <path d="M${left ? x - 6 : x - 0.2} 54.6 q3.2 1.6 6.2 0" stroke="#bba777" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      ${hand(left ? x - 2.8 : x + 2.8, 60.6)}</g>`
+  return `
+  <ellipse cx="32" cy="88.5" rx="17" ry="4.2" fill="url(#ground)"/>
+  ${leg(23, liftA)}${leg(33, liftB)}
+  <g transform="translate(0 ${-b})">
+    ${sleeve(21.5, armA, true)}${sleeve(42.5, armB, false)}
+    <!-- kurta -->
+    <path d="M21 38.5 Q32 34 43 38.5 L45 67 Q32 71.5 19 67 Z" fill="url(#kurta)" ${ink()}/>
+    <path d="M19.4 62 Q32 66.4 44.6 62 L45 67 Q32 71.5 19 67 Z" fill="url(#kurtaD)" opacity=".7"/>
+    <path d="M32 39 v22" stroke="#c9b27a" stroke-width="1.2" stroke-linecap="round"/>
+    ${[44, 50, 56].map((y) => `<circle cx="32" cy="${y}" r="1" fill="#8a5a30"/>`).join('')}
+    <!-- shawl: a red and gold scarf thrown over the right shoulder, ends hanging at the left hip -->
+    <path d="M37.5 36.6 L44.4 38.8 L30.6 63 L21.4 59.4 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M38.6 37.2 L21.9 60" stroke="#f2c12e" stroke-width="1.5" stroke-linecap="round" opacity=".95"/>
+    <path d="M43.5 39.4 L30.2 62.2" stroke="#f2c12e" stroke-width="1.5" stroke-linecap="round" opacity=".95"/>
+    <path d="M21.4 59.4 L30.6 63 L28.4 72 L20.4 68.4 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M22.4 62 L29 64.6" stroke="#f2c12e" stroke-width="1.3" stroke-linecap="round"/>
+    ${fringe(21, 69.2, 7.4).replace(/M/g, 'M').replace(/<path /g, '<path transform="rotate(20 24 69)" ')}
+    <!-- neck + collar -->
+    <path d="M27.6 31 h8.8 v7.8 q-4.4 3.2 -8.8 0 z" fill="url(#skin)" ${ink()}/>
+    <path d="M27.6 36 q4.4 3 8.8 0" fill="none" stroke="#c98a5e" stroke-width="1.4" opacity=".8"/>
+    <path d="M26.8 38.4 q5.2 4.4 10.4 0" fill="none" stroke="#c9b27a" stroke-width="1.4" stroke-linecap="round"/>
+    <!-- head -->
+    <circle cx="18.3" cy="21.5" r="3.1" fill="url(#skin)" ${ink()}/><circle cx="45.7" cy="21.5" r="3.1" fill="url(#skin)" ${ink()}/>
+    <path d="M18.6 17 Q18 31.5 32 33.6 Q46 31.5 45.4 17 Q45 5 32 5 Q19 5 18.6 17 Z" fill="url(#skin)" ${ink()}/>
+    <path d="M40 10 Q46 15 44 26 Q41 31 34 33 Q44 28 44.4 17 Q44.4 12 40 10 Z" fill="#c98a5e" opacity=".5"/>
+    <ellipse cx="23.2" cy="26.4" rx="3" ry="2" fill="#e0765b" opacity=".28"/><ellipse cx="40.8" cy="26.4" rx="3" ry="2" fill="#e0765b" opacity=".28"/>
+    <!-- hair -->
+    <path d="M17.6 20.4 Q14.6 2.6 30 2 Q36 .6 41 3 Q49 6 46.4 20.4 Q45.8 14.6 42 12.4 Q38.6 15.8 31.6 12.2 Q26 15 22 12 Q18.4 14.6 17.6 20.4 Z" fill="url(#hair)" ${ink()}/>
+    <path d="M23 8.6 Q31 3.8 41 8" fill="none" stroke="#7a5642" stroke-width="1.7" stroke-linecap="round" opacity=".7"/>
+    <path d="M17.6 20.4 q-.6 5 1.2 7.4 M46.4 20.4 q.6 5 -1.2 7.4" fill="none" stroke="#150b08" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- face -->
+    <path d="M32 14.2 v3.4" stroke="#c8102e" stroke-width="1.7" stroke-linecap="round"/>
+    <path d="M22.2 18.6 q4 -2.4 7.4 -.6 M34.4 18 q3.4 -1.8 7.4 .6" fill="none" stroke="#2a170f" stroke-width="1.5" stroke-linecap="round"/>
+    ${[26.2, 37.8].map((x) => `<ellipse cx="${x}" cy="22.8" rx="2.5" ry="2.9" fill="#2a170f"/><circle cx="${x + .8}" cy="21.7" r=".95" fill="#fff"/><circle cx="${x - .7}" cy="24.2" r=".5" fill="#fff" opacity=".7"/>`).join('')}
+    <path d="M30.8 26.2 Q32 28 33.4 26.4" fill="none" stroke="#b9764c" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M28.6 30 Q32 32.4 35.4 30" fill="none" stroke="#8a3a2a" stroke-width="1.2" stroke-linecap="round"/>
+  </g>`
+}
+
+// ---- BACK ---------------------------------------------------------------
+function back(s, b) {
+  const liftA = Math.max(0, s) * 3, liftB = Math.max(0, -s) * 3
+  const armA = -s * 2.4, armB = s * 2.4
+  const leg = (x, lift) => `<g transform="translate(0 ${-lift})">
+      <path d="M${x} 59 h9 l-.7 25 h-7.6 z" fill="url(#trouser)" ${ink()}/>${sandal(x + 4.5, 85.6)}</g>`
+  const sleeve = (x, dy, left) => `<g transform="translate(0 ${dy})">
+      <path d="${left ? `M${x} 39 q-4.8 0 -5.4 5.5 l-.6 12 q3.4 1.8 6.4 0 l.8 -12.6 z` : `M${x} 39 q4.8 0 5.4 5.5 l.6 12 q-3.4 1.8 -6.4 0 l-.8 -12.6 z`}" fill="url(#kurtaD)" ${ink()}/>
+      ${hand(left ? x - 2.8 : x + 2.8, 60.6)}</g>`
+  return `
+  <ellipse cx="32" cy="88.5" rx="17" ry="4.2" fill="url(#ground)"/>
+  ${leg(23, liftA)}${leg(33, liftB)}
+  <g transform="translate(0 ${-b})">
+    ${sleeve(21.5, armA, true)}${sleeve(42.5, armB, false)}
+    <path d="M21 38.5 Q32 34 43 38.5 L45 67 Q32 71.5 19 67 Z" fill="url(#kurta)" ${ink()}/>
+    <path d="M19.4 62 Q32 66.4 44.6 62 L45 67 Q32 71.5 19 67 Z" fill="url(#kurtaD)" opacity=".7"/>
+    <path d="M32 40 v26" stroke="#c9b27a" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+    <!-- the scarf crosses the back the other way -->
+    <path d="M26.6 36.8 L21.4 39 L33.4 63.4 L42.6 59.8 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M25.6 37.6 L41.6 60.4" stroke="#f2c12e" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M21.6 40 L34 62.6" stroke="#f2c12e" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M42.6 59.8 L33.4 63.4 L35.6 72.4 L43.6 68.8 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M41.6 62.4 L35 65" stroke="#f2c12e" stroke-width="1.3" stroke-linecap="round"/>
+    ${fringe(35.6, 70, 7.4).replace(/<path /g, '<path transform="rotate(-20 40 70)" ')}
+    <path d="M27.6 31 h8.8 v7.8 q-4.4 3.2 -8.8 0 z" fill="url(#skin)" ${ink()}/>
+    <circle cx="18.3" cy="21.5" r="3.1" fill="url(#skin)" ${ink()}/><circle cx="45.7" cy="21.5" r="3.1" fill="url(#skin)" ${ink()}/>
+    <path d="M17.8 18 Q15.8 3.6 32 3 Q48.2 3.6 46.2 18 Q46.6 31 38 32.4 Q32 33.4 26 32.4 Q17.4 31 17.8 18 Z" fill="url(#hair)" ${ink()}/>
+        <path d="M22 9 Q31 3.6 42 8.6" fill="none" stroke="#7a5642" stroke-width="1.7" stroke-linecap="round" opacity=".7"/>
+    <path d="M23.6 27 Q32 31.4 40.4 27" fill="none" stroke="#0e0605" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+  </g>`
+}
+
+// ---- SIDE (facing left; right is this mirrored) --------------------------
+function side(s, b) {
+  const sw = s * 6.5
+  const lift = (d) => Math.max(0, d) * 1.6
+  const leg = (dx, fill, dim) => `<g transform="translate(0 ${-lift(dx / 6.5)})">
+      <path d="M29.4 59 h8.6 l${dx + 0.2} 25 h-8.6 z" fill="url(#${fill})" ${ink()}/>
+      ${sandal(31.6 + dx - 2.2, 86.2, 5.6)}</g>`
+  const arm = (dx, fill) => `<g>
+      <path d="M28.6 39.4 q3.4 -1.4 6.8 0 l${dx + 0.4} 16.4 q-3.6 2 -7 0 z" fill="url(#${fill})" ${ink()}/>
+      ${hand(32 + dx, 59.4)}</g>`
+  return `
+  <ellipse cx="33" cy="88.5" rx="16" ry="4.2" fill="url(#ground)"/>
+  ${leg(-sw, 'trouserD')}
+  ${arm(sw * 0.8, 'kurtaD')}
+  <g transform="translate(0 ${-b})">
+    <path d="M24.6 38.4 Q32 34.8 39.4 38.4 L40.6 67 Q32 71 23.4 67 Z" fill="url(#kurta)" ${ink()}/>
+    <path d="M23.6 62 Q32 65.6 40.4 62 L40.6 67 Q32 71 23.4 67 Z" fill="url(#kurtaD)" opacity=".7"/>
+    <!-- scarf: the sash across the chest, and its end hanging down the back -->
+    <path d="M33.4 36.8 L39.8 38.6 L27.4 62 L22.6 60 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M34.6 37.4 L23.6 59.6" stroke="#f2c12e" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M39 39.4 L27.2 61.4" stroke="#f2c12e" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M37.4 50 L43.4 54 L45 74 L38.6 72.6 Z" fill="url(#shawl)" ${ink()}/>
+    <path d="M40 54.6 L41.2 72.8" stroke="#f2c12e" stroke-width="1.3" stroke-linecap="round"/>
+    ${fringe(38.8, 72.8, 5.6).replace(/<path /g, '<path transform="rotate(-4 41 73)" ')}
+    <path d="M28.4 31.6 h7.4 v7.2 q-3.8 2.8 -7.4 0 z" fill="url(#skin)" ${ink()}/>
+    <!-- head in profile -->
+    <path d="M18.4 18 Q17.6 29.6 25.4 32.6 Q35 34.2 40.8 28.6 Q44.6 20 41.6 12 Q38.4 4.6 29 5 Q19.8 6.4 18.4 18 Z" fill="url(#skinS)" ${ink()}/>
+    <path d="M18.6 21 Q15.2 23.6 18.8 26.2" fill="url(#skin)" ${ink()}/>
+    <ellipse cx="22.8" cy="27" rx="2.6" ry="1.8" fill="#e0765b" opacity=".3"/>
+    <path d="M18.4 17.6 Q17 3.8 31 3.2 Q46.6 3.8 44.6 22 Q44.4 30 39.4 31.8 Q40 22 36.2 16 Q30 11.6 24.2 14.2 Q20 15.4 18.4 17.6 Z" fill="url(#hair)" ${ink()}/>
+    <path d="M24 8.4 Q32 3.8 41 8.8" fill="none" stroke="#7a5642" stroke-width="1.7" stroke-linecap="round" opacity=".7"/>
+    <ellipse cx="36.8" cy="22.6" rx="2.3" ry="3.1" fill="url(#skin)" ${ink(1)}/><path d="M36.2 21.4 q1.4 .6 1.2 2.4" fill="none" stroke="#b9764c" stroke-width=".9" stroke-linecap="round"/>
+    <path d="M20.2 16.8 q3 -2 6.2 -.4" fill="none" stroke="#2a170f" stroke-width="1.5" stroke-linecap="round"/>
+    <ellipse cx="23.6" cy="21.8" rx="2.3" ry="2.9" fill="#2a170f"/><circle cx="22.9" cy="20.7" r=".95" fill="#fff"/>
+    <path d="M21.4 29.6 Q23.6 31.2 26.4 30" fill="none" stroke="#8a3a2a" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+  ${leg(sw, 'trouser')}
+  ${arm(-sw * 0.8, 'kurta')}`
+}
+
+const mirror = (inner) => `<g transform="translate(64 0) scale(-1 1)">${inner}</g>`
+// walk phase: stride, bob. frame 0 is also the standing pose.
+const FRAMES = [{ s: 0, b: 0 }, { s: 1, b: 1.2 }, { s: 0, b: 0 }, { s: -1, b: 1.2 }]
+const ROWS = [['down', front], ['left', side], ['right', (s, b) => mirror(side(s, b))], ['up', back]]
+
+const svg = (inner) =>
+  `<svg viewBox="0 0 64 96" xmlns="http://www.w3.org/2000/svg"><g filter="url(#paint)">${inner}</g></svg>`
+
+const sheet = document.getElementById('sheet')
+for (const [, draw] of ROWS) for (const { s, b } of FRAMES) sheet.insertAdjacentHTML('beforeend', svg(draw(s, b)))
+document.getElementById('big').innerHTML = svg(front(0, 0))
+document.body.dataset.ready = '1'
+</script>

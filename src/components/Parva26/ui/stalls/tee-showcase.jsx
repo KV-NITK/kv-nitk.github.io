@@ -6,8 +6,8 @@ import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
-import { Tee3D } from '@p26/scenes/08-interval/tee-3d'
-import { PriceTag, EarlyFlag, SizeChart, ClosedBoard, GlassDoor } from '@p26/scenes/08-interval/showcase-parts'
+import { Tee3D } from '@p26/ui/stalls/tee-3d'
+import { PriceTag, EarlyFlag, SizeChart, ClosedBoard, GlassDoor } from '@p26/ui/stalls/showcase-parts'
 
 // Parva Angadi (Scene 8): the lobby's glass showcase, used as the Parva
 // shop. The tee hangs on a brass rod and turns slowly on its hanger. Tapping

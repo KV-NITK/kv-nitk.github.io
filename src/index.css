@@ -252,6 +252,12 @@ code {
     45% { translate: 6px 0; }
     70% { translate: -3px 0; }
   }
+  /* Parva Market: a role card's walker steps through its four frames */
+  --animate-walk-cycle: p26-walk-cycle 0.64s steps(4, jump-none) infinite;
+
+  @keyframes p26-walk-cycle {
+    to { background-position-x: 100%; }
+  }
   @keyframes p26-mote {
     0% { transform: translate(0, 0); opacity: 0; }
     15% { opacity: 0.9; }
