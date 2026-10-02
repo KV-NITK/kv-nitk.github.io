@@ -67,10 +67,7 @@ export const getCashfreeOrder = async (orderId) => {
 
 export const getCashfreePayments = async (orderId) => {
     try {
-        const response = await cashfree.PGOrderFetchPayments(
-            "2022-09-01",
-            orderId
-        );
+        const response = await cashfree.PGOrderFetchPayments(orderId);
 
         return response.data;
     } catch (error) {

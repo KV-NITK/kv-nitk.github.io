@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
-import { createCashfreeOrder } from "./cashfree.service.js";
+import { quoteOrder } from "./pricing.service.js";
+import { PaymentError } from "./payment.error.js";
 import {
     createCashfreeOrder,
-    getCashfreeOrder,
     getCashfreePayments,
 } from "./cashfree.service.js";
 
@@ -12,8 +12,9 @@ export const createPayment = async ({
     customerName,
     customerEmail,
     customerPhone,
-    amount,
-    purpose,
+    items,
+    couponCode = null,
+    purpose = "STORE_ORDER",
     referenceId = null,
     returnUrl,
     idempotencyKey,
@@ -23,31 +24,27 @@ export const createPayment = async ({
     // -----------------------------------------
 
     if (!idempotencyKey) {
-        throw new Error("Idempotency key is required");
+        throw new PaymentError("Idempotency key is required");
     }
 
     if (!userIrisId) {
-        throw new Error("User identity is required");
+        throw new PaymentError("User identity is required", 401);
     }
 
     if (!customerName) {
-        throw new Error("Customer name is required");
+        throw new PaymentError("Customer name is required");
     }
 
     if (!customerEmail) {
-        throw new Error("Customer email is required");
+        throw new PaymentError("Customer email is required");
     }
 
     if (!customerPhone) {
-        throw new Error("Customer phone is required");
-    }
-
-    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0) {
-        throw new Error("Invalid payment amount");
+        throw new PaymentError("Customer phone is required");
     }
 
     if (!purpose) {
-        throw new Error("Payment purpose is required");
+        throw new PaymentError("Payment purpose is required");
     }
 
     // -----------------------------------------
@@ -66,7 +63,7 @@ export const createPayment = async ({
 
     if (existingPayment) {
         if (existingPayment.user_iris_id !== userIrisId) {
-            throw new Error("Invalid payment request");
+            throw new PaymentError("Invalid payment request");
         }
 
         return {
@@ -79,6 +76,12 @@ export const createPayment = async ({
             currency: existingPayment.currency,
         };
     }
+
+    // -----------------------------------------
+    // Price the order on the server. The amount is never taken from the client.
+    // -----------------------------------------
+    const quote = await quoteOrder({ items, couponCode, userIrisId });
+    const amount = quote.total;
 
     const paymentId = crypto.randomUUID();
 
@@ -98,8 +101,13 @@ export const createPayment = async ({
             purpose,
             reference_id: referenceId,
 
-            amount: Number(amount),
-            currency: "INR",
+            amount,
+            currency: quote.currency,
+
+            items: quote.items,
+            subtotal_amount: quote.subtotal,
+            discount_amount: quote.discount,
+            coupon_code: quote.couponCode,
 
             provider: "CASHFREE",
             provider_order_id: providerOrderId,
@@ -128,7 +136,7 @@ export const createPayment = async ({
         const cashfreeOrder = await createCashfreeOrder({
             orderId: providerOrderId,
 
-            amount: Number(amount),
+            amount,
 
             customerId: userIrisId,
             customerName,
@@ -203,8 +211,56 @@ export const createPayment = async ({
     }
 };
 
-export const getPaymentStatus = async (paymentId) => {
-    // 1. Find our payment
+const CASHFREE_STATUS_MAP = {
+    SUCCESS: "SUCCESS",
+    FAILED: "FAILED",
+    USER_DROPPED: "CANCELLED",
+    CANCELLED: "CANCELLED",
+    PENDING: "PENDING",
+    NOT_ATTEMPTED: "PENDING",
+};
+
+const amountsMatch = (a, b) => Number(a).toFixed(2) === Number(b).toFixed(2);
+
+const toPaymentView = (payment, status = payment.status) => ({
+    paymentId: payment.id,
+    orderId: payment.provider_order_id,
+    status,
+    amount: payment.amount,
+    currency: payment.currency,
+    items: payment.items ?? [],
+    subtotal: payment.subtotal_amount ?? payment.amount,
+    discount: payment.discount_amount ?? 0,
+    couponCode: payment.coupon_code ?? null,
+    paidAt: payment.paid_at ?? null,
+    failureReason: payment.failure_reason ?? null,
+    createdAt: payment.created_at ?? null,
+});
+
+// The user's own orders, newest first. Stored status only (no Cashfree calls):
+// the page refreshes unfinished ones one by one through getPaymentStatus.
+export const listUserPayments = async (userIrisId) => {
+    const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("user_iris_id", userIrisId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+    if (error) {
+        console.error("Failed to list payments:", error);
+        throw new Error("Failed to fetch orders");
+    }
+
+    return data.map((payment) => toPaymentView(payment));
+};
+
+/**
+ * Status of one payment, for its owner. If the payment is not final yet,
+ * Cashfree is asked directly (the webhook may not have arrived yet).
+ * A SUCCESS is never downgraded.
+ */
+export const getPaymentStatus = async (paymentId, userIrisId) => {
     const { data: payment, error } = await supabase
         .from("payments")
         .select("*")
@@ -216,83 +272,89 @@ export const getPaymentStatus = async (paymentId) => {
         throw new Error("Failed to fetch payment");
     }
 
-    if (!payment) {
-        throw new Error("Payment not found");
+    // Same answer for "missing" and "someone else's" so ids cannot be probed
+    if (!payment || payment.user_iris_id !== userIrisId) {
+        throw new PaymentError("Payment not found", 404);
     }
 
-    // 2. Ask Cashfree about the provider order
-    const cashfreePayments = await getCashfreePayments(
-        payment.provider_order_id
+    if (payment.status === "SUCCESS" || !payment.provider_payment_session_id) {
+        return toPaymentView(payment);
+    }
+
+    let cashfreePayments;
+
+    try {
+        cashfreePayments = await getCashfreePayments(payment.provider_order_id);
+    } catch (err) {
+        // Cashfree unreachable: show what we have, the webhook will catch up
+        console.error("Status check failed, using stored status:", err.message);
+        return toPaymentView(payment);
+    }
+
+    if (!Array.isArray(cashfreePayments) || cashfreePayments.length === 0) {
+        return toPaymentView(payment);
+    }
+
+    // A successful attempt wins over any other attempt on the same order
+    const successAttempt = cashfreePayments.find(
+        (p) => p.payment_status === "SUCCESS"
     );
 
-    // 3. No actual payment attempt yet
-    if (!cashfreePayments || cashfreePayments.length === 0) {
-        return {
+    const attempt =
+        successAttempt ||
+        cashfreePayments.find((p) => p.payment_status === "PENDING") ||
+        cashfreePayments[cashfreePayments.length - 1];
+
+    const newStatus =
+        CASHFREE_STATUS_MAP[attempt.payment_status] ?? payment.status;
+
+    if (newStatus === "SUCCESS" && !amountsMatch(attempt.payment_amount, payment.amount)) {
+        console.error("Payment amount mismatch on status check:", {
             paymentId: payment.id,
-            status: payment.status,
-            amount: payment.amount,
-            currency: payment.currency,
-        };
+            expected: payment.amount,
+            got: attempt.payment_amount,
+        });
+
+        throw new Error("Payment amount mismatch");
     }
 
-    // 4. Find the most relevant payment
-    const latestPayment = cashfreePayments[cashfreePayments.length - 1];
-
-    const cashfreeStatus = latestPayment.payment_status;
-
-    let normalizedStatus = payment.status;
-
-    switch (cashfreeStatus) {
-        case "SUCCESS":
-            normalizedStatus = "SUCCESS";
-            break;
-
-        case "FAILED":
-            normalizedStatus = "FAILED";
-            break;
-
-        case "USER_DROPPED":
-            normalizedStatus = "CANCELLED";
-            break;
-
-        case "PENDING":
-            normalizedStatus = "PENDING";
-            break;
-
-        default:
-            normalizedStatus = payment.status;
+    if (newStatus === payment.status) {
+        return toPaymentView(payment);
     }
 
-    // 5. Update our DB if the status changed
-    if (normalizedStatus !== payment.status) {
-        const updateData = {
-            status: normalizedStatus,
-            updated_at: new Date().toISOString(),
-        };
-
-        if (normalizedStatus === "SUCCESS") {
-            updateData.paid_at =
-                latestPayment.payment_completion_time ||
-                latestPayment.payment_time ||
-                new Date().toISOString();
-        }
-
-        if (normalizedStatus === "FAILED") {
-            updateData.failure_reason =
-                latestPayment.payment_message || "Payment failed";
-        }
-
-        await supabase
-            .from("payments")
-            .update(updateData)
-            .eq("id", payment.id);
-    }
-
-    return {
-        paymentId: payment.id,
-        orderId: payment.provider_order_id,
-        status: normalizedStatus,
-        amount: payment.amount,
-        currency: payment.currency,
+    const updateData = {
+        status: newStatus,
+        provider_payment_id: attempt.cf_payment_id
+            ? String(attempt.cf_payment_id)
+            : payment.provider_payment_id,
+        updated_at: new Date().toISOString(),
     };
+
+    if (newStatus === "SUCCESS") {
+        updateData.paid_at =
+            attempt.payment_completion_time ||
+            attempt.payment_time ||
+            new Date().toISOString();
+        updateData.failure_reason = null;
+    }
+
+    if (newStatus === "FAILED") {
+        updateData.failure_reason = attempt.payment_message || "Payment failed";
+    }
+
+    // .neq guards against overwriting a SUCCESS written by the webhook meanwhile
+    const { data: updated, error: updateError } = await supabase
+        .from("payments")
+        .update(updateData)
+        .eq("id", payment.id)
+        .neq("status", "SUCCESS")
+        .select()
+        .maybeSingle();
+
+    if (updateError) {
+        console.error("Failed to update payment status:", updateError);
+        return toPaymentView(payment);
+    }
+
+    return toPaymentView(updated ?? payment, updated ? newStatus : "SUCCESS");
 };
