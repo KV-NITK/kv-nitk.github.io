@@ -22,19 +22,9 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
-    let userData = session.user_data;
-
-    if (!userData && req.cookies.user_meta) {
-      try {
-        userData = JSON.parse(
-          Buffer.from(req.cookies.user_meta, "base64").toString("utf-8")
-        );
-      } catch (e) {
-        console.error("Failed to parse user_meta cookie:", e);
-      }
-    }
-
-    userData = userData || {};
+    // Profile comes from our own session row only. The user_meta cookie is
+    // editable by the user, so it is never trusted for identity or payment details.
+    const userData = session.user_data || {};
 
     req.user = {
       irisId: session.user_id,

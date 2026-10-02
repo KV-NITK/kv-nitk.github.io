@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
 import API_URL from "../../api/api";
@@ -35,6 +35,8 @@ const groupProducts = (products) => {
 };
 
 const MerchTest = () => {
+  const [searchParams] = useSearchParams();
+  const loginFailed = searchParams.has("login_error");
   const [user, setUser] = useState(undefined); // undefined = checking, null = logged out
   const [groups, setGroups] = useState([]);
   const [loadError, setLoadError] = useState("");
@@ -158,6 +160,12 @@ const MerchTest = () => {
         idempotencyKey: keyRef.current.key,
       });
 
+      // Same checkout key came back for an order that is already paid
+      if (payment.status === "SUCCESS") {
+        window.location.href = `/payment/status?order_id=${encodeURIComponent(payment.orderId)}`;
+        return;
+      }
+
       const cashfree = await load({ mode: CASHFREE_MODE });
 
       // Redirects to Cashfree, then back to CASHFREE_RETURN_URL (/payment/status)
@@ -166,6 +174,13 @@ const MerchTest = () => {
         redirectTarget: "_self",
       });
     } catch (e) {
+      // The server answered with an error, so that attempt is finished (a failed
+      // order is never reused): the next click needs a fresh key. A network error
+      // has no status and keeps the key, so retrying cannot create a second order.
+      if (e.status) {
+        keyRef.current = { signature: "", key: "" };
+      }
+
       setPayError(e.message || "Could not start payment");
       setPaying(false);
     }
@@ -178,6 +193,7 @@ const MerchTest = () => {
   if (user === null) {
     return (
       <Shell>
+        {loginFailed && <p className="mb-3 text-red-600">Login failed. Please try again.</p>}
         <p className="mb-4 text-neutral-700">Login with your NITK IRIS account to buy merch.</p>
         <button
           type="button"

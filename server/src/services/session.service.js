@@ -11,21 +11,31 @@ export const createSession = async (userId, sessionType, userData = null) => {
     Date.now() + SESSION_DURATION
   ).toISOString();
 
-  const { error } = await supabase
+  const row = {
+    id: sessionId,
+    user_id: userId,
+    session_type: sessionType,
+    expires_at: expiresAt,
+  };
+
+  let { error } = await supabase
     .from("sessions")
-    .insert({
-      id: sessionId,
-      user_id: userId,
-      session_type: sessionType,
-      expires_at: expiresAt,
-    });
+    .insert(userData ? { ...row, user_data: userData } : row);
+
+  // sessions.user_data not migrated yet (sql/add_session_user_data.sql):
+  // keep logging in, with the profile held in memory only
+  if (error?.code === "PGRST204" && userData) {
+    console.warn("sessions.user_data column missing, storing profile in memory only");
+
+    ({ error } = await supabase.from("sessions").insert(row));
+
+    if (!error) {
+      sessionProfileMap.set(sessionId, userData);
+    }
+  }
 
   if (error) {
     throw error;
-  }
-
-  if (userData) {
-    sessionProfileMap.set(sessionId, userData);
   }
 
   return {
@@ -47,7 +57,7 @@ export const getSession = async (sessionId) => {
   }
 
   if (data) {
-    data.user_data = sessionProfileMap.get(sessionId) || null;
+    data.user_data = data.user_data || sessionProfileMap.get(sessionId) || null;
   }
 
   return data;

@@ -14,6 +14,8 @@ import feedbackRoutes from "./routes/feedback.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import paymentWebhookRoutes from "./routes/payment.webhook.routes.js";
 
+import { getAllowedOrigins } from "./config/urls.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -22,15 +24,7 @@ app.set("trust proxy", 1);
 
 app.use(helmet());
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",
-  "http://kannadavedike.dev.local:5173",
-  "https://kannadavedike.dev.local:5173",
-  "http://localhost:5174",
-  "http://kannadavedike.dev.local:5174",
-  "https://kannadavedike.dev.local:5174",
-].filter(Boolean);
+const allowedOrigins = getAllowedOrigins();
 
 app.use(
   cors({
