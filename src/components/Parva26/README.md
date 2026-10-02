@@ -23,8 +23,9 @@ film/           the on-screen look: film layer, film frame, ink filter
 ui/             pieces used by more than one scene (coupon, flourish, bulbs,
                 the ಪರ್ವ lettering); stalls/ is what is sold: feast poster,
                 booking counter, tee showcase
-market/         the Parva Market page (in progress): assets/characters/ and
-                world/characters.js, the two walkers
+market/         the Parva Market page (/parva-26/market): Market.jsx, the role
+                picker, the place prompt, and world/ (the Phaser forecourt:
+                layout, path finding, painted art, the two walkers)
 lib/            gsap, prefs (Sub, En), useOnScreen, storage, willChange, text
 styles/         materials, textures, carving (style objects)
 content/        everything the team will change, one file per topic;
@@ -55,4 +56,5 @@ node scripts/parva26-check.mjs baseline              # before the change
 node scripts/parva26-check.mjs                       # after: compares shots
 P26_SUBTITLES=off node scripts/parva26-check.mjs     # the same, subtitles off
 node scripts/parva26-flows.mjs                       # plays the interactions
+node scripts/market-flows.mjs [phone]                # the market page's
 ```

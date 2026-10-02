@@ -20,8 +20,9 @@ import { InkDefs } from '@p26/film/ink-defs'
 // subtitles switch), the dark theatre background, the film layer, the pieces
 // that stay on screen (top bar, subtitle strip, agarbatti cursor) and the
 // page title. `reel` adds the progress reel, which follows the landing
-// page's scenes. The page itself goes in `children`.
-export function PageShell({ title, reel = false, children }) {
+// page's scenes; `topBar` is passed to the top bar (see TopBar). The page
+// itself goes in `children`.
+export function PageShell({ title, reel = false, topBar, children }) {
   // While the agarbatti cursor is active, hide the system cursor everywhere
   // except text fields.
   const [customCursor, setCustomCursor] = useState(false)
@@ -37,7 +38,7 @@ export function PageShell({ title, reel = false, children }) {
         <MetaData title={title} />
         <InkDefs />
         <FilmLayer />
-        <TopBar />
+        <TopBar {...topBar} />
         {reel && <FilmReel />}
         <SubtitleStrip />
         <AgarbattiCursor onActiveChange={setCustomCursor} />

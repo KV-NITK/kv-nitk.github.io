@@ -25,6 +25,7 @@ import FeedbackResponses from './components/feedback-responses/FeedbackResponses
 // Loaded on its own, so /parva-26 doesn't pull in the rest of the site's code
 // and the rest of the site doesn't pull in its fonts and effects.
 const Parva26 = lazy(() => import('./components/Parva26/Parva26'));
+const Parva26Market = lazy(() => import('./components/Parva26/market/Market'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/parva-26" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
+        <Route path="/parva-26/market" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Market /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
