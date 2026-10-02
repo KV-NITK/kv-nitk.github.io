@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
     "@fontsource-variable/anek-kannada": "^5.3.0",
     "@fontsource-variable/baloo-tamma-2": "^5.3.0",
     "@fontsource-variable/noto-serif-kannada": "^5.3.0",

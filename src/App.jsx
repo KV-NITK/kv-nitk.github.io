@@ -11,6 +11,9 @@ import Social from './components/Social/Social';
 import Parva25 from './components/Parva25/Parva25';
 import Parva from './components/Parva/Parva';
 import Merch from './components/merch/merch';
+import MerchTest from './components/merch-test/MerchTest';
+import PaymentStatus from './components/merch-test/PaymentStatus';
+import MyOrders from './components/merch-test/MyOrders';
 import TeamRegistration from './components/team-registration/TeamRegistration';
 import HH2026 from './components/HH2026/HH2026';
 import HH2026Stats from './components/HH2026/HH2026Stats';
@@ -28,7 +31,7 @@ const Parva26 = lazy(() => import('./components/Parva26/Parva26'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26', '/merch-test', '/payment/status', '/my-orders'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -45,6 +48,9 @@ function AppRoutes() {
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/parva-26" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />
+        <Route path="/merch-test" element={<MerchTest />} />
+        <Route path="/payment/status" element={<PaymentStatus />} />
+        <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/feedback-responses" element={<FeedbackResponses />} />
