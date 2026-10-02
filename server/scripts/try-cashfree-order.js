@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { createCashfreeOrder } from "./services/cashfree.service.js";
+import { createCashfreeOrder } from "../src/services/cashfree.service.js";
 
 const orderId = `pay_${randomUUID()}`;
 

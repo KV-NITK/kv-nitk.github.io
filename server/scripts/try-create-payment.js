@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { createPayment } from "./services/payment.service.js";
+import { createPayment } from "../src/services/payment.service.js";
 
 try {
   const payment = await createPayment({
