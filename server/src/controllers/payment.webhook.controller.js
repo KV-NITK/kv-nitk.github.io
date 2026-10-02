@@ -183,43 +183,24 @@ export const cashfreeWebhook = async (req, res) => {
     }
 
     // -----------------------------------------
-    // 7. Update our payment
-    // -----------------------------------------
-
-    const { error: updateError } = await supabase
-      .from("payments")
-      .update(updateData)
-      .eq("id", payment.id);
-
-    if (updateError) {
-      console.error(
-        "Failed to update payment:",
-        updateError
-      );
-
-      return res.status(500).json({
-        success: false,
-        message: "Failed to update payment",
-      });
-    }
-
-    // -----------------------------------------
-    // 8. Record webhook event
+    // 7. Record the event FIRST. The unique event key makes a duplicate or
+    //    replayed webhook stop here, before it can touch the payment again.
     // -----------------------------------------
 
     const providerEventKey =
       `${event.type}:${providerPaymentId}`;
 
-    const { error: eventError } = await supabase
+    const { data: storedEvent, error: eventError } = await supabase
       .from("payment_events")
       .insert({
         payment_id: payment.id,
         event_type: event.type,
         provider_event_key: providerEventKey,
         payload: event,
-      });
+      })
+      .select("id")
+      .single();
 
-    // Duplicate webhook
     if (eventError?.code === "23505") {
       return res.status(200).json({
         success: true,
@@ -236,6 +217,40 @@ export const cashfreeWebhook = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Failed to store payment event",
+      });
+    }
+
+    // -----------------------------------------
+    // 8. Update our payment
+    // -----------------------------------------
+
+    const { error: updateError } = await supabase
+      .from("payments")
+      .update(updateData)
+      .eq("id", payment.id);
+
+    if (updateError) {
+      console.error(
+        "Failed to update payment:",
+        updateError
+      );
+
+      // Forget the event so Cashfree's retry is processed, not skipped as a duplicate
+      const { error: rollbackError } = await supabase
+        .from("payment_events")
+        .delete()
+        .eq("id", storedEvent.id);
+
+      if (rollbackError) {
+        console.error(
+          "Failed to roll back payment event:",
+          rollbackError
+        );
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update payment",
       });
     }
 
