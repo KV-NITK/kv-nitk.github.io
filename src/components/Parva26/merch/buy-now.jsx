@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { load } from '@cashfreepayments/cashfree-js'
 import { En } from '@p26/lib/prefs'
+import { useStoredState } from '@p26/lib/storage'
 import { PERFORATED } from '@p26/ui/coupon'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
@@ -20,7 +21,8 @@ const PHONE = /^[6-9]\d{9}$/
 export function BuyNow({ lines, shirts, user, onRefused }) {
   const [quote, setQuote] = useState(null)
   const [quoteError, setQuoteError] = useState('')
-  const [phone, setPhone] = useState(() => sessionStorage.getItem('merch_phone') || '')
+  // Kept in this browser, so it is still there after the IRIS login
+  const [phone, setPhone] = useStoredState('merch_phone', '')
   const [formError, setFormError] = useState('') // '' | 'none' | 'sizes'
   const [payError, setPayError] = useState('')
   const [paying, setPaying] = useState(false)
@@ -31,10 +33,6 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
   const items = useMemo(() => lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), [lines])
   const signature = JSON.stringify(items)
   const complete = shirts > 0 && lines.reduce((n, l) => n + l.quantity, 0) === shirts
-
-  useEffect(() => {
-    sessionStorage.setItem('merch_phone', phone)
-  }, [phone])
 
   // The order changing clears a refusal that no longer applies
   useEffect(() => {
@@ -151,19 +149,17 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
             </div>
           </div>
 
-          {user && (
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-              placeholder="Mobile number (10 digits)"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              disabled={paying}
-              aria-label="Mobile number"
-              className="mt-4 w-full rounded border border-[#c2aa84] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#8a5530]"
-            />
-          )}
-          {user === null && <p className="mt-3 text-sm font-semibold">You will log in with IRIS first.</p>}
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+            placeholder="Mobile number (10 digits)"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            disabled={paying}
+            aria-label="Mobile number"
+            className="mt-4 w-full rounded border border-[#c2aa84] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#8a5530]"
+          />
+          {user === null && <p className="mt-3 text-sm font-semibold">You will log in with IRIS first, then come back here to pay.</p>}
         </div>
       )}
 
@@ -171,13 +167,17 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
         type="button"
         onClick={buy}
         disabled={user === undefined || paying}
-        data-en="Buy Now"
+        data-en={user === null ? 'Login to Buy Now' : 'Buy Now'}
         className="group relative block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina disabled:opacity-70"
       >
         <span className="relative flex min-h-14 items-center bg-arishina py-2 pl-6 pr-5 text-theatre transition-transform duration-200 group-hover:-translate-y-0.5" style={PERFORATED}>
           <span className="flex flex-col">
-            <span className="font-kn-display text-2xl font-extrabold leading-none">{paying ? 'Redirecting…' : 'Buy Now'}</span>
-            <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">ಈಗಲೇ ಖರೀದಿಸಿ</span>
+            <span className="font-kn-display text-2xl font-extrabold leading-none">
+              {paying ? 'Redirecting…' : user === null ? 'Login to Buy Now' : 'Buy Now'}
+            </span>
+            <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
+              {user === null ? 'ಲಾಗಿನ್ ಮಾಡಿ ಖರೀದಿಸಿ' : 'ಈಗಲೇ ಖರೀದಿಸಿ'}
+            </span>
           </span>
           <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />
         </span>
