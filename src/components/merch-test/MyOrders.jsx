@@ -94,7 +94,7 @@ const MyOrders = () => {
       <div className="mx-auto max-w-xl">
         <div className="mb-6 flex items-baseline justify-between">
           <h1 className="text-2xl font-bold">My orders</h1>
-          <Link to="/merch-test" className="text-sm underline">
+          <Link to="/parva-26/market" className="text-sm underline">
             Back to merch
           </Link>
         </div>
