@@ -266,8 +266,9 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
 export const listProducts = async () => {
     const { data, error } = await supabase
         .from("payment_products")
-        .select("id, name, category, group_key, variant, unit_price, max_quantity")
+        .select("id, name, category, group_key, fit, variant, unit_price, discount, max_quantity")
         .eq("active", true)
+        .order("sort_order", { ascending: true })
         .order("group_key", { ascending: true })
         .order("id", { ascending: true });
 
@@ -281,8 +282,10 @@ export const listProducts = async () => {
         name: p.name,
         category: p.category,
         groupKey: p.group_key ?? p.id,
+        fit: p.fit,
         variant: p.variant,
         unitPrice: Number(p.unit_price),
+        discount: Number(p.discount),
         maxQuantity: p.max_quantity,
     }));
 };

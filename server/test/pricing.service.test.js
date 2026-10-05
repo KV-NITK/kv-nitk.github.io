@@ -225,7 +225,7 @@ describe("listProducts", () => {
   it("returns only active products in the shape the UI needs", async () => {
     seed({ products: [product("tee-m", 299, { group_key: "tee", variant: "M" }), product("hidden", 5, { active: false })] });
     assert.deepEqual(await listProducts(), [
-      { id: "tee-m", name: "Product tee-m", category: "MERCH", groupKey: "tee", variant: "M", unitPrice: 299, maxQuantity: 5 },
+      { id: "tee-m", name: "Product tee-m", category: "MERCH", groupKey: "tee", fit: null, variant: "M", unitPrice: 299, discount: 0, maxQuantity: 5 },
     ]);
   });
 });
