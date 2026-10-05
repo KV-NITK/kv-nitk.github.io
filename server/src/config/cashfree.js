@@ -1,4 +1,4 @@
-import { Cashfree } from "cashfree-pg";
+import { Cashfree, CFEnvironment } from "cashfree-pg";
 
 let client = null;
 
@@ -22,7 +22,7 @@ export const getCashfree = () => {
   }
 
   client = new Cashfree(
-    environment === "PRODUCTION" ? Cashfree.PRODUCTION : Cashfree.SANDBOX,
+    environment === "PRODUCTION" ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX,
     clientId,
     clientSecret
   );
