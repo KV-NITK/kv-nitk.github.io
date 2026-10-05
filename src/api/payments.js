@@ -1,5 +1,13 @@
 import API_URL from "./api";
 
+export const CASHFREE_MODE = import.meta.env.VITE_CASHFREE_MODE || "sandbox";
+
+// crypto.randomUUID only exists on https/localhost; the dev host is plain http
+export const newIdempotencyKey = () =>
+  typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join("")}`;
+
 // Throws Error(message) with the server's message, so the UI can show it as is.
 const request = async (path, options = {}) => {
   let response;

@@ -122,12 +122,12 @@ const PaymentStatus = () => {
         )}
 
         <div className="mt-6 flex gap-4 text-sm">
-          <a href="http://kannadavedike.dev.local:5173/my-orders" className="underline">
+          <Link to="/my-orders" className="underline">
             My orders
-          </a>
-          <a href="http://kannadavedike.dev.local:5173/parva-26/market" className="underline">
+          </Link>
+          <Link to="/parva-26/merch" className="underline">
             Back to merch
-          </a>
+          </Link>
         </div>
       </div>
     </div>
