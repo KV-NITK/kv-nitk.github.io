@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 import './App.css';
 import React from 'react';
@@ -25,9 +25,15 @@ import HH2026QrScanner from './components/HH2026/qr-scanner';
 import Feedback from './components/feedback/Feedback';
 import FeedbackResponses from './components/feedback-responses/FeedbackResponses';
 
+// Loaded on its own, so these don't pull in the rest of the site's code
+// and the rest of the site doesn't pull in their fonts and effects.
+// The /parva-26 landing page itself stays unrouted until it is released.
+const Parva26Market = lazy(() => import('./components/Parva26/market/Market'));
+const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
+
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/merch-test', '/payment/status', '/my-orders'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -42,6 +48,8 @@ function AppRoutes() {
         <Route path="/social" element={<Social />} />
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
+        <Route path="/parva-26/market" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Market /></Suspense>} />
+        <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/merch-test" element={<MerchTest />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
