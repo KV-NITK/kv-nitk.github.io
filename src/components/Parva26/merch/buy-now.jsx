@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { load } from '@cashfreepayments/cashfree-js'
 import { En } from '@p26/lib/prefs'
 import { useStoredState } from '@p26/lib/storage'
@@ -12,7 +13,8 @@ const PHONE = /^[6-9]\d{9}$/
 
 // The end of the shop page: what is being bought, the mobile number, and the
 // one Buy Now for the whole order. Pressing it goes to IRIS first if there is
-// no login, otherwise straight to the payment page. What you pay is whatever
+// no login, otherwise straight to the payment page. Coming back from that
+// login (?buy=1) it carries on to the payment page by itself. What you pay is whatever
 // the server quotes for these products; the prices shown before login are the
 // shop's list prices.
 //
@@ -26,6 +28,16 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
   const [formError, setFormError] = useState('') // '' | 'none' | 'sizes'
   const [payError, setPayError] = useState('')
   const [paying, setPaying] = useState(false)
+  // Back from the IRIS login with ?buy=1: pay without another press. The flag
+  // is read once and removed from the address at once, so a refresh or a
+  // failed attempt never repeats it.
+  const [params, setParams] = useSearchParams()
+  const resume = useRef(params.get('buy') === '1')
+  useEffect(() => {
+    if (!params.has('buy')) return
+    params.delete('buy')
+    setParams(params, { replace: true })
+  }, [params, setParams])
   // One key per distinct checkout: reused if Buy Now is pressed again after a
   // network error, replaced as soon as the order or the phone changes.
   const keyRef = useRef({ signature: '', key: '' })
@@ -69,13 +81,14 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
       onRefused()
       return
     }
-    if (user === null) {
-      // The order is already remembered in this browser, so it is still here on return
-      window.location.href = `${API_URL}/auth/iris?redirect=/parva-26/merch`
-      return
-    }
+    // The number is asked for before the login, so that coming back can pay
     if (!PHONE.test(phone)) {
       setPayError('Enter a valid 10-digit mobile number')
+      return
+    }
+    if (user === null) {
+      // The order and the number are remembered in this browser, so they are still here on return
+      window.location.href = `${API_URL}/auth/iris?redirect=${encodeURIComponent('/parva-26/merch?buy=1')}`
       return
     }
 
@@ -105,6 +118,12 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
       setPaying(false)
     }
   }
+
+  useEffect(() => {
+    if (!resume.current || user === undefined) return
+    resume.current = false
+    if (user && complete && PHONE.test(phone)) buy()
+  }, [user])
 
   const error = quoteError || payError
 
@@ -159,7 +178,7 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
             aria-label="Mobile number"
             className="mt-4 w-full rounded border border-[#c2aa84] bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#8a5530]"
           />
-          {user === null && <p className="mt-3 text-sm font-semibold">You will log in with IRIS first, then come back here to pay.</p>}
+          {user === null && <p className="mt-3 text-sm font-semibold">You will log in with IRIS, then go straight to payment.</p>}
         </div>
       )}
 
