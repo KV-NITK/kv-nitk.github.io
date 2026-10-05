@@ -103,6 +103,7 @@ export function CartOverlay({ cart, setCart, onClose }) {
       // network error has no status and keeps the key, so a retry cannot make
       // a second order.
       if (err.status) keyRef.current = { signature: '', key: '' }
+      if (err.status === 401) setUser(null) // session gone: offer the IRIS login instead
       setPayError(err.message || 'Could not start payment')
       setPaying(false)
     }

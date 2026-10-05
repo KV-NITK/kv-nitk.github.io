@@ -33,6 +33,16 @@ export const requireAuth = async (req, res, next) => {
       rollNo: userData.rollNo || session.roll_no || "",
     };
 
+    // A session with no profile (made before profiles were stored, or whose
+    // in-memory profile was lost on a restart) is as good as logged out: the
+    // user has to sign in with IRIS again to get a name on it.
+    if (!req.user.name) {
+      return res.status(401).json({
+        success: false,
+        message: "Please log in with IRIS again",
+      });
+    }
+
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);
