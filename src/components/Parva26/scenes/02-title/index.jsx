@@ -81,7 +81,7 @@ export function TitleScene() {
 
       {/* --seat: how much of the seat in front shows below its rail;
           --peek: how far the tickets stand above it */}
-      <div ref={seatsRef} className="relative pt-2 [--peek:5.25rem] [--seat:5.25rem] sm:[--peek:6.75rem] sm:[--seat:clamp(7rem,20svh,13rem)]">
+      <div ref={seatsRef} className="relative pt-2 [--peek:5.75rem] [--seat:5.25rem] sm:[--peek:6.75rem] sm:[--seat:clamp(7rem,20svh,13rem)]">
         <div ref={seatsDepthRef}>
           <div ref={audienceRef} className="absolute inset-x-0 bottom-[var(--seat)]">
             <Audience className="bottom-0" />
@@ -322,62 +322,68 @@ function useCameraPush({ sectionRef, roomRef, maskRef, seatsRef }) {
   useGSAP(
     () => {
       if (reduced) return
-      const room = roomRef.current
-      // Where the screen sits in the hall, ignoring the push already applied.
-      const measure = () => {
-        const scale = gsap.getProperty(room, 'scaleX') || 1
-        const r = room.getBoundingClientRect()
-        const m = maskRef.current.getBoundingClientRect()
-        const w = m.width / scale
-        const cx = (m.left - r.left) / scale + w / 2
-        const cy = (m.top - r.top) / scale + m.height / scale / 2
-        return { w, cx, cy }
-      }
+      // Not on a phone: the screen already spans the page there, so the push
+      // would only pin the hero for a scroll and fade the Book ticket away.
+      const mm = gsap.matchMedia()
+      mm.add('(min-width: 640px)', () => {
+        const room = roomRef.current
+        // Where the screen sits in the hall, ignoring the push already applied.
+        const measure = () => {
+          const scale = gsap.getProperty(room, 'scaleX') || 1
+          const r = room.getBoundingClientRect()
+          const m = maskRef.current.getBoundingClientRect()
+          const w = m.width / scale
+          const cx = (m.left - r.left) / scale + w / 2
+          const cy = (m.top - r.top) / scale + m.height / scale / 2
+          return { w, cx, cy }
+        }
 
-      // While the push is moving, the hall, the seats and everything that fades
-      // get their own compositor layers, so each frame only scales and fades
-      // pictures already painted instead of repainting the whole hall at the
-      // new size. Shortly after it stops they drop back, and the hall is
-      // repainted once, sharp, at whatever size it stopped.
-      const seats = seatsRef.current
-      const fades = [...room.querySelectorAll('[data-fade]')]
-      let promoted = false
-      let settle = 0
-      const promote = (on) => {
-        promoted = on
-        willChange([room], on && 'transform')
-        willChange([seats], on && 'transform, opacity')
-        willChange(fades, on && 'opacity')
-      }
-      const moving = () => {
-        if (!promoted) promote(true)
-        clearTimeout(settle)
-        settle = setTimeout(() => promote(false), 220)
-      }
+        // While the push is moving, the hall, the seats and everything that fades
+        // get their own compositor layers, so each frame only scales and fades
+        // pictures already painted instead of repainting the whole hall at the
+        // new size. Shortly after it stops they drop back, and the hall is
+        // repainted once, sharp, at whatever size it stopped.
+        const seats = seatsRef.current
+        const fades = [...room.querySelectorAll('[data-fade]')]
+        let promoted = false
+        let settle = 0
+        const promote = (on) => {
+          promoted = on
+          willChange([room], on && 'transform')
+          willChange([seats], on && 'transform, opacity')
+          willChange(fades, on && 'opacity')
+        }
+        const moving = () => {
+          if (!promoted) promote(true)
+          clearTimeout(settle)
+          settle = setTimeout(() => promote(false), 220)
+        }
 
-      gsap
-        .timeline({
-          scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=80%', pin: true, scrub: 0.5, invalidateOnRefresh: true },
-          onUpdate: moving,
-        })
-        .to(
-          room,
-          {
-            transformOrigin: () => {
-              const { cx, cy } = measure()
-              return `${cx}px ${cy}px`
+        gsap
+          .timeline({
+            scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=80%', pin: true, scrub: 0.5, invalidateOnRefresh: true },
+            onUpdate: moving,
+          })
+          .to(
+            room,
+            {
+              transformOrigin: () => {
+                const { cx, cy } = measure()
+                return `${cx}px ${cy}px`
+              },
+              scale: () => window.innerWidth / measure().w,
+              x: () => window.innerWidth / 2 - measure().cx,
+              y: () => window.innerHeight / 2 - measure().cy,
+              ease: 'power2.in',
             },
-            scale: () => window.innerWidth / measure().w,
-            x: () => window.innerWidth / 2 - measure().cx,
-            y: () => window.innerHeight / 2 - measure().cy,
-            ease: 'power2.in',
-          },
-          0
-        )
-        .to(seats, { yPercent: 130, ease: 'power2.in' }, 0)
-        .to(seats, { autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0.5)
-        .to(fades, { autoAlpha: 0, ease: 'power1.in', duration: 0.8 }, 0.1)
-      return () => clearTimeout(settle)
+            0
+          )
+          .to(seats, { yPercent: 130, ease: 'power2.in' }, 0)
+          .to(seats, { autoAlpha: 0, ease: 'power1.in', duration: 0.5 }, 0.5)
+          .to(fades, { autoAlpha: 0, ease: 'power1.in', duration: 0.8 }, 0.1)
+        return () => clearTimeout(settle)
+      })
+      return () => mm.revert()
     },
     { dependencies: [reduced] }
   )
