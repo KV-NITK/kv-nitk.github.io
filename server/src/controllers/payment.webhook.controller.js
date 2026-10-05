@@ -1,5 +1,6 @@
 import { supabase } from "../config/supabase.js";
 import { verifyCashfreeWebhook } from "../services/cashfree.service.js";
+import { issuePassesForPayment } from "../services/pass.service.js";
 
 const PAYMENT_WEBHOOK_TYPES = new Set([
   "PAYMENT_SUCCESS_WEBHOOK",
@@ -252,6 +253,14 @@ export const cashfreeWebhook = async (req, res) => {
         success: false,
         message: "Failed to update payment",
       });
+    }
+
+    if (newStatus === "SUCCESS") {
+      try {
+        await issuePassesForPayment(payment.id);
+      } catch (passError) {
+        console.error("Failed to issue passes in webhook:", passError);
+      }
     }
 
     return res.status(200).json({

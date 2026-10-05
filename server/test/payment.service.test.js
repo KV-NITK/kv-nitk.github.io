@@ -338,6 +338,17 @@ describe("getPaymentStatus", () => {
     assert.equal((await getPaymentStatus("p1", "u1")).status, "SUCCESS");
   });
 
+  it("issues passes for the payment on successful polling fallback", async () => {
+    db.rows("payments")[0].items = [{ productId: "tee", name: "Parva T-Shirt", category: "MERCH", variant: "L", quantity: 1 }];
+    cf.getCashfreePayments = async () => [attempt("SUCCESS")];
+    await getPaymentStatus("p1", "u1");
+    const passes = db.rows("claimable_items");
+    assert.equal(passes.length, 1);
+    assert.equal(passes[0].payment_id, "p1");
+    assert.equal(passes[0].category, "MERCH");
+    assert.equal(passes[0].variant, "L");
+  });
+
   it("refuses to confirm a payment whose amount differs from the order", async () => {
     cf.getCashfreePayments = async () => [attempt("SUCCESS", { payment_amount: 1 })];
 

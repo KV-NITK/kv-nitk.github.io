@@ -147,6 +147,15 @@ describe("cashfree webhook", () => {
       assert.equal(stored.provider_event_key, "PAYMENT_SUCCESS_WEBHOOK:777");
     });
 
+    it("issues passes for the payment on successful webhook", async () => {
+      payment().items = [{ productId: "food-1", name: "Food Pass", category: "FOOD", quantity: 1 }];
+      await send(event());
+      const passes = db.rows("claimable_items");
+      assert.equal(passes.length, 1);
+      assert.equal(passes[0].payment_id, "p1");
+      assert.equal(passes[0].category, "FOOD");
+    });
+
     it("marks a failed payment FAILED with the reason", async () => {
       await send(withData({ type: "PAYMENT_FAILED_WEBHOOK", payment: { payment_status: "FAILED", payment_message: "Card declined" } }));
       assert.equal(payment().status, "FAILED");

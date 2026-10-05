@@ -8,6 +8,7 @@ import crypto from "node:crypto";
 const UNIQUE = {
   payments: ["idempotency_key"],
   payment_events: ["provider_event_key"],
+  claimable_items: ["token"],
 };
 
 export const createFakeDb = (seed = {}) => {
@@ -47,17 +48,26 @@ export const createFakeDb = (seed = {}) => {
       const rows = rowsOf(table);
 
       if (q.op === "insert") {
-        const row = { created_at: new Date().toISOString(), ...q.payload };
-        if (table === "payment_events" && !row.id) row.id = crypto.randomUUID();
+        const payloadRows = Array.isArray(q.payload) ? q.payload : [q.payload];
+        const inserted = [];
 
-        for (const col of UNIQUE[table] || []) {
-          if (rows.some((r) => r[col] === row[col])) {
-            return { data: null, error: { code: "23505", message: `duplicate key value violates unique constraint (${col})` } };
+        for (const p of payloadRows) {
+          const row = { created_at: new Date().toISOString(), ...p };
+          if ((table === "payment_events" || table === "claimable_items") && !row.id) {
+            row.id = crypto.randomUUID();
           }
+
+          for (const col of UNIQUE[table] || []) {
+            if (rows.some((r) => r[col] === row[col])) {
+              return { data: null, error: { code: "23505", message: `duplicate key value violates unique constraint (${col})` } };
+            }
+          }
+
+          rows.push(row);
+          inserted.push({ ...row });
         }
 
-        rows.push(row);
-        return shape(q.returning ? [{ ...row }] : []);
+        return shape(q.returning ? inserted : []);
       }
 
       if (q.op === "update") {
@@ -127,7 +137,18 @@ export const createFakeDb = (seed = {}) => {
     return api;
   };
 
-  return { client: { from }, rows: rowsOf, failNext };
+  const rpcHandlers = {};
+  const registerRpc = (name, handler) => {
+    rpcHandlers[name] = handler;
+  };
+  const rpc = async (name, args) => {
+    if (rpcHandlers[name]) {
+      return rpcHandlers[name](args, tables);
+    }
+    return { data: null, error: null };
+  };
+
+  return { client: { from, rpc }, rows: rowsOf, failNext, registerRpc };
 };
 
 export const product = (id, price, extra = {}) => ({
