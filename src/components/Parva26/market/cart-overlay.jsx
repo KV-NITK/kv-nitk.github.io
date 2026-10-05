@@ -92,7 +92,7 @@ export function CartOverlay({ cart, setCart, onClose }) {
         return
       }
 
-      const cashfree = await load({ mode: "sandbox" })
+      const cashfree = await load({ mode: "production" })
 
       await cashfree.checkout({
         paymentSessionId: payment.paymentSessionId,
