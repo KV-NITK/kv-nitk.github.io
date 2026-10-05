@@ -75,7 +75,7 @@ function Screw({ className }) {
   )
 }
 
-// A brass plate engraved ಉಪಶೀರ್ಷಿಕೆ with a bat-handle toggle: the lever points
+// A brass plate engraved "Subtitles" with a bat-handle toggle: the lever points
 // up for on and flips down for off. Its label shows in the subtitle strip even
 // when subtitles are off, so someone who can't read the plate can find it.
 function SubtitlesPlate() {
@@ -98,10 +98,10 @@ function SubtitlesPlate() {
     >
       <Screw className="left-1.5" />
       <span
-        lang="kn"
-        className="font-kn-serif text-[0.7rem] font-bold text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5),0_-1px_0_rgba(40,25,0,.35)] max-sm:hidden sm:text-xs"
+        lang="en"
+        className="font-poster text-sm tracking-widest text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5),0_-1px_0_rgba(40,25,0,.35)] max-sm:hidden sm:text-base"
       >
-        ಉಪಶೀರ್ಷಿಕೆ
+        Subtitles
       </span>
       {/* On a phone the plate shrinks to the cinema's own sign for subtitles */}
       <span aria-hidden className="font-poster text-base leading-none tracking-wider text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5)] sm:hidden">

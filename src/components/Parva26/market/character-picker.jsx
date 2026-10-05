@@ -25,15 +25,15 @@ export function CharacterPicker({ onPick, onClose }) {
       style={{ backgroundImage: 'radial-gradient(ellipse 70% 50% at 50% 30%, rgba(200,16,46,.22), transparent 70%)' }}
     >
       <div className="w-full max-w-xl text-center">
-        <p lang="kn" className="font-kn-card text-[clamp(2.6rem,10vw,4.2rem)] leading-tight text-arishina [text-shadow:0.05em_0.05em_0_#7e1424]">
-          {MARKET.title.kn}
-        </p>
-        <En as="p" className="block font-poster text-xl tracking-[0.4em] text-gandha/80">
+        <En as="p" className="block font-poster text-[clamp(2.6rem,10vw,4.2rem)] leading-tight tracking-[0.15em] text-arishina [text-shadow:0.05em_0.05em_0_#7e1424]">
           {MARKET.title.en}
         </En>
+        <p lang="kn" className="font-kn-card text-xl text-gandha/80">
+          {MARKET.title.kn}
+        </p>
         <h1 id="market-pick" className="mt-8 font-kn-display text-2xl font-bold text-gandha sm:text-3xl">
-          <span lang="kn">{MARKET.choose.kn}</span>
-          <En className="block text-lg font-semibold text-gandha/75">{MARKET.choose.en}</En>
+          <En className="block">{MARKET.choose.en}</En>
+          <span lang="kn" className="block text-lg font-semibold text-gandha/75">{MARKET.choose.kn}</span>
         </h1>
 
         <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-8">
@@ -51,10 +51,10 @@ export function CharacterPicker({ onPick, onClose }) {
                 className="relative block aspect-[2/3] w-[min(34vw,9.5rem)] bg-no-repeat motion-safe:group-hover:animate-walk-cycle motion-safe:group-focus-visible:animate-walk-cycle"
                 style={{ backgroundImage: `url(${c.sheet})`, backgroundSize: '400% 400%', backgroundPosition: '0% 0%' }}
               />
-              <span lang="kn" className="mt-2 font-kn-display text-2xl font-extrabold leading-none">
+              <En className="mt-2 font-poster text-2xl leading-none tracking-widest">{c.en}</En>
+              <span lang="kn" className="font-kn-display text-lg font-extrabold leading-tight">
                 {c.kn}
               </span>
-              <En className="font-poster text-lg leading-tight tracking-widest">{c.en}</En>
               <span aria-hidden className="pointer-events-none absolute inset-0 rounded-sm opacity-40 mix-blend-multiply" style={paper} />
             </button>
           ))}
@@ -66,8 +66,8 @@ export function CharacterPicker({ onPick, onClose }) {
             onClick={onClose}
             className="mt-8 font-kn-body text-base font-semibold text-gandha/70 underline underline-offset-4 hover:text-gandha focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-arishina"
           >
-            <span lang="kn">ಹಿಂದಕ್ಕೆ</span>
-            <En> · Back</En>
+            <En>Back · </En>
+            <span lang="kn" className="text-sm">ಹಿಂದಕ್ಕೆ</span>
           </button>
         )}
       </div>

@@ -78,10 +78,10 @@ function MarketPage() {
             className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 z-30 cursor-pointer rounded-[5px] px-3 py-1.5 text-left shadow-[0_3px_8px_rgba(0,0,0,.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
             style={brass}
           >
-            <span lang="kn" className="block font-kn-display text-sm font-extrabold leading-tight text-[#4a3208]">
+            <En className="block font-poster text-base leading-none tracking-widest text-[#4a3208]">{MARKET.change.en}</En>
+            <span lang="kn" className="block font-kn-display text-xs font-extrabold leading-tight text-[#4a3208]">
               {MARKET.change.kn}
             </span>
-            <En className="block font-poster text-sm leading-none tracking-widest text-[#4a3208]">{MARKET.change.en}</En>
           </button>
         </>
       )}
@@ -115,12 +115,12 @@ function Hint() {
     >
       {/* A phone has no arrow keys */}
       <span className="pointer-coarse:hidden">
-        <span lang="kn">{MARKET.hint.kn}</span>
-        <En className="block text-sm font-medium text-gandha/75">{MARKET.hint.en}</En>
+        <En className="block">{MARKET.hint.en}</En>
+        <span lang="kn" className="block text-sm font-medium text-gandha/75">{MARKET.hint.kn}</span>
       </span>
       <span className="hidden pointer-coarse:block">
-        <span lang="kn">{MARKET.hintTouch.kn}</span>
-        <En className="block text-sm font-medium text-gandha/75">{MARKET.hintTouch.en}</En>
+        <En className="block">{MARKET.hintTouch.en}</En>
+        <span lang="kn" className="block text-sm font-medium text-gandha/75">{MARKET.hintTouch.kn}</span>
       </span>
     </p>
   )

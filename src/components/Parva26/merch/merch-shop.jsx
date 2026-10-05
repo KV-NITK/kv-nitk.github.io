@@ -156,10 +156,10 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
   return (
     <div ref={shopRef} id="angadi" className={cn('relative flex flex-col items-center')}>
       <h3 className="relative z-10 -mb-1 rounded-t-[6px] bg-kumkuma px-6 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2)]">
-        <span lang="kn" className="block font-kn-display text-2xl font-extrabold leading-tight">
+        <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
+        <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
           ಪರ್ವ ಅಂಗಡಿ
         </span>
-        <span className={cn('block font-poster text-lg leading-none tracking-[0.25em] text-arishina', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
       </h3>
 
       {/* The cabinet */}
@@ -200,18 +200,18 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
           >
             <span aria-hidden className="size-3 rounded-full shadow-[inset_0_-1px_1px_rgba(0,0,0,.5)]" style={brass} />
             <span className="text-left leading-tight">
-              <span lang="kn" className="block font-kn-display text-sm font-semibold">
+              <En className="block font-kn-display text-sm font-semibold">{back ? 'See the front' : 'See the back'}</En>
+              <span lang="kn" className="block text-xs">
                 {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
               </span>
-              <En className="block text-xs">{back ? 'See the front' : 'See the back'}</En>
             </span>
           </button>
         </div>
 
         <fieldset className="mt-4">
           <legend className="mb-1.5 font-kn-display text-base font-semibold text-[#f3ead5]">
-            <span lang="kn">ಪ್ರಮಾಣ</span>
-            <En className="font-kn-body"> · Quantity</En>
+            <En>Quantity · </En>
+            <span lang="kn" className="font-kn-body text-sm">ಪ್ರಮಾಣ</span>
           </legend>
           <div className="flex items-center gap-3">
             <button
@@ -232,8 +232,8 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
 
         <fieldset className="mt-4">
           <legend className="mb-1.5 font-kn-display text-base font-semibold text-[#f3ead5]">
-            <span lang="kn">ಅಳತೆ</span>
-            <En className="font-kn-body"> · Size of each shirt</En>
+            <En>Size of each shirt · </En>
+            <span lang="kn" className="font-kn-body text-sm">ಅಳತೆ</span>
           </legend>
           <div ref={sizesRef} className="space-y-2">
             {picks.map((variant, i) => (
@@ -268,11 +268,11 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
           >
             <span className="relative flex min-h-14 items-center bg-arishina py-2 pl-5 pr-4 text-theatre transition-transform duration-200 group-hover:-translate-y-0.5" style={PERFORATED}>
               <span className="flex flex-col">
-                <span lang="kn" className="font-kn-display text-xl font-extrabold leading-none">
-                  {added ? "ಈಗಲೇ ಖರೀದಿಸಿ" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
-                </span>
-                <span className="mt-1 font-kn-body text-base font-bold leading-none">
+                <span className="font-kn-display text-2xl font-extrabold leading-none">
                   {added ? "Buy Now" : "Add to Cart"}
+                </span>
+                <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
+                  {added ? "ಈಗಲೇ ಖರೀದಿಸಿ" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
                 </span>
               </span>
               <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />
@@ -282,8 +282,8 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
         <p role="status" className={cn('mt-2 text-right font-kn-display text-base font-semibold text-arishina', !hint && 'sr-only')}>
           {hint && (
             <>
-              <span lang="kn">ಮೊದಲು ಅಳತೆ ಆರಿಸಿ</span>
-              <En className="font-kn-body"> · Pick a size first</En>
+              <En>Pick a size first · </En>
+              <span lang="kn" className="font-kn-body text-sm">ಮೊದಲು ಅಳತೆ ಆರಿಸಿ</span>
             </>
           )}
         </p>
