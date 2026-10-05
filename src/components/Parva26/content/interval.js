@@ -33,8 +33,8 @@ export const MENU = [
 // server; `buyLink` goes to payment.
 export const TEE = {
   name: { kn: 'ಪರ್ವ ಟೀ ಶರ್ಟ್', en: 'Parva T-shirt' },
-  price: 399,
-  earlyPrice: 349,
+  price: 319,
+    earlyPrice: 319,
   earlyQuota: 50,
   earlySold: 32,
   closes: '2026-10-20',

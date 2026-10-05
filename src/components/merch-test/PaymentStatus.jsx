@@ -42,7 +42,12 @@ const PaymentStatus = () => {
         setPayment(result);
         setError("");
 
-        if (FINAL.has(result.status)) return;
+        if (FINAL.has(result.status)) {
+          if (result.status === "SUCCESS") {
+            localStorage.removeItem("merch_cart");
+          }
+          return;
+        }
       } catch (e) {
         if (cancelled) return;
         setError(e.message);
@@ -117,12 +122,12 @@ const PaymentStatus = () => {
         )}
 
         <div className="mt-6 flex gap-4 text-sm">
-          <Link to="/my-orders" className="underline">
+          <a href="http://kannadavedike.dev.local:5173/my-orders" className="underline">
             My orders
-          </Link>
-          <Link to="/merch-test" className="underline">
+          </a>
+          <a href="http://kannadavedike.dev.local:5173/parva-26/market" className="underline">
             Back to merch
-          </Link>
+          </a>
         </div>
       </div>
     </div>
