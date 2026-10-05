@@ -73,7 +73,7 @@ export function CartOverlay({ cart, setCart, onClose }) {
 
   const buy = async () => {
     if (user === null) {
-      window.location.href = `${API_URL}/auth/iris?redirect=/parva-26/merch`
+      window.location.href = `${API_URL}/auth/iris?redirect=${encodeURIComponent('/parva-26/merch?checkout=1')}`
       return
     }
     if (!PHONE.test(phone)) {

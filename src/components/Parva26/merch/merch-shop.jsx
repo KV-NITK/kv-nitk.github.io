@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ShoppingBag } from 'lucide-react'
 import { En, usePrefs } from '@p26/lib/prefs'
 import { TEE } from '@p26/content'
 import { PERFORATED } from '@p26/ui/coupon'
@@ -61,7 +62,7 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
           {designs?.map((design, i) => (
-            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} setCart={setCart} user={user} onOpenCart={onOpenCart} />
+            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} setCart={setCart} />
           ))}
           {designs?.length === 0 && <p className="col-span-full text-center font-poster text-xl text-[#f3ead5]">No merch on sale right now.</p>}
           {!designs && (
@@ -71,19 +72,22 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
           )}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onOpenCart}
-        className="fixed bottom-5 right-5 z-[70] flex items-center gap-2 rounded-full bg-[#f3ead5] px-5 py-3 font-bold text-[#4a2a12] shadow-[0_6px_18px_rgba(0,0,0,.5)] transition-transform hover:-translate-y-0.5"
-      >
-        <span aria-hidden className="text-xl">🛒</span>
-        <span>Cart ({cartItemCount})</span>
-      </button>
+      {cartItemCount > 0 && (
+        <button
+          type="button"
+          aria-label="Buy now: open your order"
+          onClick={onOpenCart}
+          className="fixed bottom-5 right-5 z-[70] flex items-center gap-2 rounded-full bg-[#f3ead5] px-5 py-3 font-bold text-[#4a2a12] shadow-[0_6px_18px_rgba(0,0,0,.5)] transition-transform hover:-translate-y-0.5"
+        >
+          <ShoppingBag aria-hidden className="size-6" />
+          <span>Buy Now ({cartItemCount})</span>
+        </button>
+      )}
     </div>
   )
 }
 
-function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
+function MerchDesignCard({ design, art, setCart }) {
   const { subtitles } = usePrefs()
   // One size per shirt: "" is a shirt whose size is not chosen yet
   const [picks, setPicks] = useState([''])
@@ -98,17 +102,13 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
   const quantity = picks.length
   const maxQuantity = shown.maxQuantity
 
-  // Changing the order makes the button add again instead of buying
-  const setQuantity = (next) => {
-    setAdded(false)
+  const setQuantity = (next) =>
     setPicks((prev) => {
       const qty = Math.max(1, Math.min(maxQuantity, next))
       return Array.from({ length: qty }, (_, i) => prev[i] ?? '')
     })
-  }
 
   const setPick = (index, variant) => {
-    setAdded(false)
     setPicks((prev) => prev.map((v, i) => (i === index ? variant : v)))
     setHint(false)
     setOpen(true)
@@ -141,16 +141,7 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
     })
 
     setAdded(true)
-  }
-
-  // Straight to payment: IRIS first if they are not logged in (it brings them
-  // back with the cart open), otherwise the cart where they pay
-  const buyNow = () => {
-    if (user === null) {
-      window.location.href = `${API_URL}/auth/iris?redirect=${encodeURIComponent('/parva-26/merch?checkout=1')}`
-      return
-    }
-    onOpenCart()
+    setTimeout(() => setAdded(false), 2000)
   }
 
   return (
@@ -262,17 +253,18 @@ function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={added ? buyNow : addToCart}
-            data-en={added ? "Buy Now" : "Add to Cart"}
-            className="group relative ml-auto block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina"
+            onClick={addToCart}
+            data-en="Add to Cart"
+            disabled={added}
+            className="group relative ml-auto block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina disabled:opacity-80"
           >
             <span className="relative flex min-h-14 items-center bg-arishina py-2 pl-5 pr-4 text-theatre transition-transform duration-200 group-hover:-translate-y-0.5" style={PERFORATED}>
               <span className="flex flex-col">
                 <span className="font-kn-display text-2xl font-extrabold leading-none">
-                  {added ? "Buy Now" : "Add to Cart"}
+                  {added ? "Added to Cart" : "Add to Cart"}
                 </span>
                 <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
-                  {added ? "ಈಗಲೇ ಖರೀದಿಸಿ" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
+                  {added ? "ಸೇರಿಸಲಾಗಿದೆ!" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
                 </span>
               </span>
               <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />

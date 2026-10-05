@@ -20,7 +20,7 @@ function MerchPage() {
   const [cart, setCart] = useStoredState('merch_cart', [])
   // Coming back from the IRIS login with ?checkout=1 opens the cart for payment
   const [params, setParams] = useSearchParams()
-  const [cartOpen, setCartOpen] = useState(params.get('checkout') === '1')
+  const [cartOpen, setCartOpen] = useState(params.get('checkout') === '1' && cart.length > 0)
 
   useEffect(() => {
     if (params.has('checkout')) {
