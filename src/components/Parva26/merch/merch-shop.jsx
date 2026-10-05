@@ -28,6 +28,7 @@ const groupDesigns = (products) => {
 
 // The shop: one card per design and a single Buy Now for the whole order.
 export function MerchShop() {
+  const { subtitles } = usePrefs()
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
   const [loadError, setLoadError] = useState('')
@@ -89,6 +90,14 @@ export function MerchShop() {
           )}
         </div>
 
+        {/* The shop's sign, once for all the shirts */}
+        <h1 className="mx-auto mt-6 w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
+          <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
+          <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
+            ಪರ್ವ ಅಂಗಡಿ
+          </span>
+        </h1>
+
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
           {designs?.map((design, i) => (
             <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} picks={picks[design.key] || []} setPicks={(update) => setDesignPicks(design.key, update)} showMissing={attempts > 0 && missingSize(design.key)} attempts={attempts} />
@@ -141,13 +150,6 @@ function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }
 
   return (
     <div ref={shopRef} id="angadi" className={cn('relative flex flex-col items-center')}>
-      <h3 className="relative z-10 -mb-1 rounded-t-[6px] bg-kumkuma px-6 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2)]">
-        <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
-        <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
-          ಪರ್ವ ಅಂಗಡಿ
-        </span>
-      </h3>
-
       {/* The cabinet */}
       <div className="relative w-full max-w-[24rem] rounded-t-[6px] p-2.5 shadow-[0_1rem_1.4rem_-0.6rem_rgba(20,30,20,.55)] [perspective:1800px]" style={{ backgroundImage: TEAK }}>
         <div
