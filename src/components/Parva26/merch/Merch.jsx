@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useStoredState } from '@p26/lib/storage'
 import { PageShell } from '@p26/chrome/page-shell'
 import { MerchShop } from '@p26/merch/merch-shop'
@@ -17,7 +18,16 @@ export default function Merch() {
 function MerchPage() {
   // The cart is kept in this browser (the payment status page empties it once paid)
   const [cart, setCart] = useStoredState('merch_cart', [])
-  const [cartOpen, setCartOpen] = useState(false)
+  // Coming back from the IRIS login with ?checkout=1 opens the cart for payment
+  const [params, setParams] = useSearchParams()
+  const [cartOpen, setCartOpen] = useState(params.get('checkout') === '1')
+
+  useEffect(() => {
+    if (params.has('checkout')) {
+      params.delete('checkout')
+      setParams(params, { replace: true })
+    }
+  }, [params, setParams])
 
   return (
     <main>

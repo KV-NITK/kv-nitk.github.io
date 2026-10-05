@@ -57,19 +57,11 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
               My Orders
             </Link>
           )}
-          <button
-            type="button"
-            onClick={onOpenCart}
-            className="flex items-center gap-2 rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5"
-          >
-            <span aria-hidden className="text-xl">🛒</span>
-            <span>Cart ({cartItemCount})</span>
-          </button>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
           {designs?.map((design, i) => (
-            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} cart={cart} setCart={setCart} />
+            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} setCart={setCart} user={user} onOpenCart={onOpenCart} />
           ))}
           {designs?.length === 0 && <p className="col-span-full text-center font-poster text-xl text-[#f3ead5]">No merch on sale right now.</p>}
           {!designs && (
@@ -79,11 +71,19 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
           )}
         </div>
       </div>
+      <button
+        type="button"
+        onClick={onOpenCart}
+        className="fixed bottom-5 right-5 z-[70] flex items-center gap-2 rounded-full bg-[#f3ead5] px-5 py-3 font-bold text-[#4a2a12] shadow-[0_6px_18px_rgba(0,0,0,.5)] transition-transform hover:-translate-y-0.5"
+      >
+        <span aria-hidden className="text-xl">🛒</span>
+        <span>Cart ({cartItemCount})</span>
+      </button>
     </div>
   )
 }
 
-function MerchDesignCard({ design, art, cart, setCart }) {
+function MerchDesignCard({ design, art, setCart, user, onOpenCart }) {
   const { subtitles } = usePrefs()
   // One size per shirt: "" is a shirt whose size is not chosen yet
   const [picks, setPicks] = useState([''])
@@ -98,13 +98,17 @@ function MerchDesignCard({ design, art, cart, setCart }) {
   const quantity = picks.length
   const maxQuantity = shown.maxQuantity
 
-  const setQuantity = (next) =>
+  // Changing the order makes the button add again instead of buying
+  const setQuantity = (next) => {
+    setAdded(false)
     setPicks((prev) => {
       const qty = Math.max(1, Math.min(maxQuantity, next))
       return Array.from({ length: qty }, (_, i) => prev[i] ?? '')
     })
+  }
 
   const setPick = (index, variant) => {
+    setAdded(false)
     setPicks((prev) => prev.map((v, i) => (i === index ? variant : v)))
     setHint(false)
     setOpen(true)
@@ -137,7 +141,16 @@ function MerchDesignCard({ design, art, cart, setCart }) {
     })
 
     setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+  }
+
+  // Straight to payment: IRIS first if they are not logged in (it brings them
+  // back with the cart open), otherwise the cart where they pay
+  const buyNow = () => {
+    if (user === null) {
+      window.location.href = `${API_URL}/auth/iris?redirect=${encodeURIComponent('/parva-26/merch?checkout=1')}`
+      return
+    }
+    onOpenCart()
   }
 
   return (
@@ -249,18 +262,17 @@ function MerchDesignCard({ design, art, cart, setCart }) {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={addToCart}
-            data-en="Add to Cart"
-            disabled={added}
-            className="group relative ml-auto block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina disabled:opacity-80"
+            onClick={added ? buyNow : addToCart}
+            data-en={added ? "Buy Now" : "Add to Cart"}
+            className="group relative ml-auto block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina"
           >
             <span className="relative flex min-h-14 items-center bg-arishina py-2 pl-5 pr-4 text-theatre transition-transform duration-200 group-hover:-translate-y-0.5" style={PERFORATED}>
               <span className="flex flex-col">
                 <span lang="kn" className="font-kn-display text-xl font-extrabold leading-none">
-                  {added ? "ಸೇರಿಸಲಾಗಿದೆ!" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
+                  {added ? "ಈಗಲೇ ಖರೀದಿಸಿ" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
                 </span>
                 <span className="mt-1 font-kn-body text-base font-bold leading-none">
-                  {added ? "Added to Cart" : "Add to Cart"}
+                  {added ? "Buy Now" : "Add to Cart"}
                 </span>
               </span>
               <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />
