@@ -45,6 +45,7 @@ const PaymentStatus = () => {
         if (FINAL.has(result.status)) {
           if (result.status === "SUCCESS") {
             localStorage.removeItem("merch_cart");
+            localStorage.removeItem("merch_order");
           }
           return;
         }

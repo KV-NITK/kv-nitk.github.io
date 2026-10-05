@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingBag } from 'lucide-react'
 import { En, usePrefs } from '@p26/lib/prefs'
 import { TEE } from '@p26/content'
-import { PERFORATED } from '@p26/ui/coupon'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
-import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
 import { Tee3D } from '@p26/ui/stalls/tee-3d'
 import { PriceTag, GlassDoor } from '@p26/ui/stalls/showcase-parts'
 import API_URL from '../../../api/api'
 import { getProducts } from '../../../api/payments'
+import { useStoredState } from '@p26/lib/storage'
+import { BuyNow } from '@p26/merch/buy-now'
 
 // One card per t-shirt design, with its fit and sizes in the order the
 // catalog lists them. Names, fits, sizes and prices all come from the server;
@@ -26,11 +26,16 @@ const groupDesigns = (products) => {
   return [...designs.values()]
 }
 
-// The shop: one card per design. `onOpenCart` opens the cart that the page owns.
-export function MerchShop({ cart, setCart, onOpenCart }) {
+// The shop: one card per design and a single Buy Now for the whole order.
+export function MerchShop() {
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
   const [loadError, setLoadError] = useState('')
+  // One size per shirt for each design, by design key: "" is a shirt whose
+  // size is not chosen yet. A design with no shirts is not part of the order.
+  // Kept in this browser, so the order is still there after the IRIS login
+  const [picks, setPicks] = useStoredState('merch_order', {})
+  const [attempts, setAttempts] = useState(0) // Buy Now presses that were refused
 
   useEffect(() => {
     fetch(`${API_URL}/auth/me`, { credentials: "include" })
@@ -43,7 +48,31 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
       .catch((e) => setLoadError(e.message))
   }, [])
 
-  const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
+  const setDesignPicks = (key, update) =>
+    setPicks((prev) => ({ ...prev, [key]: typeof update === 'function' ? update(prev[key] || []) : update }))
+
+  const missingSize = (key) => (picks[key] || []).some((v) => !v)
+
+  // The shirts with a size chosen as order lines, and how many shirts were asked for
+  const { lines, shirts } = useMemo(() => {
+    const lines = []
+    let shirts = 0
+    for (const { key, fit, sizes } of designs || []) {
+      // Shirts of the same size become one order line
+      const counts = new Map()
+      for (const v of picks[key] || []) {
+        shirts++
+        if (v) counts.set(v, (counts.get(v) || 0) + 1)
+      }
+      for (const [variant, count] of counts) {
+        const product = sizes.find((p) => p.variant === variant)
+        // A size no longer on sale leaves the order incomplete
+        if (!product) continue
+        lines.push({ productId: product.id, name: product.name, fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
+      }
+    }
+    return { lines, shirts }
+  }, [designs, picks])
 
   return (
     <div className="flex min-h-screen justify-center p-4 pb-20 pt-24" style={{
@@ -62,7 +91,7 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
           {designs?.map((design, i) => (
-            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} setCart={setCart} />
+            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} picks={picks[design.key] || []} setPicks={(update) => setDesignPicks(design.key, update)} showMissing={attempts > 0 && missingSize(design.key)} attempts={attempts} />
           ))}
           {designs?.length === 0 && <p className="col-span-full text-center font-poster text-xl text-[#f3ead5]">No merch on sale right now.</p>}
           {!designs && (
@@ -71,30 +100,17 @@ export function MerchShop({ cart, setCart, onOpenCart }) {
             </p>
           )}
         </div>
+
+        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
       </div>
-      {cartItemCount > 0 && (
-        <button
-          type="button"
-          aria-label="Buy now: open your order"
-          onClick={onOpenCart}
-          className="fixed bottom-5 right-5 z-[70] flex items-center gap-2 rounded-full bg-[#f3ead5] px-5 py-3 font-bold text-[#4a2a12] shadow-[0_6px_18px_rgba(0,0,0,.5)] transition-transform hover:-translate-y-0.5"
-        >
-          <ShoppingBag aria-hidden className="size-6" />
-          <span>Buy Now ({cartItemCount})</span>
-        </button>
-      )}
     </div>
   )
 }
 
-function MerchDesignCard({ design, art, setCart }) {
+function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }) {
   const { subtitles } = usePrefs()
-  // One size per shirt: "" is a shirt whose size is not chosen yet
-  const [picks, setPicks] = useState([''])
   const [back, setBack] = useState(false)
-  const [hint, setHint] = useState(false)
   const [open, setOpen] = useState(false)
-  const [added, setAdded] = useState(false)
   const sizesRef = useRef(null)
   const shopRef = useRef(null)
   const { fit, sizes } = design
@@ -102,46 +118,25 @@ function MerchDesignCard({ design, art, setCart }) {
   const quantity = picks.length
   const maxQuantity = shown.maxQuantity
 
-  const setQuantity = (next) =>
+  // Starts at none: a design only joins the order once it has a shirt
+  const setQuantity = (next) => {
     setPicks((prev) => {
-      const qty = Math.max(1, Math.min(maxQuantity, next))
+      const qty = Math.max(0, Math.min(maxQuantity, next))
       return Array.from({ length: qty }, (_, i) => prev[i] ?? '')
     })
+    if (next > 0) setOpen(true)
+  }
+
+  // A refused Buy Now shakes the sizes that are still to pick
+  useEffect(() => {
+    if (attempts > 0 && sizesRef.current && picks.some((v) => !v)) {
+      gsap.fromTo(sizesRef.current, { x: 0 }, { keyframes: { x: [0, -6, 5, -3, 2, 0] }, duration: 0.45, ease: 'none' })
+    }
+  }, [attempts])
 
   const setPick = (index, variant) => {
     setPicks((prev) => prev.map((v, i) => (i === index ? variant : v)))
-    setHint(false)
     setOpen(true)
-  }
-
-  const addToCart = (e) => {
-    e.preventDefault()
-
-    if (picks.some((v) => !v)) {
-      setHint(true)
-      gsap.fromTo(sizesRef.current, { x: 0 }, { keyframes: { x: [0, -6, 5, -3, 2, 0] }, duration: 0.45, ease: 'none' })
-      return
-    }
-
-    // Shirts of the same size become one cart line
-    const counts = new Map()
-    for (const v of picks) counts.set(v, (counts.get(v) || 0) + 1)
-
-    setCart((prev) => {
-      let next = prev
-      for (const [variant, count] of counts) {
-        const { id: productId, name, unitPrice, maxQuantity } = sizes.find((p) => p.variant === variant)
-        if (next.some((item) => item.productId === productId)) {
-          next = next.map((item) => (item.productId === productId ? { ...item, quantity: Math.min(maxQuantity, item.quantity + count) } : item))
-        } else {
-          next = [...next, { productId, name, fit, size: variant, price: unitPrice, maxQuantity, quantity: Math.min(maxQuantity, count) }]
-        }
-      }
-      return next
-    })
-
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
   }
 
   return (
@@ -209,7 +204,7 @@ function MerchDesignCard({ design, art, setCart }) {
               type="button"
               onClick={() => setQuantity(quantity - 1)}
               className="grid size-9 place-items-center rounded-[4px] bg-[#f3ead5] font-poster text-xl text-[#4a2a12] shadow-[0_2px_3px_rgba(0,0,0,.5)] disabled:opacity-50"
-              disabled={quantity <= 1}
+              disabled={quantity <= 0}
             >-</button>
             <span className="font-poster text-xl text-[#f3ead5] w-6 text-center tabular-nums">{quantity}</span>
             <button
@@ -221,6 +216,7 @@ function MerchDesignCard({ design, art, setCart }) {
           </div>
         </fieldset>
 
+        {quantity > 0 && (
         <fieldset className="mt-4">
           <legend className="mb-1.5 font-kn-display text-base font-semibold text-[#f3ead5]">
             <En>Size of each shirt · </En>
@@ -235,7 +231,7 @@ function MerchDesignCard({ design, art, setCart }) {
                   onChange={(e) => setPick(i, e.target.value)}
                   className={cn(
                     'min-h-10 rounded-[4px] bg-[#f3ead5] px-2 font-poster text-lg text-[#4a2a12] shadow-[0_2px_3px_rgba(0,0,0,.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
-                    hint && !variant && 'ring-2 ring-arishina'
+                    showMissing && !variant && 'ring-2 ring-arishina'
                   )}
                 >
                   <option value="">Select size</option>
@@ -249,33 +245,13 @@ function MerchDesignCard({ design, art, setCart }) {
             ))}
           </div>
         </fieldset>
+        )}
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={addToCart}
-            data-en="Add to Cart"
-            disabled={added}
-            className="group relative ml-auto block rotate-[1.5deg] rounded-sm drop-shadow-[0_0.5rem_0.6rem_rgba(0,0,0,.45)] focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-arishina disabled:opacity-80"
-          >
-            <span className="relative flex min-h-14 items-center bg-arishina py-2 pl-5 pr-4 text-theatre transition-transform duration-200 group-hover:-translate-y-0.5" style={PERFORATED}>
-              <span className="flex flex-col">
-                <span className="font-kn-display text-2xl font-extrabold leading-none">
-                  {added ? "Added to Cart" : "Add to Cart"}
-                </span>
-                <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
-                  {added ? "ಸೇರಿಸಲಾಗಿದೆ!" : "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ"}
-                </span>
-              </span>
-              <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />
-            </span>
-          </button>
-        </div>
-        <p role="status" className={cn('mt-2 text-right font-kn-display text-base font-semibold text-arishina', !hint && 'sr-only')}>
-          {hint && (
+        <p role="status" className={cn('mt-2 text-right font-kn-display text-base font-semibold text-arishina', !showMissing && 'sr-only')}>
+          {showMissing && (
             <>
-              <En>Pick a size first · </En>
-              <span lang="kn" className="font-kn-body text-sm">ಮೊದಲು ಅಳತೆ ಆರಿಸಿ</span>
+              <En>Pick a size for every shirt · </En>
+              <span lang="kn" className="font-kn-body text-sm">ಪ್ರತಿ ಶರ್ಟ್‌ಗೂ ಅಳತೆ ಆರಿಸಿ</span>
             </>
           )}
         </p>
