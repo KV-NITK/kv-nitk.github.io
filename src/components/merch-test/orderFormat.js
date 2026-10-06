@@ -1,9 +1,11 @@
+import { shirtName } from "@/lib/shirtName";
+
 export const rupees = (n) => `₹${Number(n).toFixed(2)}`;
 
-// "T-Shirt A (M) × 2". Older orders have no stored variant, so fall back to the id suffix.
+// "Regular T-shirt (M) × 2". Older orders have no stored variant, so fall back to the id suffix.
 export const itemLabel = (it) => {
   const variant = it.variant || (it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
-  return `${it.name}${variant ? ` (${variant})` : ""} × ${it.quantity}`;
+  return `${shirtName(it.productId, it.name)}${variant ? ` (${variant})` : ""} × ${it.quantity}`;
 };
 
 export const STATUS_STYLES = {

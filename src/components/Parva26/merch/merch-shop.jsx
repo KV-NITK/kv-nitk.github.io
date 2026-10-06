@@ -6,6 +6,7 @@ import { TEE } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { cn } from '@/lib/utils'
+import { shirtName } from '@/lib/shirtName'
 import { Tee3D } from '@p26/ui/stalls/tee-3d'
 import { PriceTag, GlassDoor } from '@p26/ui/stalls/showcase-parts'
 import API_URL from '../../../api/api'
@@ -73,7 +74,7 @@ export function MerchShop() {
         const product = sizes.find((p) => p.variant === variant)
         // A size no longer on sale leaves the order incomplete
         if (!product) continue
-        lines.push({ productId: product.id, name: product.name, fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
+        lines.push({ productId: product.id, name: shirtName(product.id, product.name), fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
       }
     }
     return { lines, shirts }

@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
 import API_URL from "../../api/api";
+import { shirtName } from "@/lib/shirtName";
 import { discountParts, itemLabel, rupees } from "./orderFormat";
 import { CASHFREE_MODE, createPayment, getProducts, newIdempotencyKey, quoteOrder } from "../../api/payments";
 
@@ -13,7 +14,7 @@ const groupProducts = (products) => {
     if (!groups.has(p.groupKey)) {
       groups.set(p.groupKey, {
         key: p.groupKey,
-        name: p.name,
+        name: shirtName(p.groupKey, p.name),
         unitPrice: p.unitPrice,
         maxQuantity: p.maxQuantity,
         variants: [],

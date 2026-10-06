@@ -184,7 +184,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
                   <span>
                     <span className="font-bold">{line.name}</span>
                     <span className="block text-sm opacity-80">
-                      {line.fit ? `${line.fit} · ` : ''}Size {line.size} · {line.quantity} ×{' '}
+                      Size {line.size} · {line.quantity} ×{' '}
                       {off ? (
                         <>
                           <s className="mr-1 text-red-700">{rupees(list)}</s>
