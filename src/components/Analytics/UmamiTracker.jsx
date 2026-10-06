@@ -26,7 +26,7 @@ export function UmamiTracker() {
   }, []);
 
   useEffect(() => {
-    // SPA route change tracking
+    // 1. Umami Cloud tracking
     if (window.umami && typeof window.umami.track === "function") {
       try {
         window.umami.track((props) => ({
@@ -35,11 +35,20 @@ export function UmamiTracker() {
           title: document.title,
         }));
       } catch (err) {
-        // Ignore tracking errors in dev
+        // Ignore tracking errors
       }
     }
+
+    // 2. Backend API route & IP analytics tracker
+    const currentPath = location.pathname;
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ route: currentPath, title: document.title }),
+    }).catch(() => {
+      // Ignore network errors if running in standalone static mode
+    });
   }, [location]);
 
   return null;
 }
-
