@@ -63,10 +63,10 @@ describe("quoteOrder: goodie", () => {
     const q = await quoteOrder({ items: tee, userIrisId: "u1" });
     const line = q.items.find((i) => i.productId === "goodie");
     assert.deepEqual([line.unitPrice, line.discount, line.netLineTotal], [25, 25, 0]);
-    assert.equal(q.subtotal, 658); // the free goodie adds nothing
-    assert.equal(q.discount, 0); // and is not counted as a coupon discount
+    assert.equal(q.subtotal, 683); // 2 shirts and the goodie at its price
+    assert.deepEqual([q.discount, q.couponDiscount, q.goodieDiscount], [25, 0, 25]); // the goodie given back
     assert.equal(q.total, 658);
-    assert.equal(q.couponCode, null);
+    assert.equal(q.couponCode, null); // a free goodie is not a coupon
   });
 
   it("charges only what is left of the goodie price after its own discount", async () => {
@@ -97,15 +97,19 @@ describe("quoteOrder: price per line", () => {
     assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [60, 598]); // 2 x (329 -> 299)
     assert.deepEqual([line(q, "over").discount, line(q, "over").netLineTotal], [30, 369]); // 399 -> 369
     assert.deepEqual([line(q, "lunch").discount, line(q, "lunch").netLineTotal], [0, 60]); // food untouched
-    assert.equal(q.discount, 90);
+    assert.equal(q.subtotal, 658 + 399 + 60 + 25);
+    assert.deepEqual([q.couponDiscount, q.goodieDiscount, q.discount], [90, 25, 115]); // 30 x 3 shirts, plus the goodie
     assert.equal(q.total, 598 + 369 + 60);
+    assert.equal(q.subtotal - q.discount, q.total);
+    assert.equal(q.couponCode, "EARLY");
   });
 
   it("splits a percent coupon over the lines so the parts add up to the order discount", async () => {
     seed({ products: [product("reg", 329), product("over", 399), product("goodie", 25, { category: "GOODIE", discount: 25 })], coupons: [coupon("PCT", { discount_type: "PERCENT", discount_value: 7 })] });
     const q = await quoteOrder({ items: [{ productId: "reg", quantity: 1 }, { productId: "over", quantity: 1 }], couponCode: "PCT", userIrisId: "u1" });
     const cents = (n) => Math.round(n * 100);
-    assert.equal(cents(line(q, "reg").discount) + cents(line(q, "over").discount), cents(q.discount));
+    assert.equal(cents(line(q, "reg").discount) + cents(line(q, "over").discount), cents(q.couponDiscount));
+    assert.equal(cents(q.couponDiscount) + cents(q.goodieDiscount), cents(q.discount));
     assert.equal(cents(line(q, "reg").netLineTotal) + cents(line(q, "over").netLineTotal) + cents(line(q, "goodie").netLineTotal), cents(q.total));
   });
 

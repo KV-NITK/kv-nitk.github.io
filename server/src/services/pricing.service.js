@@ -296,6 +296,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         .reduce((n, line) => n + line.quantity, 0);
     const goodie = productsById.get(GOODIE_PRODUCT_ID);
     const discountablePaise = subtotalPaise;
+    let goodieOffPaise = 0;
 
     if (shirts > 0 && goodie?.active) {
         // Listed at unit_price, with the product's own discount taken off: a
@@ -304,7 +305,8 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         const offPaise = Math.min(listPaise, toPaise(goodie.discount || 0));
         const chargedPaise = listPaise - offPaise;
 
-        subtotalPaise += chargedPaise;
+        subtotalPaise += listPaise;
+        goodieOffPaise = offPaise;
 
         lineItems.push({
             productId: goodie.id,
@@ -324,7 +326,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     let shares = lineItems.map(() => 0);
 
     if (code) {
-        ({ discountPaise, shares } = await applyCoupon({ code, subtotalPaise, discountablePaise, lineItems, userIrisId }));
+        ({ discountPaise, shares } = await applyCoupon({ code, subtotalPaise: discountablePaise, discountablePaise, lineItems, userIrisId }));
     }
 
     // What each line pays after the coupon. The goodie's discount is its own
@@ -340,7 +342,10 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         line.netLineTotal = toRupees(paise - shares[i]);
     });
 
-    const totalPaise = subtotalPaise - discountPaise;
+    // The goodie is listed in the subtotal and given back as a discount, so
+    // subtotal - discount = total and the receipt shows what the customer saved.
+    // couponDiscount and goodieDiscount are the two parts of that discount.
+    const totalPaise = subtotalPaise - discountPaise - goodieOffPaise;
 
     if (totalPaise < MIN_TOTAL_PAISE) {
         throw new PaymentError(
@@ -351,7 +356,9 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     return {
         items: lineItems,
         subtotal: toRupees(subtotalPaise),
-        discount: toRupees(discountPaise),
+        discount: toRupees(discountPaise + goodieOffPaise),
+        couponDiscount: toRupees(discountPaise),
+        goodieDiscount: toRupees(goodieOffPaise),
         total: toRupees(totalPaise),
         couponCode: discountPaise > 0 ? code : null,
         currency: "INR",

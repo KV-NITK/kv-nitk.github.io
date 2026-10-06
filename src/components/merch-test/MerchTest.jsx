@@ -2,7 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
 import API_URL from "../../api/api";
-import { itemLabel, rupees } from "./orderFormat";
+import { discountParts, itemLabel, rupees } from "./orderFormat";
 import { CASHFREE_MODE, createPayment, getProducts, newIdempotencyKey, quoteOrder } from "../../api/payments";
 
 // Group variant rows (one per size) into one card per t-shirt.
@@ -329,12 +329,12 @@ const MerchTest = () => {
               <span>Subtotal</span>
               <span>{rupees(quote.subtotal)}</span>
             </div>
-            {quote.discount > 0 && (
-              <div className="flex justify-between text-green-700">
-                <span>Coupon {quote.couponCode}</span>
-                <span>−{rupees(quote.discount)}</span>
+            {discountParts(quote).map((part) => (
+              <div key={part.label} className="flex justify-between text-green-700">
+                <span>{part.label}</span>
+                <span>−{rupees(part.amount)}</span>
               </div>
-            )}
+            ))}
             <div className="flex justify-between text-base font-semibold">
               <span>Total</span>
               <span>{rupees(quote.total)}</span>

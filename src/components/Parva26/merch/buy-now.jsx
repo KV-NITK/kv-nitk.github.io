@@ -95,10 +95,21 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const goodieList = quoted(goodie?.id)?.unitPrice ?? goodie?.unitPrice
   const goodieNet = quoted(goodie?.id)?.netLineTotal ?? Math.max(0, goodie?.unitPrice - goodie?.discount)
 
-  const total = quote ? quote.total : lines.reduce((sum, l) => sum + l.price * l.quantity, 0) + (goodieShown ? goodieNet : 0)
+  // The sums, as the server quoted them. Before there is a quote (logged out, order
+  // not complete) the list prices stand in, with only the goodie taken off.
+  const subtotal = quote ? quote.subtotal : lines.reduce((sum, l) => sum + l.price * l.quantity, 0) + (goodieShown ? goodieList : 0)
+  const couponOff = quote ? quote.couponDiscount : 0
+  const goodieOff = goodieShown ? (quote ? quote.goodieDiscount : goodieList - goodieNet) : 0
+  const totalOff = couponOff + goodieOff
+  const total = quote ? quote.total : subtotal - totalOff
+
+  // "₹30 × 2 shirts" when every discounted shirt got the same amount off
+  const offEach = lines.map((l) => quoted(l.productId)).filter((q) => q?.discount > 0)
+  const perShirt = offEach.length > 0 && offEach.every((q) => Math.abs(q.discount / q.quantity - offEach[0].discount / offEach[0].quantity) < 0.005) ? offEach[0].discount / offEach[0].quantity : null
+  const shirtsOff = offEach.reduce((n, q) => n + q.quantity, 0)
 
   // What the coupon box says: only what the server's quote says
-  const couponNote = !appliedCoupon || quoteError ? '' : quote ? (quote.discount > 0 ? `Coupon ${quote.couponCode} applied: ₹${quote.discount} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
+  const couponNote = !appliedCoupon || quoteError ? '' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
 
   const buy = async () => {
     if (shirts === 0 || !complete) {
@@ -246,28 +257,45 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
               )}
             </div>
             {couponNote && (
-              <p role="status" className={cn('mt-2.5 rounded border p-2.5 text-xs font-bold', quote?.discount > 0 ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-800')}>
+              <p role="status" className={cn('mt-2.5 rounded border p-2.5 text-xs font-bold', quote?.couponDiscount > 0 ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-800')}>
                 {couponNote}
               </p>
             )}
           </div>
 
           <div className="space-y-1 pt-3 text-lg font-bold">
-            {quote && quote.discount > 0 && (
+            {totalOff > 0 && (
               <>
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{quote.subtotal}</span>
+                  <span>{rupees(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-green-700">
                   <span>Discount</span>
-                  <span>- ₹{quote.discount}</span>
+                  <span>- {rupees(totalOff)}</span>
+                </div>
+                <div className="space-y-0.5 pl-3 text-sm font-semibold text-green-700">
+                  {couponOff > 0 && (
+                    <div className="flex justify-between">
+                      <span>
+                        Coupon {quote.couponCode}
+                        {perShirt !== null && ` (${rupees(perShirt)} × ${shirtsOff} ${shirtsOff === 1 ? 'shirt' : 'shirts'})`}
+                      </span>
+                      <span>- {rupees(couponOff)}</span>
+                    </div>
+                  )}
+                  {goodieOff > 0 && (
+                    <div className="flex justify-between">
+                      <span>{goodie.name} (free)</span>
+                      <span>- {rupees(goodieOff)}</span>
+                    </div>
+                  )}
                 </div>
               </>
             )}
             <div className="flex justify-between text-xl">
               <span>Total</span>
-              <span>₹{total}</span>
+              <span>{rupees(total)}</span>
             </div>
           </div>
 

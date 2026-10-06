@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import API_URL from "../../api/api";
 import { getMyPayments, getPayment } from "../../api/payments";
-import { STATUS_STYLES, itemLabel, rupees } from "./orderFormat";
+import { STATUS_STYLES, discountParts, itemLabel, rupees } from "./orderFormat";
 
 // Unfinished orders are re-checked with Cashfree on load (the webhook may be late)
 const MAX_AUTO_REFRESH = 5;
@@ -139,12 +139,12 @@ const MyOrders = () => {
                     </div>
                   ))}
 
-                  {order.discount > 0 && (
-                    <div className="flex justify-between text-green-700">
-                      <span>Coupon {order.couponCode}</span>
-                      <span>−{rupees(order.discount)}</span>
+                  {discountParts(order).map((part) => (
+                    <div key={part.label} className="flex justify-between text-green-700">
+                      <span>{part.label}</span>
+                      <span>−{rupees(part.amount)}</span>
                     </div>
-                  )}
+                  ))}
 
                   <div className="flex justify-between border-t pt-1 font-semibold">
                     <span>Total</span>

@@ -13,3 +13,16 @@ export const STATUS_STYLES = {
   FAILED: { label: "Failed", className: "bg-red-100 text-red-800" },
   CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-800" },
 };
+
+// The saved discount is the coupon plus the free goodie. Split it back into
+// its parts for display: [{ label, amount }], coupon first. Orders made before
+// the goodie was free have no goodie discount, so all of theirs is the coupon.
+export const discountParts = ({ items = [], discount = 0, couponCode = null }) => {
+  const goodie = items.find((it) => it.productId === "goodie")?.discount ?? 0;
+  const coupon = Math.round((discount - goodie) * 100) / 100;
+
+  return [
+    coupon > 0 && { label: couponCode ? `Coupon ${couponCode}` : "Discount", amount: coupon },
+    goodie > 0 && { label: "Goodie (free)", amount: goodie },
+  ].filter(Boolean);
+};

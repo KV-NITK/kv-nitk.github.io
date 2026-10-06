@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getPayment } from "../../api/payments";
-import { itemLabel, rupees } from "./orderFormat";
+import { discountParts, itemLabel, rupees } from "./orderFormat";
 
 const FINAL = new Set(["SUCCESS", "FAILED", "CANCELLED"]);
 const POLL_MS = 3000;
@@ -105,12 +105,12 @@ const PaymentStatus = () => {
                 <span>{rupees(it.lineTotal)}</span>
               </div>
             ))}
-            {payment.discount > 0 && (
-              <div className="flex justify-between text-green-700">
-                <span>Coupon {payment.couponCode}</span>
-                <span>−{rupees(payment.discount)}</span>
+            {discountParts(payment).map((part) => (
+              <div key={part.label} className="flex justify-between text-green-700">
+                <span>{part.label}</span>
+                <span>−{rupees(part.amount)}</span>
               </div>
-            )}
+            ))}
             <div className="flex justify-between border-t pt-1 font-semibold">
               <span>Total</span>
               <span>{rupees(payment.amount)}</span>
