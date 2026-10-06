@@ -13,6 +13,7 @@ import coordinatorRoutes from "./routes/coordinator.routes.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import paymentWebhookRoutes from "./routes/payment.webhook.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 import { getAllowedOrigins } from "./config/urls.js";
 
@@ -62,6 +63,7 @@ app.use("/api/scan", scanRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Serve frontend static build if present in container / root
 const clientBuildPath = path.join(__dirname, "../../build");

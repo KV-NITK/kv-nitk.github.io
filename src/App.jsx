@@ -14,6 +14,7 @@ import Merch from './components/merch/merch';
 import MerchTest from './components/merch-test/MerchTest';
 import PaymentStatus from './components/merch-test/PaymentStatus';
 import MyOrders from './components/merch-test/MyOrders';
+import AdminOrders from './components/admin/AdminOrders';
 import TeamRegistration from './components/team-registration/TeamRegistration';
 import HH2026 from './components/HH2026/HH2026';
 import HH2026Stats from './components/HH2026/HH2026Stats';
@@ -33,7 +34,7 @@ const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders', '/admin'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -54,6 +55,7 @@ function AppRoutes() {
         <Route path="/merch-test" element={<MerchTest />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/admin" element={<AdminOrders />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/feedback-responses" element={<FeedbackResponses />} />
