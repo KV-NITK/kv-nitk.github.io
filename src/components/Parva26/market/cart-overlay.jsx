@@ -107,7 +107,7 @@ export function CartOverlay({ cart, setCart, onClose }) {
     }
   }
 
-  const total = cart.reduce((acc, item) => acc + (TEE.price || 319) * item.quantity, 0)
+  const total = cart.reduce((acc, item) => acc + (item.price || 319) * item.quantity, 0)
   const discount = 0; // Discount option requested by user
 
   return (
@@ -130,7 +130,7 @@ export function CartOverlay({ cart, setCart, onClose }) {
                 <div key={i} className="flex justify-between items-center bg-[#e5d4b5] p-3 rounded shadow-sm">
                   <div>
                     <p className="font-bold">{item.name}</p>
-                    <p className="text-sm opacity-80">Size: {item.size} | ₹{TEE.price}</p>
+                    <p className="text-sm opacity-80">Size: {item.size} | ₹{item.price}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button onClick={() => updateQuantity(i, -1)} className="w-6 h-6 bg-[#d1bfa3] rounded shadow font-bold text-lg leading-none">-</button>

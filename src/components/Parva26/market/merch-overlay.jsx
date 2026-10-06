@@ -40,8 +40,8 @@ export function MarketMerchOverlay({ onClose, cart, setCart }) {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 max-w-[80rem] w-full mt-8" onClick={(e) => e.stopPropagation()}>
-        <MerchDesignCard initialVariant="black" user={user} cart={cart} setCart={setCart} />
-        <MerchDesignCard initialVariant="sandal" user={user} cart={cart} setCart={setCart} />
+        <MerchDesignCard initialVariant="orange" user={user} cart={cart} setCart={setCart} />
+        <MerchDesignCard initialVariant="purple" user={user} cart={cart} setCart={setCart} />
       </div>
     </div>
   )
@@ -52,7 +52,7 @@ function MerchDesignCard({ initialVariant, user, cart, setCart }) {
   const [variantId, setVariantId] = useState(initialVariant)
   const [size, setSize] = useState(null)
   const [quantity, setQuantity] = useState(1)
-  const [back, setBack] = useState(false)
+  const [back, setBack] = useState(true)
   const [chart, setChart] = useState(false)
   const [hint, setHint] = useState(false)
   const [open, setOpen] = useState(false)
@@ -62,7 +62,7 @@ function MerchDesignCard({ initialVariant, user, cart, setCart }) {
   const variant = TEE.variants.find((v) => v.id === variantId)
   const closed = Date.now() > closesAt(TEE.closes)
   const early = TEE.earlySold < TEE.earlyQuota
-  const price = early ? TEE.earlyPrice : TEE.price
+  const price = early ? variant.earlyPrice : variant.price
   const closeDay = eventDay(TEE.closes)
 
   const totalPrice = price * quantity
@@ -124,10 +124,10 @@ function MerchDesignCard({ initialVariant, user, cart, setCart }) {
 
           <Tee3D variant={variant} back={back} onTurn={setBack} forward={open} />
 
-          <PriceTag price={TEE.price} early={early ? TEE.earlyPrice : null} />
+          <PriceTag price={variant.price} early={early ? variant.earlyPrice : null} />
 
           {/* Order deadline, on a card propped at the back of the shelf */}
-          <p className="absolute bottom-[5%] left-[4%] rotate-[-2deg] rounded-[2px] bg-[#f3ead5] px-2 py-1 text-[#1d1a17] shadow-[0_2px_4px_rgba(0,0,0,.45)]" style={paper}>
+          <p className="absolute bottom-[5%] left-[4%] rotate-[-2deg] scale-[0.80] origin-bottom-left rounded-[2px] bg-[#f3ead5] px-2 py-1 text-[#1d1a17] shadow-[0_2px_4px_rgba(0,0,0,.45)]" style={paper}>
             <span lang="kn" className="block font-kn-display text-[0.8rem] font-semibold leading-tight">
               ಆರ್ಡರ್ ಕೊನೆಯ ದಿನ
             </span>
@@ -151,7 +151,7 @@ function MerchDesignCard({ initialVariant, user, cart, setCart }) {
               <En className="font-kn-body"> · Colour</En>
             </legend>
             <div role="radiogroup" className="flex gap-2.5">
-              {TEE.variants.map((v) => (
+              {TEE.variants.filter(v => v.id === initialVariant).map((v) => (
                 <button
                   key={v.id}
                   type="button"
