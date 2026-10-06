@@ -118,7 +118,7 @@ export function MerchShop() {
 
 function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }) {
   const { subtitles } = usePrefs()
-  const [back, setBack] = useState(false)
+  const [back, setBack] = useState(true)
   const [open, setOpen] = useState(false)
   const sizesRef = useRef(null)
   const shopRef = useRef(null)
