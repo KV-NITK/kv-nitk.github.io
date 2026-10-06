@@ -11,6 +11,7 @@ import { CASHFREE_MODE, createPayment, newIdempotencyKey, quoteOrder } from '../
 import API_URL from '../../../api/api'
 
 const PHONE = /^[6-9]\d{9}$/
+const rupees = (n) => `₹${Number.isInteger(n) ? n : n.toFixed(2)}`
 
 // The end of the shop page: what is being bought, the mobile number, coupon code, and the
 // one Buy Now for the whole order. Pressing it goes to IRIS first if there is
@@ -79,12 +80,22 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
     }
   }, [user, complete, signature, appliedCoupon])
 
-  const unitPrice = (line) => quote?.items.find((l) => l.productId === line.productId)?.unitPrice ?? line.price
+  // Each line as the server quoted it: list price, what is taken off it, what it costs
+  const quoted = (productId) => quote?.items.find((l) => l.productId === productId)
+  const priced = (line) => {
+    const q = quoted(line.productId)
+    const list = q?.unitPrice ?? line.price
+    const net = q ? q.netLineTotal : line.price * line.quantity
+    return { list, net, perShirt: net / line.quantity, off: q?.discount > 0 }
+  }
 
-  // The server adds the goodie to any order with a shirt; this only shows it
-  const goodiePrice = lines.length > 0 && goodie ? (quote?.items.find((l) => l.productId === goodie.id)?.unitPrice ?? goodie.unitPrice) : null
+  // The server adds the goodie to any order with a shirt; this only shows it.
+  // It is listed at its price and the product's own discount comes off it.
+  const goodieShown = lines.length > 0 && goodie
+  const goodieList = quoted(goodie?.id)?.unitPrice ?? goodie?.unitPrice
+  const goodieNet = quoted(goodie?.id)?.netLineTotal ?? Math.max(0, goodie?.unitPrice - goodie?.discount)
 
-  const total = quote ? quote.total : lines.reduce((sum, l) => sum + l.price * l.quantity, 0) + (goodiePrice ?? 0)
+  const total = quote ? quote.total : lines.reduce((sum, l) => sum + l.price * l.quantity, 0) + (goodieShown ? goodieNet : 0)
 
   // What the coupon box says: only what the server's quote says
   const couponNote = !appliedCoupon || quoteError ? '' : quote ? (quote.discount > 0 ? `Coupon ${quote.couponCode} applied: ₹${quote.discount} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
@@ -155,18 +166,32 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
             <span lang="kn" className="ml-2 font-kn-body text-sm font-bold">ನಿಮ್ಮ ಆರ್ಡರ್</span>
           </h2>
           <ul className="space-y-2 border-b border-[#c2aa84] pb-3">
-            {lines.map((line) => (
-              <li key={line.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
-                <span>
-                  <span className="font-bold">{line.name}</span>
-                  <span className="block text-sm opacity-80">
-                    {line.fit ? `${line.fit} · ` : ''}Size {line.size} · {line.quantity} × ₹{unitPrice(line)}
+            {lines.map((line) => {
+              const { list, net, perShirt, off } = priced(line)
+              return (
+                <li key={line.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
+                  <span>
+                    <span className="font-bold">{line.name}</span>
+                    <span className="block text-sm opacity-80">
+                      {line.fit ? `${line.fit} · ` : ''}Size {line.size} · {line.quantity} ×{' '}
+                      {off ? (
+                        <>
+                          <s className="mr-1 text-red-700">{rupees(list)}</s>
+                          <span className="font-bold text-emerald-800">{rupees(perShirt)}</span>
+                        </>
+                      ) : (
+                        rupees(list)
+                      )}
+                    </span>
                   </span>
-                </span>
-                <span className="font-bold">₹{unitPrice(line) * line.quantity}</span>
-              </li>
-            ))}
-            {goodiePrice !== null && (
+                  <span className="font-bold">
+                    {off && <s className="mr-1 text-xs font-normal text-red-700">{rupees(list * line.quantity)}</s>}
+                    <span className={off ? 'text-emerald-800' : ''}>{rupees(net)}</span>
+                  </span>
+                </li>
+              )
+            })}
+            {goodieShown && (
               <li className="flex items-baseline justify-between gap-3 rounded border border-dashed border-[#8a5530] bg-[#f0e2c4] px-3 py-2">
                 <span className="flex items-center gap-2">
                   <Gift aria-hidden className="size-5 shrink-0 text-kumkuma" />
@@ -178,7 +203,10 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
                     </span>
                   </span>
                 </span>
-                <span className="font-bold">₹{goodiePrice}</span>
+                <span className="font-bold">
+                  {goodieNet < goodieList && <s className="mr-1 text-xs font-normal text-red-700">{rupees(goodieList)}</s>}
+                  <span className={goodieNet === 0 ? 'text-emerald-800' : ''}>{goodieNet === 0 ? 'Free' : rupees(goodieNet)}</span>
+                </span>
               </li>
             )}
           </ul>

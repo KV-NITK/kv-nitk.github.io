@@ -58,6 +58,22 @@ describe("quoteOrder: goodie", () => {
     assert.equal(big.total, 25);
   });
 
+  it("shows the goodie at its price and gives it free when the product discount equals the price", async () => {
+    seed({ products: [product("tee", 329), goodie({ discount: 25 })] });
+    const q = await quoteOrder({ items: tee, userIrisId: "u1" });
+    const line = q.items.find((i) => i.productId === "goodie");
+    assert.deepEqual([line.unitPrice, line.discount, line.netLineTotal], [25, 25, 0]);
+    assert.equal(q.subtotal, 658); // the free goodie adds nothing
+    assert.equal(q.discount, 0); // and is not counted as a coupon discount
+    assert.equal(q.total, 658);
+    assert.equal(q.couponCode, null);
+  });
+
+  it("charges only what is left of the goodie price after its own discount", async () => {
+    seed({ products: [product("tee", 329), goodie({ discount: 10 })] });
+    assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658 + 15);
+  });
+
   it("does not let the client put the goodie in the cart", async () => {
     await rejects(quoteOrder({ items: [...tee, { productId: "goodie", quantity: 1 }], userIrisId: "u1" }), "added to your order automatically");
   });
@@ -67,6 +83,36 @@ describe("quoteOrder: goodie", () => {
     assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658);
     seed({ products: [product("tee", 329), goodie({ active: false })] });
     assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658);
+  });
+});
+
+describe("quoteOrder: price per line", () => {
+  beforeEach(() => seed({ products: [product("reg", 329), product("over", 399), product("lunch", 60, { category: "FOOD" }), product("goodie", 25, { category: "GOODIE", discount: 25 })] }));
+  const cart = [{ productId: "reg", quantity: 2 }, { productId: "over", quantity: 1 }, { productId: "lunch", quantity: 1 }];
+  const line = (q, id) => q.items.find((i) => i.productId === id);
+
+  it("gives each shirt line its own discount with a per-item coupon", async () => {
+    seed({ products: [product("reg", 329), product("over", 399), product("lunch", 60, { category: "FOOD" }), product("goodie", 25, { category: "GOODIE", discount: 25 })], coupons: [coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 })] });
+    const q = await quoteOrder({ items: cart, couponCode: "EARLY", userIrisId: "u1" });
+    assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [60, 598]); // 2 x (329 -> 299)
+    assert.deepEqual([line(q, "over").discount, line(q, "over").netLineTotal], [30, 369]); // 399 -> 369
+    assert.deepEqual([line(q, "lunch").discount, line(q, "lunch").netLineTotal], [0, 60]); // food untouched
+    assert.equal(q.discount, 90);
+    assert.equal(q.total, 598 + 369 + 60);
+  });
+
+  it("splits a percent coupon over the lines so the parts add up to the order discount", async () => {
+    seed({ products: [product("reg", 329), product("over", 399), product("goodie", 25, { category: "GOODIE", discount: 25 })], coupons: [coupon("PCT", { discount_type: "PERCENT", discount_value: 7 })] });
+    const q = await quoteOrder({ items: [{ productId: "reg", quantity: 1 }, { productId: "over", quantity: 1 }], couponCode: "PCT", userIrisId: "u1" });
+    const cents = (n) => Math.round(n * 100);
+    assert.equal(cents(line(q, "reg").discount) + cents(line(q, "over").discount), cents(q.discount));
+    assert.equal(cents(line(q, "reg").netLineTotal) + cents(line(q, "over").netLineTotal) + cents(line(q, "goodie").netLineTotal), cents(q.total));
+  });
+
+  it("has net equal to list price on every line when there is no coupon", async () => {
+    const q = await quoteOrder({ items: cart, userIrisId: "u1" });
+    assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [0, 658]);
+    assert.equal(q.total, 658 + 399 + 60);
   });
 });
 
