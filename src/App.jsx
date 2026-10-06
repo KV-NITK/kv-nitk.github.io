@@ -25,8 +25,8 @@ import HH2026Leaderboard from './components/HH2026/leaderboard';
 import HH2026QrScanner from './components/HH2026/qr-scanner';
 import Feedback from './components/feedback/Feedback';
 import FeedbackResponses from './components/feedback-responses/FeedbackResponses';
-import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
-import { UmamiTracker } from './components/analytics/UmamiTracker';
+import AnalyticsDashboard from "./components/Analytics/AnalyticsDashboard";
+import { UmamiTracker } from "./components/Analytics/UmamiTracker";
 
 // Loaded on its own, so these don't pull in the rest of the site's code
 // and the rest of the site doesn't pull in their fonts and effects.
