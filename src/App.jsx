@@ -25,6 +25,8 @@ import HH2026Leaderboard from './components/HH2026/leaderboard';
 import HH2026QrScanner from './components/HH2026/qr-scanner';
 import Feedback from './components/feedback/Feedback';
 import FeedbackResponses from './components/feedback-responses/FeedbackResponses';
+import AnalyticsDashboard from "./components/Analytics/AnalyticsDashboard";
+import { UmamiTracker } from "./components/Analytics/UmamiTracker";
 
 // Loaded on its own, so these don't pull in the rest of the site's code
 // and the rest of the site doesn't pull in their fonts and effects.
@@ -34,7 +36,7 @@ const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders', '/admin'];
+const STANDALONE_ROUTES = ['/analytics', '/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders', '/admin'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -42,6 +44,7 @@ function AppRoutes() {
 
   return (
     <>
+      <UmamiTracker />
       {isStandalone ? null : <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -56,6 +59,7 @@ function AppRoutes() {
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/admin" element={<AdminOrders />} />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/feedback-responses" element={<FeedbackResponses />} />

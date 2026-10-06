@@ -14,8 +14,18 @@ const STATUS_FILTERS = [
   ["FAILED", "Failed"],
 ];
 
-const formatDate = (iso) =>
-  iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
+const formatDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const variantOf = (it) => it.variant || (it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
 
@@ -34,11 +44,10 @@ const writePass = (value) => {
     if (value) sessionStorage.setItem(PASS_KEY, value);
     else sessionStorage.removeItem(PASS_KEY);
   } catch {
-    // the page works without remembering the password
+    // ignore
   }
 };
 
-// The saved discount split into what the coupon took off and the free goodie
 const discountOf = (order) => {
   const parts = discountParts(order);
   const coupon = parts.find((p) => p.label !== "Goodie (free)")?.amount ?? 0;
@@ -65,20 +74,24 @@ const downloadCsv = (orders) => {
 
 const StatusBadge = ({ status }) => {
   const style = STATUS_STYLES[status] || { label: status, className: "bg-neutral-200 text-neutral-700" };
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.className}`}>{style.label}</span>;
+  return (
+    <span className={`inline-block rounded-full px-3 py-0.5 text-xs font-semibold ${style.className}`}>
+      {style.label}
+    </span>
+  );
 };
 
-const Stat = ({ label, value }) => (
-  <div className="rounded-lg border border-neutral-200 bg-white px-4 py-3">
-    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
-    <div className="mt-1 text-2xl font-bold text-neutral-900">{value}</div>
+const StatCard = ({ label, value }) => (
+  <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
+    <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">{label}</div>
+    <div className="mt-1.5 text-3xl font-bold text-neutral-900">{value}</div>
   </div>
 );
 
 const AdminOrders = () => {
   const [passcode, setPasscode] = useState(readPass);
   const [passInput, setPassInput] = useState("");
-  const [orders, setOrders] = useState(null); // null = locked
+  const [orders, setOrders] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("SUCCESS");
@@ -101,7 +114,6 @@ const AdminOrders = () => {
     }
   }, []);
 
-  // A password kept from earlier in this tab unlocks the page again
   useEffect(() => {
     if (passcode) load(passcode);
   }, []);
@@ -162,13 +174,13 @@ const AdminOrders = () => {
 
   if (!orders) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-100 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] p-4 font-sans">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             if (passInput.trim()) load(passInput.trim());
           }}
-          className="w-full max-w-sm rounded-xl bg-white p-6 shadow"
+          className="w-full max-w-sm rounded-xl border border-neutral-200/80 bg-white p-6 shadow-sm"
         >
           <h1 className="text-xl font-bold text-neutral-900">Admin</h1>
           <p className="mt-1 text-sm text-neutral-600">Enter the password to see the orders.</p>
@@ -178,13 +190,13 @@ const AdminOrders = () => {
             onChange={(e) => setPassInput(e.target.value)}
             placeholder="Password"
             autoFocus
-            className="mt-4 w-full rounded border border-neutral-300 px-3 py-2"
+            className="mt-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-neutral-400"
           />
           {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 w-full rounded bg-neutral-900 px-4 py-2 font-semibold text-white hover:bg-neutral-700 disabled:opacity-60"
+            className="mt-4 w-full rounded-lg bg-black px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 transition-colors"
           >
             {loading ? "Checking…" : "View orders"}
           </button>
@@ -194,18 +206,29 @@ const AdminOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 p-4 sm:p-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold text-neutral-900">Orders</h1>
-          <div className="flex gap-2">
-            <button onClick={() => load(passcode)} disabled={loading} className="rounded border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-neutral-50 disabled:opacity-60">
+    <div className="min-h-screen bg-[#f5f5f7] p-6 md:p-8 font-sans text-neutral-900">
+      <div className="mx-auto max-w-7xl space-y-5">
+        {/* Top bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Orders</h1>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => load(passcode)}
+              disabled={loading}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 shadow-sm disabled:opacity-60 transition-colors"
+            >
               {loading ? "Refreshing…" : "Refresh"}
             </button>
-            <button onClick={() => downloadCsv(shown)} className="rounded border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-neutral-50">
+            <button
+              onClick={() => downloadCsv(shown)}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 shadow-sm transition-colors"
+            >
               Download CSV ({shown.length})
             </button>
-            <button onClick={lock} className="rounded bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700">
+            <button
+              onClick={lock}
+              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 shadow-sm transition-colors"
+            >
               Lock
             </button>
           </div>
@@ -222,67 +245,89 @@ const AdminOrders = () => {
           <Stat label="With a coupon" value={summary.withCoupon} />
         </div>
 
+        {/* Hand out section */}
         {summary.rows.length > 0 && (
-          <details className="mt-4 rounded-lg border border-neutral-200 bg-white p-4" open>
-            <summary className="cursor-pointer font-semibold text-neutral-900">What to hand out (paid orders)</summary>
-            <ul className="mt-3 grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <details className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm" open>
+            <summary className="cursor-pointer font-bold text-neutral-900 text-base flex items-center gap-2 select-none outline-none">
+              What to hand out (paid orders)
+            </summary>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-2 text-sm">
               {summary.rows.map((row) => (
-                <li key={`${row.name}|${row.variant}`} className="flex justify-between border-b border-neutral-100 py-1">
-                  <span>{row.name}{row.variant ? ` (${row.variant})` : ""}</span>
-                  <span className="font-bold">{row.quantity}</span>
-                </li>
+                <div key={`${row.name}|${row.variant}`} className="flex justify-between items-center py-1 border-b border-neutral-100 last:border-b-0 md:border-b-0">
+                  <span className="text-neutral-800 font-medium">{row.name}{row.variant ? ` (${row.variant})` : ""}</span>
+                  <span className="font-bold text-neutral-900">{row.quantity}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </details>
         )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded border border-neutral-300 bg-white px-3 py-2 text-sm">
-            {STATUS_FILTERS.map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, phone, email, IRIS id, order id, coupon"
-            className="min-w-64 flex-1 rounded border border-neutral-300 bg-white px-3 py-2 text-sm"
-          />
-          <span className="text-sm text-neutral-600">{shown.length} of {orders.length} orders</span>
+        {/* Filters & Search */}
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-neutral-400 shadow-sm"
+            >
+              {STATUS_FILTERS.map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name, phone, email, IRIS id, order id, coupon"
+              className="min-w-64 flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-neutral-400 shadow-sm placeholder:text-neutral-400"
+            />
+            <span className="text-sm font-medium text-neutral-500 whitespace-nowrap">{shown.length} of {orders.length} orders</span>
+          </div>
+          <p className="mt-1.5 text-xs text-neutral-400">
+            Status is as last saved. A Pending order may already be paid at Cashfree if its confirmation has not arrived.
+          </p>
         </div>
-        <p className="mt-1 text-xs text-neutral-500">Status is as last saved. A Pending order may already be paid at Cashfree if its confirmation has not arrived.</p>
 
-        <div className="mt-3 overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+        {/* Table */}
+        <div className="overflow-x-auto rounded-xl border border-neutral-200/80 bg-white shadow-sm">
           <table className="w-full min-w-[56rem] text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+            <thead className="bg-neutral-50/70 border-b border-neutral-200 text-xs font-bold uppercase tracking-wider text-neutral-400">
               <tr>
                 {["Date", "Name", "Phone", "Email", "Items", "Coupon", "Amount", "Status"].map((h) => (
-                  <th key={h} className="px-3 py-2 font-semibold">{h}</th>
+                  <th key={h} className="px-4 py-3 font-bold">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-neutral-100">
               {shown.map((o) => (
-                <tr key={o.paymentId} className="border-t border-neutral-100 align-top">
-                  <td className="whitespace-nowrap px-3 py-2">{formatDate(o.createdAt)}</td>
-                  <td className="px-3 py-2">
-                    <div className="font-semibold">{o.name || "—"}</div>
-                    <div className="text-xs text-neutral-500">{o.irisId}</div>
+                <tr key={o.paymentId} className="align-top hover:bg-neutral-50/50 transition-colors">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-neutral-600 font-medium text-xs sm:text-sm">{formatDate(o.createdAt)}</td>
+                  <td className="px-4 py-3.5">
+                    <div className="font-bold text-neutral-900">{o.name || "—"}</div>
+                    <div className="text-xs text-neutral-400 mt-0.5 font-normal">{o.irisId}</div>
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2">{o.phone || "—"}</td>
-                  <td className="px-3 py-2">{o.email || "—"}</td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-4 py-3.5 font-medium text-neutral-800">{o.phone || "—"}</td>
+                  <td className="px-4 py-3.5 font-medium text-neutral-800">{o.email || "—"}</td>
+                  <td className="px-4 py-3.5 font-medium text-neutral-800 space-y-0.5">
                     {o.items.length ? o.items.map((it) => <div key={it.productId}>{itemLabel(it)}</div>) : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2">
-                    {o.couponCode ? <>{o.couponCode}<div className="text-xs text-neutral-500">−{rupees(discountOf(o).coupon)}</div></> : "—"}
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    {o.couponCode ? (
+                      <div>
+                        <div className="font-semibold text-neutral-900 uppercase tracking-wider text-xs">{o.couponCode}</div>
+                        <div className="text-xs text-neutral-400 font-normal mt-0.5">-₹{discountOf(o).coupon.toFixed(2)}</div>
+                      </div>
+                    ) : (
+                      "—"
+                    )}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 font-semibold">{rupees(o.amount)}</td>
-                  <td className="px-3 py-2"><StatusBadge status={o.status} /></td>
+                  <td className="whitespace-nowrap px-4 py-3.5 font-bold text-neutral-900">{rupees(o.amount)}</td>
+                  <td className="px-4 py-3.5"><StatusBadge status={o.status} /></td>
                 </tr>
               ))}
               {shown.length === 0 && (
-                <tr><td colSpan={8} className="px-3 py-8 text-center text-neutral-500">No orders match.</td></tr>
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center text-neutral-400 font-medium">No orders match.</td>
+                </tr>
               )}
             </tbody>
           </table>
