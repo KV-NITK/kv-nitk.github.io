@@ -33,15 +33,13 @@ export const MENU = [
 // server; `buyLink` goes to payment.
 export const TEE = {
   name: { kn: 'ಪರ್ವ ಟೀ ಶರ್ಟ್', en: 'Parva T-shirt' },
-  price: 319,
-    earlyPrice: 319,
   earlyQuota: 50,
   earlySold: 32,
   closes: '2026-10-20',
   buyLink: '#',
   variants: [
-    { id: 'black', kn: 'ಕಪ್ಪು', en: 'Black', body: '#1f1b18', print: '#f2c12e', ink: '#c8102e', photos: null, soldOut: ['XXL'] },
-    { id: 'sandal', kn: 'ಗಂಧದ ಬಣ್ಣ', en: 'Sandal', body: '#ead6b0', print: '#8e0b20', ink: '#6b3f22', photos: null, soldOut: [] },
+    { id: 'orange', kn: 'ಕಿತ್ತಳೆ', en: 'Orange (Regular Fit)', body: '#f0803c', print: '#000000', ink: '#ffffff', photos: { front: '/parva-26/orange_regular_frontview.png', back: '/parva-26/orange_regular_backview.png' }, soldOut: [], price: 329, earlyPrice: 329 },
+    { id: 'purple', kn: 'ನೇರಳೆ', en: 'Purple (Oversized)', body: '#6a0dad', print: '#000000', ink: '#ffffff', photos: { front: '/parva-26/purple_oversized_frontview.png', back: '/parva-26/purple_oversized_backview.png' }, soldOut: [], price: 399, earlyPrice: 399 },
   ],
   sizes: [
     { id: 'S', chest: 38, length: 27 },
