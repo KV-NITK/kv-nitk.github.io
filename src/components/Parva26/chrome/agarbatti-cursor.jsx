@@ -75,14 +75,14 @@ export function AgarbattiCursor({ onActiveChange }) {
         {Array.from({ length: PUFFS }, (_, i) => (
           <span
             key={i}
-            className="pointer-events-none fixed -left-2.5 -top-2.5 z-[70] size-5 rounded-full bg-radial from-[#e8e0d4]/70 to-transparent to-70% opacity-0"
+            className="pointer-events-none fixed -left-2.5 -top-2.5 z-[110] size-5 rounded-full bg-radial from-[#e8e0d4]/70 to-transparent to-70% opacity-0"
           />
         ))}
       </div>
       <div
         ref={tipRef}
         data-hidden="true"
-        className="group pointer-events-none fixed left-0 top-0 z-[70] transition-opacity duration-150 data-[hidden=true]:opacity-0"
+        className="group pointer-events-none fixed left-0 top-0 z-[110] transition-opacity duration-150 data-[hidden=true]:opacity-0"
       >
         {/* The stick, held at an angle below the ember */}
         <span className="absolute left-0 top-0 h-[2.5px] w-7 origin-left rotate-[52deg] rounded-full bg-linear-to-r from-[#5b5048] via-[#3a2416] to-[#2a180c]" />
