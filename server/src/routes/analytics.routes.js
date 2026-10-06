@@ -1,12 +1,60 @@
 import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_FILE = path.join(__dirname, "../../data/analytics.json");
 
 const router = express.Router();
 
-// In-memory route analytics storage
-// Stores route -> { totalVisits: number, uniqueIps: Set<string>, lastVisited: string, history: Array }
-const routeStore = new Map();
+// Route store: route -> { totalVisits: number, uniqueIps: Set<string>, lastVisited: string }
+let routeDataMap = new Map();
 
-// Default target routes to ensure they are listed in stats even before initial hits
+// Helper to load persisted data from disk
+const loadPersistedData = () => {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const content = fs.readFileSync(DATA_FILE, "utf-8");
+      const parsed = JSON.parse(content);
+      Object.entries(parsed).forEach(([route, obj]) => {
+        routeDataMap.set(route, {
+          totalVisits: Number(obj.totalVisits) || 0,
+          uniqueIps: new Set(Array.isArray(obj.uniqueIps) ? obj.uniqueIps : []),
+          lastVisited: obj.lastVisited || null,
+        });
+      });
+    }
+  } catch (err) {
+    console.warn("Could not load analytics.json:", err.message);
+  }
+};
+
+// Helper to save data to disk
+const savePersistedData = () => {
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const exportObj = {};
+    for (const [route, data] of routeDataMap.entries()) {
+      exportObj[route] = {
+        totalVisits: data.totalVisits,
+        uniqueIps: Array.from(data.uniqueIps),
+        lastVisited: data.lastVisited,
+      };
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(exportObj, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Could not save analytics.json:", err.message);
+  }
+};
+
+// Load data on initialization
+loadPersistedData();
+
 const TARGET_ROUTES = [
   "/",
   "/events",
@@ -19,10 +67,10 @@ const TARGET_ROUTES = [
   "/admin",
 ];
 
-// Pre-populate target routes
+// Pre-initialize default target routes
 TARGET_ROUTES.forEach((r) => {
-  if (!routeStore.has(r)) {
-    routeStore.set(r, {
+  if (!routeDataMap.has(r)) {
+    routeDataMap.set(r, {
       totalVisits: 0,
       uniqueIps: new Set(),
       lastVisited: null,
@@ -42,23 +90,25 @@ const getClientIp = (req) => {
 router.post("/track", (req, res) => {
   try {
     const rawRoute = req.body?.route || req.body?.path || "/";
-    // Normalize route path (strip query params for grouping)
     const normalizedRoute = rawRoute.split("?")[0] || "/";
     const clientIp = getClientIp(req);
 
-    let data = routeStore.get(normalizedRoute);
+    let data = routeDataMap.get(normalizedRoute);
     if (!data) {
       data = {
         totalVisits: 0,
         uniqueIps: new Set(),
         lastVisited: null,
       };
-      routeStore.set(normalizedRoute, data);
+      routeDataMap.set(normalizedRoute, data);
     }
 
     data.totalVisits += 1;
     data.uniqueIps.add(clientIp);
     data.lastVisited = new Date().toISOString();
+
+    // Save to disk
+    savePersistedData();
 
     return res.json({
       success: true,
@@ -76,9 +126,9 @@ router.get("/stats", (req, res) => {
   try {
     const stats = [];
 
-    // Ensure all TARGET_ROUTES appear in response
+    // Include target routes
     TARGET_ROUTES.forEach((r) => {
-      const data = routeStore.get(r) || { totalVisits: 0, uniqueIps: new Set(), lastVisited: null };
+      const data = routeDataMap.get(r) || { totalVisits: 0, uniqueIps: new Set(), lastVisited: null };
       stats.push({
         route: r,
         totalVisits: data.totalVisits,
@@ -87,8 +137,8 @@ router.get("/stats", (req, res) => {
       });
     });
 
-    // Add any extra routes visited that weren't in default list
-    for (const [r, data] of routeStore.entries()) {
+    // Add any dynamically discovered routes
+    for (const [r, data] of routeDataMap.entries()) {
       if (!TARGET_ROUTES.includes(r)) {
         stats.push({
           route: r,
@@ -99,10 +149,9 @@ router.get("/stats", (req, res) => {
       }
     }
 
-    // Calculate overall totals
     const totalVisitsAll = stats.reduce((acc, curr) => acc + curr.totalVisits, 0);
     const allUniqueIps = new Set();
-    for (const data of routeStore.values()) {
+    for (const data of routeDataMap.values()) {
       data.uniqueIps.forEach((ip) => allUniqueIps.add(ip));
     }
 
