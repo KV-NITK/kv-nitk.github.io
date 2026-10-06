@@ -1,59 +1,26 @@
-import express from "express";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import express from "express";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_FILE = path.join(__dirname, "../../data/analytics.json");
+import { requireAdminPasscode } from "../middleware/adminAuth.middleware.js";
 
-const router = express.Router();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Route store: route -> { totalVisits: number, uniqueIps: Set<string>, lastVisited: string }
-let routeDataMap = new Map();
+// Set ANALYTICS_DATA_DIR to a folder that survives a deploy (a mounted volume),
+// or the counts start again from zero with every new container.
+const DATA_DIR = process.env.ANALYTICS_DATA_DIR || path.join(__dirname, "../../data");
+const DATA_FILE = path.join(DATA_DIR, "analytics.json");
 
-// Helper to load persisted data from disk
-const loadPersistedData = () => {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const content = fs.readFileSync(DATA_FILE, "utf-8");
-      const parsed = JSON.parse(content);
-      Object.entries(parsed).forEach(([route, obj]) => {
-        routeDataMap.set(route, {
-          totalVisits: Number(obj.totalVisits) || 0,
-          uniqueIps: new Set(Array.isArray(obj.uniqueIps) ? obj.uniqueIps : []),
-          lastVisited: obj.lastVisited || null,
-        });
-      });
-    }
-  } catch (err) {
-    console.warn("Could not load analytics.json:", err.message);
-  }
-};
+const SAVE_EVERY_MS = 10 * 1000;
+const MAX_ROUTES = 200;
+const MAX_ROUTE_LENGTH = 100;
+const ROUTE_PATTERN = /^\/[a-zA-Z0-9\-_/]*$/;
 
-// Helper to save data to disk
-const savePersistedData = () => {
-  try {
-    const dir = path.dirname(DATA_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    const exportObj = {};
-    for (const [route, data] of routeDataMap.entries()) {
-      exportObj[route] = {
-        totalVisits: data.totalVisits,
-        uniqueIps: Array.from(data.uniqueIps),
-        lastVisited: data.lastVisited,
-      };
-    }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(exportObj, null, 2), "utf-8");
-  } catch (err) {
-    console.warn("Could not save analytics.json:", err.message);
-  }
-};
-
-// Load data on initialization
-loadPersistedData();
+// Per client address, so one machine cannot flood the counters
+const TRACK_LIMIT = 60;
+const TRACK_WINDOW_MS = 60 * 1000;
 
 const TARGET_ROUTES = [
   "/",
@@ -64,109 +31,178 @@ const TARGET_ROUTES = [
   "/hh-2026",
   "/team-registration",
   "/my-orders",
-  "/admin",
 ];
 
-// Pre-initialize default target routes
-TARGET_ROUTES.forEach((r) => {
-  if (!routeDataMap.has(r)) {
-    routeDataMap.set(r, {
-      totalVisits: 0,
-      uniqueIps: new Set(),
-      lastVisited: null,
-    });
-  }
-});
+// Pages that must not count their own visits
+const NOT_TRACKED = ["/admin", "/analytics"];
 
-const getClientIp = (req) => {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
+const router = express.Router();
+
+// route -> { totalVisits, visitors: Set<hashed visitor>, lastVisited }
+const routes = new Map();
+let dirty = false;
+
+const emptyRoute = () => ({ totalVisits: 0, visitors: new Set(), lastVisited: null });
+
+// Visitors are stored as a salted hash, never as the address itself
+const visitorId = (ip) =>
+  crypto
+    .createHash("sha256")
+    .update(`${process.env.ANALYTICS_SALT || process.env.ADMIN_PASSCODE || ""}|${ip}`)
+    .digest("hex")
+    .slice(0, 16);
+
+const load = () => {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+
+    for (const [route, entry] of Object.entries(parsed)) {
+      routes.set(route, {
+        totalVisits: Number(entry.totalVisits) || 0,
+        visitors: new Set(Array.isArray(entry.visitors) ? entry.visitors : []),
+        lastVisited: entry.lastVisited || null,
+      });
+    }
+  } catch (err) {
+    if (err.code !== "ENOENT") console.warn("Could not load analytics data:", err.message);
   }
-  return req.socket?.remoteAddress || req.ip || "127.0.0.1";
 };
 
-// POST /api/analytics/track
-router.post("/track", (req, res) => {
-  try {
-    const rawRoute = req.body?.route || req.body?.path || "/";
-    const normalizedRoute = rawRoute.split("?")[0] || "/";
-    const clientIp = getClientIp(req);
+const snapshot = () => {
+  const out = {};
 
-    let data = routeDataMap.get(normalizedRoute);
-    if (!data) {
-      data = {
-        totalVisits: 0,
-        uniqueIps: new Set(),
-        lastVisited: null,
-      };
-      routeDataMap.set(normalizedRoute, data);
-    }
-
-    data.totalVisits += 1;
-    data.uniqueIps.add(clientIp);
-    data.lastVisited = new Date().toISOString();
-
-    // Save to disk
-    savePersistedData();
-
-    return res.json({
-      success: true,
-      route: normalizedRoute,
-      totalVisits: data.totalVisits,
-      uniqueIpsCount: data.uniqueIps.size,
-    });
-  } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+  for (const [route, entry] of routes) {
+    out[route] = {
+      totalVisits: entry.totalVisits,
+      visitors: [...entry.visitors],
+      lastVisited: entry.lastVisited,
+    };
   }
+
+  return JSON.stringify(out);
+};
+
+// Written off the request path, at most once every SAVE_EVERY_MS, and through a
+// temporary file so a crash mid-write cannot leave half a file behind.
+const save = async () => {
+  if (!dirty) return;
+  dirty = false;
+
+  try {
+    await fs.promises.mkdir(DATA_DIR, { recursive: true });
+    const tmp = `${DATA_FILE}.tmp`;
+    await fs.promises.writeFile(tmp, snapshot());
+    await fs.promises.rename(tmp, DATA_FILE);
+  } catch (err) {
+    dirty = true;
+    console.warn("Could not save analytics data:", err.message);
+  }
+};
+
+// On shutdown, so the last few seconds of visits are not lost
+const saveNow = () => {
+  if (!dirty) return;
+
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(DATA_FILE, snapshot());
+  } catch (err) {
+    console.warn("Could not save analytics data:", err.message);
+  }
+};
+
+load();
+TARGET_ROUTES.forEach((r) => routes.has(r) || routes.set(r, emptyRoute()));
+
+setInterval(save, SAVE_EVERY_MS).unref();
+
+// A handler for these signals replaces Node's default of exiting, so exit here
+for (const signal of ["SIGTERM", "SIGINT"]) {
+  process.once(signal, () => {
+    saveNow();
+    process.exit(0);
+  });
+}
+
+const hits = new Map();
+
+const tooMany = (ip) => {
+  const now = Date.now();
+  const record = hits.get(ip);
+
+  if (!record || now > record.resetAt) {
+    hits.set(ip, { count: 1, resetAt: now + TRACK_WINDOW_MS });
+    return false;
+  }
+
+  record.count += 1;
+  return record.count > TRACK_LIMIT;
+};
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of hits) if (now > record.resetAt) hits.delete(ip);
+}, TRACK_WINDOW_MS).unref();
+
+// Query string and trailing slash dropped; null when it is not a path we keep
+const cleanRoute = (value) => {
+  if (typeof value !== "string") return null;
+
+  let route = value.split(/[?#]/)[0];
+  if (route.length > 1) route = route.replace(/\/+$/, "");
+
+  if (!route || route.length > MAX_ROUTE_LENGTH || !ROUTE_PATTERN.test(route)) return null;
+  if (NOT_TRACKED.some((p) => route === p || route.startsWith(`${p}/`))) return null;
+
+  return route;
+};
+
+// POST /api/analytics/track  { route }
+router.post("/track", (req, res) => {
+  // trust proxy is set in app.js, so this is the visitor and not nginx
+  if (tooMany(req.ip)) return res.status(429).json({ success: false });
+
+  const route = cleanRoute(req.body?.route);
+  if (!route) return res.status(400).json({ success: false });
+
+  let entry = routes.get(route);
+
+  if (!entry) {
+    // Anything beyond the cap is dropped, so junk paths cannot grow the file
+    if (routes.size >= MAX_ROUTES) return res.status(204).end();
+    entry = emptyRoute();
+    routes.set(route, entry);
+  }
+
+  entry.totalVisits += 1;
+  entry.visitors.add(visitorId(req.ip));
+  entry.lastVisited = new Date().toISOString();
+  dirty = true;
+
+  return res.status(204).end();
 });
 
-// GET /api/analytics/stats
-router.get("/stats", (req, res) => {
-  try {
-    const stats = [];
+// GET /api/analytics/stats - needs the admin password
+router.get("/stats", requireAdminPasscode, (req, res) => {
+  const stats = [...routes].map(([route, entry]) => ({
+    route,
+    totalVisits: entry.totalVisits,
+    uniqueIps: entry.visitors.size,
+    lastVisited: entry.lastVisited,
+  }));
 
-    // Include target routes
-    TARGET_ROUTES.forEach((r) => {
-      const data = routeDataMap.get(r) || { totalVisits: 0, uniqueIps: new Set(), lastVisited: null };
-      stats.push({
-        route: r,
-        totalVisits: data.totalVisits,
-        uniqueIps: data.uniqueIps.size,
-        lastVisited: data.lastVisited,
-      });
-    });
+  const everyone = new Set();
+  for (const entry of routes.values()) entry.visitors.forEach((v) => everyone.add(v));
 
-    // Add any dynamically discovered routes
-    for (const [r, data] of routeDataMap.entries()) {
-      if (!TARGET_ROUTES.includes(r)) {
-        stats.push({
-          route: r,
-          totalVisits: data.totalVisits,
-          uniqueIps: data.uniqueIps.size,
-          lastVisited: data.lastVisited,
-        });
-      }
-    }
-
-    const totalVisitsAll = stats.reduce((acc, curr) => acc + curr.totalVisits, 0);
-    const allUniqueIps = new Set();
-    for (const data of routeDataMap.values()) {
-      data.uniqueIps.forEach((ip) => allUniqueIps.add(ip));
-    }
-
-    return res.json({
-      success: true,
-      summary: {
-        totalVisits: totalVisitsAll,
-        totalUniqueIps: allUniqueIps.size,
-        activeRoutesCount: stats.length,
-      },
-      stats,
-    });
-  } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
+  return res.json({
+    success: true,
+    summary: {
+      totalVisits: stats.reduce((sum, s) => sum + s.totalVisits, 0),
+      totalUniqueIps: everyone.size,
+      activeRoutesCount: stats.length,
+    },
+    stats,
+  });
 });
 
 export default router;

@@ -233,14 +233,14 @@ const AdminOrders = () => {
             </button>
           </div>
         </div>
+        {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
 
-        {error && <p role="alert" className="text-sm font-semibold text-red-700">{error}</p>}
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
           <StatCard label="Paid orders" value={paid.length} />
           <StatCard label="Revenue" value={rupees(summary.revenue)} />
           <StatCard label="Shirts" value={summary.shirts} />
+          <StatCard label="Regular" value={summary.regular} />
+          <StatCard label="Oversized" value={summary.oversized} />
           <StatCard label="Goodies" value={summary.goodies} />
           <StatCard label="With a coupon" value={summary.withCoupon} />
         </div>

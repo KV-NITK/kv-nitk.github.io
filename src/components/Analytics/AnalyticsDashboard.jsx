@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { getAnalyticsStats } from "../../api/admin";
 
-const ANALYTICS_PASSWORD = "KV2026";
+const PASS_KEY = "analytics_pass";
 const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID || "ca6f3d23-4369-4e89-8322-6e4666818e3d";
 const UMAMI_PORTAL_URL = `https://cloud.umami.is/websites/${WEBSITE_ID}`;
 const UMAMI_SHARE_URL = `https://cloud.umami.is/share/${WEBSITE_ID}`;
@@ -32,62 +33,76 @@ const formatTimestamp = (iso) => {
   });
 };
 
+const readPass = () => {
+  try {
+    return sessionStorage.getItem(PASS_KEY) || "";
+  } catch {
+    return "";
+  }
+};
+
+const writePass = (value) => {
+  try {
+    if (value) sessionStorage.setItem(PASS_KEY, value);
+    else sessionStorage.removeItem(PASS_KEY);
+  } catch {
+    // the page works without remembering the password
+  }
+};
+
 export default function AnalyticsDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // The password is checked by the server on every call; this page only holds it
+  const [passcode, setPasscode] = useState(readPass);
   const [passwordInput, setPasswordInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [statsData, setStatsData] = useState([]);
   const [summaryData, setSummaryData] = useState({ totalVisits: 0, totalUniqueIps: 0, activeRoutesCount: 9 });
   const [loading, setLoading] = useState(false);
+  const isAuthenticated = Boolean(passcode);
 
-  useEffect(() => {
-    const authed = sessionStorage.getItem("umami_analytics_auth");
-    if (authed === "true") {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const fetchLiveStats = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/analytics/stats");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          setStatsData(json.stats || []);
-          if (json.summary) setSummaryData(json.summary);
+  const fetchLiveStats = useCallback(
+    async (pass) => {
+      setLoading(true);
+      try {
+        const json = await getAnalyticsStats(pass);
+        setStatsData(json.stats || []);
+        if (json.summary) setSummaryData(json.summary);
+        setPasscode(pass);
+        writePass(pass);
+        setErrorMsg("");
+      } catch (err) {
+        if (err.status) {
+          // Wrong password (or locked out): back to the password box
+          writePass("");
+          setPasscode("");
+          setErrorMsg(err.message);
         }
+        // Otherwise the server is unreachable; keep what is on screen
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      // Backend api offline fallback
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchLiveStats();
-      const interval = setInterval(fetchLiveStats, 10000); // Auto-refresh every 10 seconds
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, fetchLiveStats]);
+    if (!passcode) return;
+    fetchLiveStats(passcode);
+    const interval = setInterval(() => fetchLiveStats(passcode), 10000); // Auto-refresh every 10 seconds
+    return () => clearInterval(interval);
+  }, [passcode, fetchLiveStats]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (passwordInput === ANALYTICS_PASSWORD) {
-      sessionStorage.setItem("umami_analytics_auth", "true");
-      setIsAuthenticated(true);
-      setErrorMsg("");
+    if (passwordInput.trim()) {
+      fetchLiveStats(passwordInput.trim());
       setPasswordInput("");
-    } else {
-      setErrorMsg("Incorrect password. Please try again.");
     }
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("umami_analytics_auth");
-    setIsAuthenticated(false);
+    writePass("");
+    setPasscode("");
   };
 
   if (!isAuthenticated) {
@@ -177,7 +192,7 @@ export default function AnalyticsDashboard() {
 
           <div className="flex items-center gap-2.5">
             <button
-              onClick={fetchLiveStats}
+              onClick={() => fetchLiveStats(passcode)}
               disabled={loading}
               className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 shadow-sm disabled:opacity-60 transition-colors"
             >

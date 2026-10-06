@@ -23,3 +23,26 @@ export const getAllOrders = async (passcode) => {
 
   return data.orders;
 };
+
+// Visit counts per page. Same password as the orders, checked by the server.
+export const getAnalyticsStats = async (passcode) => {
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}/analytics/stats`, {
+      headers: { "x-admin-passcode": passcode },
+    });
+  } catch {
+    throw new Error("Network error. Please check your connection.");
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data.success) {
+    const error = new Error(data.message || "Something went wrong");
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+};
