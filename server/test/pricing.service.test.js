@@ -19,6 +19,107 @@ const seed = ({ products = [], coupons = [], payments = [] } = {}) => {
 const rejects = (promise, message, statusCode = 400) =>
   assert.rejects(promise, (e) => e.name === "PaymentError" && e.statusCode === statusCode && e.message.includes(message));
 
+describe("quoteOrder: goodie", () => {
+  const goodie = (extra = {}) => product("goodie", 25, { category: "GOODIE", ...extra });
+  const tee = [{ productId: "tee", quantity: 2 }];
+
+  beforeEach(() => seed({ products: [product("tee", 329), product("lunch", 60, { category: "FOOD" }), goodie()] }));
+
+  it("adds one goodie at its own price to an order with a shirt", async () => {
+    const q = await quoteOrder({ items: tee, userIrisId: "u1" });
+    const line = q.items.find((i) => i.productId === "goodie");
+    assert.deepEqual([line.quantity, line.unitPrice, line.lineTotal], [1, 25, 25]);
+    assert.equal(q.subtotal, 329 * 2 + 25);
+    assert.equal(q.total, 329 * 2 + 25);
+  });
+
+  it("adds no goodie without a shirt", async () => {
+    const q = await quoteOrder({ items: [{ productId: "lunch", quantity: 1 }], userIrisId: "u1" });
+    assert.equal(q.items.some((i) => i.productId === "goodie"), false);
+    assert.equal(q.total, 60);
+  });
+
+  it("leaves the goodie out of every coupon, so it is always full price", async () => {
+    seed({
+      products: [product("tee", 329), goodie()],
+      coupons: [
+        coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 }),
+        coupon("PCT", { discount_type: "PERCENT", discount_value: 10 }),
+        coupon("BIG", { discount_value: 100000 }),
+      ],
+    });
+    const early = await quoteOrder({ items: tee, couponCode: "EARLY", userIrisId: "u1" });
+    assert.equal(early.discount, 60); // 2 shirts, not 3 items
+    assert.equal(early.total, 329 * 2 + 25 - 60);
+    const pct = await quoteOrder({ items: tee, couponCode: "PCT", userIrisId: "u1" });
+    assert.equal(pct.discount, 65.8); // 10% of the shirts only
+    const big = await quoteOrder({ items: tee, couponCode: "BIG", userIrisId: "u1" });
+    assert.equal(big.discount, 658);
+    assert.equal(big.total, 25);
+  });
+
+  it("shows the goodie at its price and gives it free when the product discount equals the price", async () => {
+    seed({ products: [product("tee", 329), goodie({ discount: 25 })] });
+    const q = await quoteOrder({ items: tee, userIrisId: "u1" });
+    const line = q.items.find((i) => i.productId === "goodie");
+    assert.deepEqual([line.unitPrice, line.discount, line.netLineTotal], [25, 25, 0]);
+    assert.equal(q.subtotal, 683); // 2 shirts and the goodie at its price
+    assert.deepEqual([q.discount, q.couponDiscount, q.goodieDiscount], [25, 0, 25]); // the goodie given back
+    assert.equal(q.total, 658);
+    assert.equal(q.couponCode, null); // a free goodie is not a coupon
+  });
+
+  it("charges only what is left of the goodie price after its own discount", async () => {
+    seed({ products: [product("tee", 329), goodie({ discount: 10 })] });
+    assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658 + 15);
+  });
+
+  it("does not let the client put the goodie in the cart", async () => {
+    await rejects(quoteOrder({ items: [...tee, { productId: "goodie", quantity: 1 }], userIrisId: "u1" }), "added to your order automatically");
+  });
+
+  it("orders without a goodie when its row is missing or switched off", async () => {
+    seed({ products: [product("tee", 329)] });
+    assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658);
+    seed({ products: [product("tee", 329), goodie({ active: false })] });
+    assert.equal((await quoteOrder({ items: tee, userIrisId: "u1" })).total, 658);
+  });
+});
+
+describe("quoteOrder: price per line", () => {
+  beforeEach(() => seed({ products: [product("reg", 329), product("over", 399), product("lunch", 60, { category: "FOOD" }), product("goodie", 25, { category: "GOODIE", discount: 25 })] }));
+  const cart = [{ productId: "reg", quantity: 2 }, { productId: "over", quantity: 1 }, { productId: "lunch", quantity: 1 }];
+  const line = (q, id) => q.items.find((i) => i.productId === id);
+
+  it("gives each shirt line its own discount with a per-item coupon", async () => {
+    seed({ products: [product("reg", 329), product("over", 399), product("lunch", 60, { category: "FOOD" }), product("goodie", 25, { category: "GOODIE", discount: 25 })], coupons: [coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 })] });
+    const q = await quoteOrder({ items: cart, couponCode: "EARLY", userIrisId: "u1" });
+    assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [60, 598]); // 2 x (329 -> 299)
+    assert.deepEqual([line(q, "over").discount, line(q, "over").netLineTotal], [30, 369]); // 399 -> 369
+    assert.deepEqual([line(q, "lunch").discount, line(q, "lunch").netLineTotal], [0, 60]); // food untouched
+    assert.equal(q.subtotal, 658 + 399 + 60 + 25);
+    assert.deepEqual([q.couponDiscount, q.goodieDiscount, q.discount], [90, 25, 115]); // 30 x 3 shirts, plus the goodie
+    assert.equal(q.total, 598 + 369 + 60);
+    assert.equal(q.subtotal - q.discount, q.total);
+    assert.equal(q.couponCode, "EARLY");
+  });
+
+  it("splits a percent coupon over the lines so the parts add up to the order discount", async () => {
+    seed({ products: [product("reg", 329), product("over", 399), product("goodie", 25, { category: "GOODIE", discount: 25 })], coupons: [coupon("PCT", { discount_type: "PERCENT", discount_value: 7 })] });
+    const q = await quoteOrder({ items: [{ productId: "reg", quantity: 1 }, { productId: "over", quantity: 1 }], couponCode: "PCT", userIrisId: "u1" });
+    const cents = (n) => Math.round(n * 100);
+    assert.equal(cents(line(q, "reg").discount) + cents(line(q, "over").discount), cents(q.couponDiscount));
+    assert.equal(cents(q.couponDiscount) + cents(q.goodieDiscount), cents(q.discount));
+    assert.equal(cents(line(q, "reg").netLineTotal) + cents(line(q, "over").netLineTotal) + cents(line(q, "goodie").netLineTotal), cents(q.total));
+  });
+
+  it("has net equal to list price on every line when there is no coupon", async () => {
+    const q = await quoteOrder({ items: cart, userIrisId: "u1" });
+    assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [0, 658]);
+    assert.equal(q.total, 658 + 399 + 60);
+  });
+});
+
 describe("quoteOrder: cart", () => {
   beforeEach(() => seed({ products: [product("tee", 349.1), product("lunch", 60), product("old", 10, { active: false })] }));
 
@@ -96,6 +197,19 @@ describe("quoteOrder: coupons", () => {
     });
     assert.equal((await quoteOrder({ items, couponCode: "PCT", userIrisId: "u1" })).discount, 50); // 60 capped to 50
     assert.equal((await quoteOrder({ items, couponCode: "PCT5", userIrisId: "u1" })).discount, 30);
+  });
+
+  it("takes a per-item coupon off every shirt, not once per order", async () => {
+    seed({
+      products: [product("regular", 329), product("over", 399), product("lunch", 100, { category: "FOOD" })],
+      coupons: [coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 })],
+    });
+    const cart = [{ productId: "regular", quantity: 2 }, { productId: "over", quantity: 1 }, { productId: "lunch", quantity: 1 }];
+    const q = await quoteOrder({ items: cart, couponCode: "early", userIrisId: "u1" });
+    assert.equal(q.discount, 90); // 3 shirts x 30; the lunch is not discounted
+    assert.equal(q.total, 329 * 2 + 399 + 100 - 90);
+    assert.equal((await quoteOrder({ items: [{ productId: "regular", quantity: 1 }], couponCode: "EARLY", userIrisId: "u2" })).total, 299);
+    assert.equal((await quoteOrder({ items: [{ productId: "over", quantity: 1 }], couponCode: "EARLY", userIrisId: "u3" })).total, 369);
   });
 
   it("rounds a percent discount down to whole paise", async () => {

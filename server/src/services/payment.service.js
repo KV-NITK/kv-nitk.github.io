@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
-import { claimCouponSlot, normalizeCouponCode, quoteOrder } from "./pricing.service.js";
+import { claimCouponSlot, GOODIE_PRODUCT_ID, normalizeCouponCode, quoteOrder } from "./pricing.service.js";
 import { PaymentError } from "./payment.error.js";
 import { createCashfreeOrder, getCashfreePayments } from "./cashfree.service.js";
 
@@ -49,7 +49,8 @@ const sameCart = (existing, items, couponCode) => {
         return true;
     }
 
-    const stored = cartMap(existing.items);
+    // The goodie is added by the server, so the client's cart never lists it
+    const stored = cartMap(existing.items.filter((item) => item.productId !== GOODIE_PRODUCT_ID));
     const requested = cartMap(items);
 
     if (stored.size !== requested.size) {

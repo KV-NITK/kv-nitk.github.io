@@ -1,0 +1,36 @@
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: always
+    # Loopback only. The public site reaches the tracker through nginx (see nginx-umami.conf);
+    # the dashboard is opened over an SSH tunnel or the campus-only port in that file.
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD}@db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      # Neutral names so ad-blockers don't match /script.js and /api/send.
+      TRACKER_SCRIPT_NAME: u.js
+      COLLECT_API_ENDPOINT: /u/send
+      DISABLE_TELEMETRY: 1
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    volumes:
+      - umami-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  umami-db:

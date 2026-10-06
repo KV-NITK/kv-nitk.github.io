@@ -9,9 +9,9 @@ export const getCashfree = () => {
     return client;
   }
 
-  const clientId = process.env.CASHFREE_CLIENT_ID;
-  const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
-  const environment = process.env.CASHFREE_ENV || "SANDBOX";
+  const clientId = process.env.CASHFREE_CLIENT_ID?.trim();
+  const clientSecret = process.env.CASHFREE_CLIENT_SECRET?.trim();
+  const environment = process.env.CASHFREE_ENV?.trim() || "SANDBOX";
 
   console.log("=== CASHFREE DEBUG ===");
   console.log("CASHFREE_CLIENT_ID:", clientId ? clientId.substring(0, 8) + "..." : "MISSING");

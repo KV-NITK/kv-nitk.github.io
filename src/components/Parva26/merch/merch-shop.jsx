@@ -6,6 +6,7 @@ import { TEE } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { cn } from '@/lib/utils'
+import { shirtName } from '@/lib/shirtName'
 import { Tee3D } from '@p26/ui/stalls/tee-3d'
 import { PriceTag, GlassDoor } from '@p26/ui/stalls/showcase-parts'
 import API_URL from '../../../api/api'
@@ -31,6 +32,7 @@ export function MerchShop() {
   const { subtitles } = usePrefs()
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
+  const [goodie, setGoodie] = useState(null) // the free-with-a-shirt extra, if the shop has one
   const [loadError, setLoadError] = useState('')
   // One size per shirt for each design, by design key: "" is a shirt whose
   // size is not chosen yet. A design with no shirts is not part of the order.
@@ -45,7 +47,10 @@ export function MerchShop() {
       .catch(() => setUser(null))
 
     getProducts()
-      .then((products) => setDesigns(groupDesigns(products)))
+      .then((products) => {
+        setDesigns(groupDesigns(products))
+        setGoodie(products.find((p) => p.category === 'GOODIE') ?? null)
+      })
       .catch((e) => setLoadError(e.message))
   }, [])
 
@@ -69,7 +74,7 @@ export function MerchShop() {
         const product = sizes.find((p) => p.variant === variant)
         // A size no longer on sale leaves the order incomplete
         if (!product) continue
-        lines.push({ productId: product.id, name: product.name, fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
+        lines.push({ productId: product.id, name: shirtName(product.id, product.name), fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
       }
     }
     return { lines, shirts }
@@ -83,11 +88,10 @@ export function MerchShop() {
       }}>
       <div className="w-full max-w-[80rem]">
         <div className="flex flex-wrap items-center justify-end gap-4">
-          {user && (
-            <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
-              My Orders
-            </Link>
-          )}
+          {/* Always there. Logged out, the orders page asks for the IRIS login and brings you back to it */}
+          <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
+            My Orders
+          </Link>
         </div>
 
         {/* The shop's sign, once for all the shirts */}
@@ -110,7 +114,7 @@ export function MerchShop() {
           )}
         </div>
 
-        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
+        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
       </div>
     </div>
   )
