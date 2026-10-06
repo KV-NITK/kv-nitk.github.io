@@ -42,3 +42,4 @@ export function UmamiTracker() {
 
   return null;
 }
+
