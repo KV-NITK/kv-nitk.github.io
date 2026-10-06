@@ -53,8 +53,8 @@ export function MarketWorld({ character, portrait, onNear, onAction }) {
       {status === 'loading' && (
         <p className="pointer-events-none absolute inset-0 grid place-items-center text-center font-kn-display text-xl font-bold text-gandha/80">
           <span>
-            <span lang="kn" className="block">{MARKET.loading.kn}</span>
-            <En className="block text-base font-semibold">{MARKET.loading.en}</En>
+            <En className="block">{MARKET.loading.en}</En>
+            <span lang="kn" className="block text-base font-semibold">{MARKET.loading.kn}</span>
           </span>
         </p>
       )}
@@ -68,11 +68,11 @@ function Fallback() {
   return (
     <div className="absolute inset-0 grid place-items-center px-6 text-center">
       <div>
-        <p lang="kn" className="font-kn-display text-2xl font-bold text-gandha">{MARKET.failed.kn}</p>
-        <En as="p" className="mt-1 text-gandha/75">{MARKET.failed.en}</En>
+        <En as="p" className="font-kn-display text-2xl font-bold text-gandha">{MARKET.failed.en}</En>
+        <p lang="kn" className="mt-1 text-gandha/75">{MARKET.failed.kn}</p>
         <Link to="/parva-26" className="mt-6 inline-block rounded-sm bg-arishina px-5 py-3 font-kn-display text-xl font-extrabold text-theatre">
-          <span lang="kn">{PLACES[0].kn}</span>
-          <En className="block text-base font-bold">{PLACES[0].en}</En>
+          <En className="block">{PLACES[0].en}</En>
+          <span lang="kn" className="block text-base font-bold">{PLACES[0].kn}</span>
         </Link>
       </div>
     </div>

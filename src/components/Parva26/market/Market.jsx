@@ -6,8 +6,6 @@ import { PageShell } from '@p26/chrome/page-shell'
 import { CharacterPicker } from '@p26/market/character-picker'
 import { MarketWorld } from '@p26/market/market-world'
 import { PlacePrompt } from '@p26/market/place-prompt'
-import { MarketMerchOverlay } from '@p26/market/merch-overlay'
-import { CartOverlay } from '@p26/market/cart-overlay'
 import { CHARACTERS } from '@p26/market/world/characters'
 import { MARKET, PLACES } from '@p26/content'
 import { brass } from '@p26/styles/materials'
@@ -41,63 +39,29 @@ function MarketPage() {
   const [characterId, setCharacterId] = useStoredState('parva26:market:character', null)
   const [changing, setChanging] = useState(false)
   const [near, setNear] = useState(null)
-  const [showMerch, setShowMerch] = useState(false)
-  
-  // Cart state persisted in localStorage
-  const [cartOpen, setCartOpen] = useState(false)
-  const [cart, setCart] = useState(() => {
-    try {
-      const stored = localStorage.getItem('merch_cart')
-      return stored ? JSON.parse(stored) : []
-    } catch {
-      return []
-    }
-  })
-  
-  // Custom event listener so other components can trigger cart updates
-  useEffect(() => {
-    localStorage.setItem('merch_cart', JSON.stringify(cart))
-  }, [cart])
 
   const character = CHARACTERS.find((c) => c.id === characterId)
 
-  // Using a place: the theatre goes back to the landing page; the shops do
-  // nothing yet.
+  // Using a place: the theatre goes back to the landing page, the merch stall
+  // to its shop page; the other shops do nothing yet.
   const use = useCallback(
     (id) => {
-      if (id === 'merch') {
-        setShowMerch(true)
-        return
-      }
       const place = PLACES.find((p) => p.id === id)
       if (place?.go) navigate(place.go)
     },
     [navigate]
   )
 
-  const cartItemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
-
   return (
     <main className="fixed inset-0 overflow-hidden bg-theatre">
       {character && <MarketWorld character={character} portrait={portrait} onNear={setNear} onAction={use} />}
-
-      {/* Cart Icon */}
-      <div className="fixed top-20 right-4 z-[70] flex items-center gap-4">
-        <button 
-          onClick={() => setCartOpen(true)} 
-          className="bg-[#f3ead5] text-[#4a2a12] px-4 py-2 rounded-full font-bold shadow-md hover:-translate-y-0.5 transition-transform flex items-center gap-2"
-        >
-          <span className="text-xl">🛒</span>
-          <span>Cart ({cartItemCount})</span>
-        </button>
-      </div>
 
       {/* The same places, for anyone who can't walk the forecourt */}
       <nav aria-label="Places" className="sr-only">
         <ul>
           {PLACES.map((p) => (
             <li key={p.id}>
-              {p.go ? <Link to={p.go}>{p.en}</Link> : (p.id === 'merch' ? <button onClick={() => setShowMerch(true)}>{p.en}</button> : `${p.en}: ${MARKET.soon.en}`)}
+              {p.go ? <Link to={p.go}>{p.en}</Link> : `${p.en}: ${MARKET.soon.en}`}
             </li>
           ))}
         </ul>
@@ -114,10 +78,10 @@ function MarketPage() {
             className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 z-30 cursor-pointer rounded-[5px] px-3 py-1.5 text-left shadow-[0_3px_8px_rgba(0,0,0,.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
             style={brass}
           >
-            <span lang="kn" className="block font-kn-display text-sm font-extrabold leading-tight text-[#4a3208]">
+            <En className="block font-poster text-base leading-none tracking-widest text-[#4a3208]">{MARKET.change.en}</En>
+            <span lang="kn" className="block font-kn-display text-xs font-extrabold leading-tight text-[#4a3208]">
               {MARKET.change.kn}
             </span>
-            <En className="block font-poster text-sm leading-none tracking-widest text-[#4a3208]">{MARKET.change.en}</En>
           </button>
         </>
       )}
@@ -131,9 +95,6 @@ function MarketPage() {
           onClose={character ? () => setChanging(false) : undefined}
         />
       )}
-
-      {showMerch && <MarketMerchOverlay onClose={() => setShowMerch(false)} cart={cart} setCart={setCart} />}
-      {cartOpen && <CartOverlay cart={cart} setCart={setCart} onClose={() => setCartOpen(false)} user={null} />}
     </main>
   )
 }
@@ -154,12 +115,12 @@ function Hint() {
     >
       {/* A phone has no arrow keys */}
       <span className="pointer-coarse:hidden">
-        <span lang="kn">{MARKET.hint.kn}</span>
-        <En className="block text-sm font-medium text-gandha/75">{MARKET.hint.en}</En>
+        <En className="block">{MARKET.hint.en}</En>
+        <span lang="kn" className="block text-sm font-medium text-gandha/75">{MARKET.hint.kn}</span>
       </span>
       <span className="hidden pointer-coarse:block">
-        <span lang="kn">{MARKET.hintTouch.kn}</span>
-        <En className="block text-sm font-medium text-gandha/75">{MARKET.hintTouch.en}</En>
+        <En className="block">{MARKET.hintTouch.en}</En>
+        <span lang="kn" className="block text-sm font-medium text-gandha/75">{MARKET.hintTouch.kn}</span>
       </span>
     </p>
   )

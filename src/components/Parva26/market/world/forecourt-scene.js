@@ -9,6 +9,10 @@ import { drawShop } from '@p26/market/world/art/shop'
 import { drawLamp } from '@p26/market/world/art/lamp'
 
 const FACINGS = ['down', 'left', 'right', 'up']
+// How fast the walker goes, in forecourt widths per second, and how fast its
+// legs go to match (they read as sliding if the legs lag the ground).
+const WALK_SPEED = 0.38
+const STEP_RATE = 12
 
 // The forecourt: a fixed camera on the painted ground, the theatre, three
 // shops and the lamps, with the visitor's walker moving over it. It reports
@@ -59,7 +63,7 @@ export class ForecourtScene extends Phaser.Scene {
       this.anims.create({
         key: `walk-${facing}`,
         frames: this.anims.generateFrameNumbers('walker', { frames: [0, 1, 2, 3].map((i) => frameOf(facing, i)) }),
-        frameRate: 8,
+        frameRate: STEP_RATE,
         repeat: -1,
       })
     }
@@ -96,6 +100,7 @@ export class ForecourtScene extends Phaser.Scene {
     const k = this.keys
     let vx = Number(k.RIGHT.isDown || k.D.isDown) - Number(k.LEFT.isDown || k.A.isDown)
     let vy = Number(k.DOWN.isDown || k.S.isDown) - Number(k.UP.isDown || k.W.isDown)
+    let toGo = Infinity // how far a tap's next point is, so a long frame can't overshoot it
 
     if (vx || vy) {
       this.path = []
@@ -111,14 +116,15 @@ export class ForecourtScene extends Phaser.Scene {
       } else {
         vx = dx / dist
         vy = dy / dist
+        toGo = dist
       }
     }
 
     const moving = vx !== 0 || vy !== 0
     if (moving) {
-      const speed = L.width * 0.22
+      const speed = L.width * WALK_SPEED
       const len = Math.hypot(vx, vy)
-      const step = speed * dt
+      const step = Math.min(speed * dt, toGo)
       const nx = Phaser.Math.Clamp(w.x + (vx / len) * step, L.bounds.x0, L.bounds.x1)
       const ny = Phaser.Math.Clamp(w.y + (vy / len) * step, L.bounds.y0, L.bounds.y1)
       const before = { x: w.x, y: w.y }

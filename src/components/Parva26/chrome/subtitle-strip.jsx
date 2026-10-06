@@ -112,7 +112,9 @@ export function SubtitleStrip() {
         // In the hall, the seats and tickets fill the bottom of the view, so
         // lines are subtitled on the screen itself, as a film's would be.
         scene?.id === 'title' && 'bottom-[var(--p26-screen-bottom,11.5rem)] sm:bottom-[var(--p26-screen-bottom,2rem)]',
-        hovering || speaking ? 'opacity-100' : 'opacity-0'
+        // On a phone only a tapped label is subtitled: passing scene lines
+        // (the tagline already on the screen, the bells) would cover the page.
+        hovering ? 'opacity-100' : speaking ? 'opacity-100 max-sm:opacity-0' : 'opacity-0'
       )}
     >
       {shown}

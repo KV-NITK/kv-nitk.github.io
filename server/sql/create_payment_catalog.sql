@@ -69,6 +69,13 @@ CREATE TABLE IF NOT EXISTS payment_products (
 ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS group_key TEXT;
 ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS variant TEXT;
 
+-- `fit` is the label shown with a design (regular fit, oversized); `sort_order`
+-- is the order rows are listed in (sizes XS to XXL); `discount` is rupees off
+-- per unit, stored for early-bird offers and not applied to orders yet.
+ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS fit TEXT;
+ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS discount NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (discount >= 0);
+
 -- ---------- coupons ----------
 
 CREATE TABLE IF NOT EXISTS payment_coupons (

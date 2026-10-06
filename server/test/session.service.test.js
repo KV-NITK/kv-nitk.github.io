@@ -110,15 +110,14 @@ describe("requireAuth", () => {
     assert.equal(req.user.email, "a@example.com");
   });
 
-  it("does not take a profile from user_meta when the session has none", async () => {
+  it("does not take a profile from user_meta, so a session with none counts as logged out", async () => {
     db.rows("sessions").push({ id: "bare", user_id: "2310113", expires_at: new Date(Date.now() + 3600e3).toISOString() });
     const forged = Buffer.from(JSON.stringify({ name: "Forged", email: "evil@example.com" })).toString("base64");
 
-    const { req, nextCalled } = await run({ session_id: "bare", user_meta: forged });
-    assert.equal(nextCalled, true);
-    assert.equal(req.user.irisId, "2310113");
-    assert.equal(req.user.name, "");
-    assert.equal(req.user.email, "");
+    const { req, res, nextCalled } = await run({ session_id: "bare", user_meta: forged });
+    assert.equal(nextCalled, false);
+    assert.equal(res.statusCode, 401);
+    assert.notEqual(req.user?.name, "Forged");
   });
 
   it("answers 500 when the session lookup fails", async () => {

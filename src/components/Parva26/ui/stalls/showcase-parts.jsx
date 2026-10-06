@@ -29,13 +29,14 @@ export function PriceTag({ price, early }) {
 export function EarlyFlag({ subtitles }) {
   return (
     <p className="-rotate-2 bg-kumkuma px-3 py-1.5 text-[#fff4dc] shadow-[0_3px_5px_rgba(0,0,0,.4)]" style={{ clipPath: 'polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%)' }}>
-      <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight">
+      <En className="block font-kn-display text-base font-bold leading-tight">First Day First Show price</En>
+      <span lang="kn" className="block text-[0.8rem] font-semibold leading-tight">
         ಮೊದಲ ದಿನ ಮೊದಲ ಆಟ
       </span>
-      <En className="block text-[0.8rem] font-semibold leading-tight">First Day First Show price</En>
       <span className="block text-base font-bold leading-tight">
-        {TEE.earlySold}/{TEE.earlyQuota} <span lang="kn">ಮಾರಾಟ</span>
-        {subtitles && ' · sold'}
+        {TEE.earlySold}/{TEE.earlyQuota}
+        {subtitles && ' sold · '}
+        <span lang="kn" className="text-sm">ಮಾರಾಟ</span>
       </span>
     </p>
   )
@@ -46,8 +47,8 @@ export function SizeChart({ subtitles }) {
     <div className="mt-3 rotate-[-0.6deg] bg-paper px-3 py-2 text-pen shadow-[0_3px_6px_rgba(0,0,0,.4)]" style={paper}>
       <table className="w-full text-center text-base">
         <caption className="text-left font-kn-display text-sm font-semibold">
-          <span lang="kn">ಅಳತೆ (ಇಂಚುಗಳಲ್ಲಿ)</span>
-          <En className="font-kn-body"> · Size, in inches</En>
+          <En>Size, in inches · </En>
+          <span lang="kn" className="font-kn-body text-xs">ಅಳತೆ (ಇಂಚುಗಳಲ್ಲಿ)</span>
         </caption>
         <thead>
           <tr className="font-kn-display text-sm">
@@ -81,10 +82,10 @@ export function SizeChart({ subtitles }) {
 export function ClosedBoard({ subtitles }) {
   return (
     <p className="absolute inset-x-[10%] top-[38%] z-20 rotate-[-4deg] rounded-[3px] border-[3px] border-[#fff4dc] bg-kumkuma px-3 py-2 text-center text-[#fff4dc] shadow-[0_6px_10px_rgba(0,0,0,.5)]">
-      <span lang="kn" className="block font-kn-display text-2xl font-extrabold leading-none">
+      <En className="block font-poster text-3xl leading-none tracking-[0.2em]">Booking closed</En>
+      <span lang="kn" className="block font-kn-display text-lg font-extrabold leading-none">
         ಬುಕಿಂಗ್ ಮುಗಿದಿದೆ
       </span>
-      <En className="block font-poster text-xl leading-none tracking-[0.2em]">Booking closed</En>
     </p>
   )
 }
@@ -114,10 +115,10 @@ export function GlassDoor({ open, onOpen, subtitles }) {
       {/* Handle, and a small brass plate that says what to do */}
       <span aria-hidden className="absolute right-1 top-1/2 h-9 w-2.5 -translate-y-1/2 rounded-[3px] shadow-[0_2px_3px_rgba(0,0,0,.5)]" style={brass} />
       <span aria-hidden className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[2px] px-2 py-0.5 text-center shadow-[0_2px_3px_rgba(0,0,0,.45)]" style={brass}>
-        <span lang="kn" className="block font-kn-display text-sm font-bold leading-tight text-[#4a3208]">
+        <En className="block font-poster text-base leading-none tracking-widest text-[#4a3208]">Open</En>
+        <span lang="kn" className="block font-kn-display text-xs font-bold leading-tight text-[#4a3208]">
           ತೆರೆಯಿರಿ
         </span>
-        <En className="block font-poster text-xs leading-none tracking-widest text-[#4a3208]">Open</En>
       </span>
     </button>
   )

@@ -22,12 +22,12 @@ export function PlacePrompt({ placeId, onUse }) {
         E
       </span>
       <span className="text-left">
-        <span lang="kn" className="block font-kn-display text-xl font-extrabold leading-tight">
+        <En className="block font-kn-display text-xl font-extrabold leading-tight">{go ? shown?.en : `${shown?.en} · ${MARKET.soon.en}`}</En>
+        <span lang="kn" className="block font-kn-body text-sm font-bold leading-tight">
           {shown?.kn}
         </span>
-        <En className="block font-kn-body text-sm font-bold leading-tight">{go ? shown?.en : `${shown?.en} · ${MARKET.soon.en}`}</En>
         {!go && (
-          <span lang="kn" className="block font-kn-body text-sm font-semibold leading-tight text-theatre/75">
+          <span lang="kn" className="block font-kn-body text-xs font-semibold leading-tight text-theatre/75">
             {MARKET.soon.kn}
           </span>
         )}

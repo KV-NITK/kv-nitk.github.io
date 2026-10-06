@@ -33,11 +33,11 @@ export function Coupon({ price, href, subtitles, className, ...props }) {
           <span className="font-poster text-xl leading-none">017</span>
         </span>
         <span className="flex flex-col justify-center px-4 py-2">
-          <span lang="kn" className="font-kn-display text-2xl font-extrabold leading-none">
-            ಬುಕ್ ಮಾಡಿ
-          </span>
-          <span className="mt-1 font-kn-body text-base font-bold leading-none">
+          <span className="font-kn-display text-2xl font-extrabold leading-none">
             {subtitles ? 'Book · ' : ''}₹{price}
+          </span>
+          <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
+            ಬುಕ್ ಮಾಡಿ
           </span>
         </span>
         <span aria-hidden className="absolute inset-0 opacity-40 mix-blend-multiply" style={paper} />

@@ -75,7 +75,7 @@ function Screw({ className }) {
   )
 }
 
-// A brass plate engraved ಉಪಶೀರ್ಷಿಕೆ with a bat-handle toggle: the lever points
+// A brass plate engraved "Subtitles" with a bat-handle toggle: the lever points
 // up for on and flips down for off. Its label shows in the subtitle strip even
 // when subtitles are off, so someone who can't read the plate can find it.
 function SubtitlesPlate() {
@@ -90,7 +90,7 @@ function SubtitlesPlate() {
       data-en-always=""
       onClick={() => setSubtitles((on) => !on)}
       className={cn(
-        'pointer-events-auto relative flex h-10 cursor-pointer items-center gap-2.5 rounded-[3px] px-4 sm:h-11 sm:px-5',
+        'pointer-events-auto relative flex h-10 cursor-pointer items-center gap-2 rounded-[3px] px-4 sm:h-11 sm:gap-2.5 sm:px-5',
         'shadow-[inset_0_1px_0_rgba(255,248,220,.6),inset_0_-1px_0_rgba(60,35,5,.6),0_3px_8px_rgba(0,0,0,.55)]',
         focusRing
       )}
@@ -98,10 +98,14 @@ function SubtitlesPlate() {
     >
       <Screw className="left-1.5" />
       <span
-        lang="kn"
-        className="font-kn-serif text-[0.7rem] font-bold text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5),0_-1px_0_rgba(40,25,0,.35)] sm:text-xs"
+        lang="en"
+        className="font-poster text-sm tracking-widest text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5),0_-1px_0_rgba(40,25,0,.35)] max-sm:hidden sm:text-base"
       >
-        ಉಪಶೀರ್ಷಿಕೆ
+        Subtitles
+      </span>
+      {/* On a phone the plate shrinks to the cinema's own sign for subtitles */}
+      <span aria-hidden className="font-poster text-base leading-none tracking-wider text-[#4a3208] [text-shadow:0_1px_0_rgba(255,240,200,.5)] sm:hidden">
+        CC
       </span>
       <span
         aria-hidden
@@ -131,7 +135,7 @@ function SpeakerGrille() {
       data-en={`Sound: ${sound ? 'on' : 'off'}`}
       onClick={() => setSound((on) => !on)}
       className={cn(
-        'pointer-events-auto relative size-10 shrink-0 cursor-pointer rounded-full p-1 sm:size-11',
+        'pointer-events-auto relative size-10 shrink-0 cursor-pointer rounded-full p-1 max-sm:hidden sm:size-11',
         'shadow-[inset_0_1px_0_rgba(255,248,220,.6),0_3px_8px_rgba(0,0,0,.55)]',
         focusRing
       )}
@@ -215,10 +219,10 @@ function TicketStub() {
         </span>
         <span className="block drop-shadow-[0_3px_4px_rgba(0,0,0,.55)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:-rotate-2">
           <span
-            className="flex h-10 items-center gap-1.5 bg-arishina pl-3 pr-4 text-theatre bg-blend-multiply sm:h-11"
+            className="flex h-11 items-center gap-1.5 bg-arishina pl-4 pr-5 text-theatre bg-blend-multiply sm:h-11"
             style={{ ...paper, clipPath: TORN_EDGE }}
           >
-            <span className="font-poster text-xl leading-none tracking-wider sm:text-2xl">Book</span>
+            <span className="font-poster text-2xl leading-none tracking-wider">Book</span>
             <span className="hidden font-typewriter text-[0.6rem] text-theatre/70 sm:inline">No. {toKannadaDigits('017')}</span>
           </span>
         </span>

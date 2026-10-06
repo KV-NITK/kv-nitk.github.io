@@ -6,6 +6,7 @@ import { brass, velvet } from '@p26/styles/materials'
 import { paper, wood } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { RowSevenNeighbour } from '@p26/scenes/02-title/audience'
+import { MEAL } from '@p26/content'
 import { cn } from '@/lib/utils'
 
 // The row in front of you (brief, Scene 2). The three main actions are
@@ -13,10 +14,15 @@ import { cn } from '@/lib/utils'
 // lifts it and dips the others, and clicking pulls it out and flies it at the
 // camera before cutting to its section. The golden fan pass sits in the middle
 // because it's the main promotion.
+//
+// On a phone there is room for one thing to do: the food coupon, as a wide
+// ticket with its price and how many are left (`phoneOnly`). The fan pass and
+// merch tickets wait for the booking scene (`hideOnPhone`).
+const LEFT = Math.max(0, MEAL.coupons - MEAL.sold)
 const TICKETS = [
-  { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Get food coupon', label: 'Food coupon', tilt: -7, Face: LeafTicket },
-  { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket },
-  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
+  { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}${LEFT ? ` · ${LEFT} left` : ' · sold out'}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
+  { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket, hideOnPhone: true },
+  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag, hideOnPhone: true },
 ]
 
 // Sized by --seat (how much of the seat shows below its rail) and --peek (how
@@ -89,8 +95,8 @@ function Tickets() {
   return (
     // Behind the rail and cushion (later siblings), with each ticket's lower
     // end tucked 1.5rem down inside the seat.
-    <div className="absolute inset-x-[4%] bottom-[calc(100%-1.5rem)] flex items-end justify-center gap-[3%]" onPointerLeave={() => setActive(null)}>
-      {TICKETS.map(({ id, href, kn, en, label, tilt, Face }) => (
+    <div className="absolute inset-x-[4%] bottom-[calc(100%-1.5rem)] max-sm:bottom-[calc(100%-0.9rem)] flex items-end justify-center gap-[3%]" onPointerLeave={() => setActive(null)}>
+      {TICKETS.map(({ id, href, kn, en, label, tilt, Face, PhoneFace, hideOnPhone }) => (
         <a
           key={id}
           href={href}
@@ -101,13 +107,23 @@ function Tickets() {
           onClick={(e) => onClick(e, href)}
           className={cn(
             'relative block origin-bottom drop-shadow-[0_6px_6px_rgba(0,0,0,.55)] transition-[translate,rotate] duration-300 ease-out',
+            hideOnPhone && 'max-sm:hidden',
+            '[rotate:var(--tilt-phone)] sm:[rotate:var(--tilt)]',
             'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-arishina',
             active === id && '-translate-y-2.5',
             active && active !== id && 'translate-y-2.5'
           )}
-          style={{ rotate: `${active === id ? tilt * 0.4 - 2 : tilt}deg` }}
+          style={{ '--tilt': `${active === id ? tilt * 0.4 - 2 : tilt}deg`, '--tilt-phone': `${PhoneFace ? (active === id ? -1 : -2) : active === id ? tilt * 0.4 - 2 : tilt}deg` }}
         >
-          <Face kn={kn} en={label} lit={active === id} />
+          {/* (a plain div: a display class on the ticket itself would fight the hide) */}
+          <div className={cn(PhoneFace && 'max-sm:hidden')}>
+            <Face kn={kn} en={label} lit={active === id} />
+          </div>
+          {PhoneFace && (
+            <div className="sm:hidden">
+              <PhoneFace kn={kn} en={label} lit={active === id} />
+            </div>
+          )}
         </a>
       ))}
     </div>
@@ -181,6 +197,35 @@ function LeafMark({ className }) {
         <path key={x} d={`M${x} ${13 - (x - 10) * 0.28} l3 -5 M${x} ${13 - (x - 10) * 0.28} l-1 5`} strokeWidth=".8" />
       ))}
     </svg>
+  )
+}
+
+// The phone's one ticket: the same banana-leaf green, wide enough for the
+// price and the coupons left on its stub.
+function BookTicket({ kn, en, lit }) {
+  return (
+    <span
+      className="relative flex h-[6.2rem] w-[min(19rem,84vw)] items-stretch rounded-[4px] bg-[#4f8a36] text-[#f6efd6] bg-blend-multiply"
+      style={{
+        ...paper,
+        ...notched,
+        backgroundImage: `repeating-linear-gradient(62deg, rgba(220,245,190,.14) 0 1px, transparent 1px 7px), linear-gradient(160deg, #6fae4c, #3c7429), ${paper.backgroundImage}`,
+        backgroundSize: `auto, auto, ${paper.backgroundSize}`,
+      }}
+    >
+      <span className="flex min-w-0 flex-1 flex-col justify-start gap-0.5 py-2 pl-4 pr-2">
+        <LeafMark className="h-4 w-7 text-[#f6efd6]/90" />
+        <span lang="kn" className="block whitespace-nowrap font-kn-display text-[1.45rem] font-extrabold leading-tight">{kn}</span>
+        <Caption en="Book food coupon" className="text-[0.65rem] text-[#f6efd6]/85" />
+      </span>
+      <span aria-hidden className="my-2 border-r border-dashed border-[#f6efd6]/40" />
+      <span className="flex w-[6.2rem] shrink-0 flex-col items-center justify-start gap-1 pb-2 pt-2.5 text-center">
+        <span className="font-poster text-[1.9rem] leading-none text-[#fff3b8] [text-shadow:0_1px_0_rgba(40,70,20,.7)]">₹{MEAL.price}</span>
+        <span lang="kn" className="font-kn-body text-[0.8rem] font-bold leading-none">{LEFT ? `ಇನ್ನು ${LEFT}` : 'ಮುಗಿದಿದೆ'}</span>
+        <Caption en={LEFT ? 'left' : 'sold out'} className="text-[0.6rem] text-[#f6efd6]/80" />
+      </span>
+      <Sheen lit={lit} />
+    </span>
   )
 }
 

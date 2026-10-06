@@ -17,11 +17,11 @@ export const MARKET = {
   failed: { kn: 'ಸಂತೆ ತೆರೆಯಲಿಲ್ಲ', en: 'The market could not open on this device' },
 }
 
-// Where you can go from the forecourt. `go` is a route; the shops have none
-// yet. `kind` picks how a shop is drawn.
+// Where you can go from the forecourt. `go` is a route; the shops without
+// one say they are opening soon. `kind` picks how a shop is drawn.
 export const PLACES = [
   { id: 'theatre', kn: 'ಚಿತ್ರಮಂದಿರಕ್ಕೆ ಹಿಂತಿರುಗಿ', en: 'Back to the theatre', go: '/parva-26' },
   { id: 'food', kind: 'food', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Bhoori Bhojana · meal coupon' },
-  { id: 'merch', kind: 'merch', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Parva Angadi · merch' },
+  { id: 'merch', kind: 'merch', go: '/parva-26/merch', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Parva Angadi · merch' },
   { id: 'photo', kind: 'photo', kn: 'ಫೋಟೋ ಸ್ಟುಡಿಯೋ', en: 'Photo Studio' },
 ]

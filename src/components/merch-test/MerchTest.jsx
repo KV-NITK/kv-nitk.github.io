@@ -3,16 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
 import API_URL from "../../api/api";
 import { itemLabel, rupees } from "./orderFormat";
-import { createPayment, getProducts, quoteOrder } from "../../api/payments";
-
-const CASHFREE_MODE = import.meta.env.VITE_CASHFREE_MODE || "sandbox";
-
-// crypto.randomUUID only exists on https/localhost; the dev host is plain http
-const newIdempotencyKey = () =>
-  typeof crypto.randomUUID === "function"
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join("")}`;
-
+import { CASHFREE_MODE, createPayment, getProducts, newIdempotencyKey, quoteOrder } from "../../api/payments";
 
 // Group variant rows (one per size) into one card per t-shirt.
 const groupProducts = (products) => {
