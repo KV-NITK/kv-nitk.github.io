@@ -104,7 +104,7 @@ const MyOrders = () => {
         {user === null && (
           <div>
             {loginFailed && <p className="mb-3 text-red-600">Login failed. Please try again.</p>}
-            <p className="mb-4 text-neutral-700">Login with your NITK IRIS account to see your orders.</p>
+            <p className="mb-4 text-neutral-700">Login with IRIS to view your orders. You will come back to this page after logging in.</p>
             <button
               type="button"
               onClick={handleLogin}
