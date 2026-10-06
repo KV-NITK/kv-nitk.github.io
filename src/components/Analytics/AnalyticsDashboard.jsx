@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 const ANALYTICS_PASSWORD = "KV2026";
@@ -6,22 +6,39 @@ const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID || "ca6f3d23-4369-4e89-
 const UMAMI_PORTAL_URL = `https://cloud.umami.is/websites/${WEBSITE_ID}`;
 const UMAMI_SHARE_URL = `https://cloud.umami.is/share/${WEBSITE_ID}`;
 
-const TRACKED_ROUTES = [
-  { path: "/", name: "Home Page", category: "Core" },
-  { path: "/events", name: "Events Page", category: "Core" },
-  { path: "/social", name: "Social Initiatives", category: "Core" },
-  { path: "/parva-26/merch", name: "Parva 2026 Merch Shop", category: "Merchandise" },
-  { path: "/parva-26/market", name: "Parva 2026 Market", category: "Landing" },
-  { path: "/hh-2026", name: "Hotte Hunnime 2026", category: "Games" },
-  { path: "/team-registration", name: "Team Registration", category: "Events" },
-  { path: "/my-orders", name: "User Orders", category: "Merchandise" },
-  { path: "/admin", name: "Admin Orders Dashboard", category: "Admin" },
+// Default target routes as shown in user screenshot
+const TARGET_ROUTES = [
+  { path: "/", name: "Home Page" },
+  { path: "/events", name: "Events Page" },
+  { path: "/social", name: "Social Initiatives" },
+  { path: "/parva-26/merch", name: "Parva 2026 Merch Shop" },
+  { path: "/parva-26/market", name: "Parva 2026 Market" },
+  { path: "/hh-2026", name: "Hotte Hunnime 2026" },
+  { path: "/team-registration", name: "Team Registration" },
+  { path: "/my-orders", name: "User Orders" },
+  { path: "/admin", name: "Admin Orders Dashboard" },
 ];
+
+const formatTimestamp = (iso) => {
+  if (!iso) return "No visits yet";
+  const date = new Date(iso);
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 export default function AnalyticsDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [statsData, setStatsData] = useState([]);
+  const [summaryData, setSummaryData] = useState({ totalVisits: 0, totalUniqueIps: 0, activeRoutesCount: 9 });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const authed = sessionStorage.getItem("umami_analytics_auth");
@@ -29,6 +46,32 @@ export default function AnalyticsDashboard() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  const fetchLiveStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/analytics/stats");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setStatsData(json.stats || []);
+          if (json.summary) setSummaryData(json.summary);
+        }
+      }
+    } catch (err) {
+      // Backend api offline fallback
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchLiveStats();
+      const interval = setInterval(fetchLiveStats, 10000); // Auto-refresh every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, fetchLiveStats]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -49,7 +92,7 @@ export default function AnalyticsDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] p-4 font-sans">
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] p-4 font-sans text-neutral-900">
         <form
           onSubmit={handleLogin}
           className="w-full max-w-sm rounded-xl border border-neutral-200/80 bg-white p-6 shadow-sm"
@@ -103,10 +146,22 @@ export default function AnalyticsDashboard() {
     );
   }
 
+  // Combine TARGET_ROUTES with live statsData
+  const displayRoutes = TARGET_ROUTES.map((target) => {
+    const live = statsData.find((s) => s.route === target.path);
+    return {
+      route: target.path,
+      name: target.name,
+      totalVisits: live?.totalVisits || 0,
+      uniqueIps: live?.uniqueIps || 0,
+      lastVisited: live?.lastVisited || null,
+    };
+  });
+
   return (
     <div className="min-h-screen bg-[#f5f5f7] p-6 md:p-8 font-sans text-neutral-900">
       <div className="mx-auto max-w-7xl space-y-5">
-        {/* Top Header */}
+        {/* Top Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -116,11 +171,18 @@ export default function AnalyticsDashboard() {
               </h1>
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              Tracking unique IP visits & individual page views via Umami Analytics
+              Per-route page visit counts & unique IP visitor analytics
             </p>
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={fetchLiveStats}
+              disabled={loading}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 shadow-sm disabled:opacity-60 transition-colors"
+            >
+              {loading ? "Refreshing..." : "Refresh Stats"}
+            </button>
             <a
               href={UMAMI_PORTAL_URL}
               target="_blank"
@@ -138,47 +200,94 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* Stat Cards Row */}
+        {/* Summary Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
+            <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              Total Page Visits
+            </div>
+            <div className="mt-1.5 text-3xl font-bold text-neutral-900">
+              {summaryData.totalVisits}
+            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Total page hits across all tracked endpoints
+            </p>
+          </div>
+
           <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
             <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
               Unique IP Visitors
             </div>
-            <div className="mt-1.5 text-2xl font-bold text-neutral-900">Active</div>
+            <div className="mt-1.5 text-3xl font-bold text-neutral-900">
+              {summaryData.totalUniqueIps}
+            </div>
             <p className="mt-1 text-xs text-neutral-500">
-              Measures unique individual users and IP addresses visiting each page.
+              Distinct client IP addresses that visited the site
             </p>
           </div>
 
           <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
             <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Per-Page Tracking
+              Tracked Endpoints
             </div>
-            <div className="mt-1.5 text-2xl font-bold text-neutral-900">All Routes</div>
-            <p className="mt-1 text-xs text-neutral-500">
-              Tracks routes like /events, /parva-26/merch, /hh-2026, /team-registration, etc.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
-            <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-              Website ID
-            </div>
-            <div className="mt-1.5 text-xs font-mono font-bold text-neutral-900 truncate">
-              {WEBSITE_ID}
+            <div className="mt-1.5 text-3xl font-bold text-neutral-900">
+              {displayRoutes.length}
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              Umami Cloud Property Identifier
+              Individual route endpoints actively tracked
             </p>
           </div>
         </div>
 
-        {/* Embedded Analytics / Umami Dashboard */}
+        {/* Route Stats Table (Matching User Screenshot Specification) */}
+        <div className="overflow-x-auto rounded-xl border border-neutral-200/80 bg-white shadow-sm">
+          <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-neutral-900">Per-Route Visit & Unique IP Analytics</h2>
+            <span className="text-xs text-neutral-500">Live updates every 10s</span>
+          </div>
+
+          <table className="w-full min-w-[45rem] text-left text-sm">
+            <thead className="bg-neutral-50/70 border-b border-neutral-200 text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <tr>
+                <th className="px-4 py-3 font-bold">ROUTE</th>
+                <th className="px-4 py-3 font-bold">TOTAL VISITS</th>
+                <th className="px-4 py-3 font-bold">UNIQUE IP VISITORS</th>
+                <th className="px-4 py-3 font-bold">LAST VISITED</th>
+                <th className="px-4 py-3 font-bold">STATUS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {displayRoutes.map((row) => (
+                <tr key={row.route} className="align-middle hover:bg-neutral-50/50 transition-colors">
+                  <td className="whitespace-nowrap px-4 py-3.5 font-bold font-mono text-neutral-900 text-sm">
+                    {row.route}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 font-bold text-neutral-900 text-base">
+                    {row.totalVisits}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 font-bold text-neutral-900 text-base">
+                    {row.uniqueIps}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-xs text-neutral-600 font-medium">
+                    {formatTimestamp(row.lastVisited)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-800">
+                      Active Tracking
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Embedded Umami Cloud Dashboard Frame / Fallback */}
         <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-lg font-bold text-neutral-900">Live Analytics Dashboard</h2>
-              <p className="text-xs text-neutral-500">Powered by Umami Analytics Cloud</p>
+              <h2 className="text-lg font-bold text-neutral-900">Umami Cloud Share Frame</h2>
+              <p className="text-xs text-neutral-500">Live analytics dashboard from Umami Cloud</p>
             </div>
             <a
               href={UMAMI_PORTAL_URL}
@@ -186,64 +295,17 @@ export default function AnalyticsDashboard() {
               rel="noopener noreferrer"
               className="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-800 transition-colors shadow-sm"
             >
-              Launch Live Dashboard ↗
+              Open Full Portal ↗
             </a>
           </div>
 
-          {/* Embedded Share Frame */}
-          <div className="relative w-full h-[600px] rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50">
+          <div className="relative w-full h-[550px] rounded-lg overflow-hidden border border-neutral-200 bg-neutral-50">
             <iframe
               src={UMAMI_SHARE_URL}
               title="Umami Analytics Dashboard"
               className="w-full h-full border-0"
               allowFullScreen
             />
-          </div>
-
-          {/* Fallback help banner if iframe is restricted by browser security policies */}
-          <div className="mt-3 rounded-lg bg-neutral-100 p-3.5 border border-neutral-200 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-600">
-            <span>
-              ℹ️ Note: If your browser (e.g. Brave Shields / AdBlock) blocks the embedded iframe from loading, click the button to view your live stats directly on Umami Cloud.
-            </span>
-            <a
-              href={UMAMI_PORTAL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-neutral-900 underline hover:text-black whitespace-nowrap"
-            >
-              Open Full Umami Dashboard ↗
-            </a>
-          </div>
-        </div>
-
-        {/* Tracked Pages List */}
-        <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
-          <h3 className="font-bold text-neutral-900 text-base mb-3">Tracked Page Routes</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-neutral-50 border-b border-neutral-200 text-xs font-bold uppercase tracking-wider text-neutral-400">
-                <tr>
-                  <th className="px-4 py-2.5 font-bold">Route</th>
-                  <th className="px-4 py-2.5 font-bold">Page Name</th>
-                  <th className="px-4 py-2.5 font-bold">Category</th>
-                  <th className="px-4 py-2.5 font-bold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {TRACKED_ROUTES.map((route) => (
-                  <tr key={route.path} className="hover:bg-neutral-50/50">
-                    <td className="px-4 py-3 font-mono text-xs font-bold text-neutral-900">{route.path}</td>
-                    <td className="px-4 py-3 font-medium text-neutral-800">{route.name}</td>
-                    <td className="px-4 py-3 text-xs text-neutral-500">{route.category}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
-                        Active Tracking
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
