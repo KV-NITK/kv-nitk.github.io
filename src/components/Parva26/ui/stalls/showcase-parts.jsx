@@ -12,7 +12,7 @@ export function PriceTag({ price, early }) {
     <div className="pointer-events-none absolute right-[5%] top-[7%] flex flex-col items-center">
       <span aria-hidden className="h-10 w-px bg-[#e9dcc0]/80" />
       <p className="rotate-[6deg] rounded-[3px] bg-[#f3ead5] px-2 pb-1.5 pt-2 text-center text-[#1d1a17] shadow-[0_3px_5px_rgba(0,0,0,.5)]" style={{ ...paper, clipPath: 'polygon(20% 0, 80% 0, 100% 16%, 100% 100%, 0 100%, 0 16%)' }}>
-        {early ? (
+        {early && early !== price ? (
           <>
             <span className="block font-kn-body text-base font-semibold leading-none line-through decoration-kumkuma decoration-2">₹{price}</span>
             <span className="block font-kn-display text-xl font-extrabold leading-tight text-kumkuma">₹{early}</span>
