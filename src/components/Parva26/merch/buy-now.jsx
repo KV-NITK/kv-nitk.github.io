@@ -25,6 +25,8 @@ const rupees = (n) => `₹${Number.isInteger(n) ? n : n.toFixed(2)}`
 export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const [quote, setQuote] = useState(null)
   const [quoteError, setQuoteError] = useState('')
+  // True from the moment the order or coupon changes until the server's new quote is in
+  const [checking, setChecking] = useState(false)
   // Kept in this browser, so it is still there after the IRIS login
   const [phone, setPhone] = useStoredState('merch_phone', '')
   const [couponInput, setCouponInput] = useStoredState('merch_coupon_input', '')
@@ -65,15 +67,22 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
     setQuoteError('')
     if (!user || !complete) {
       setQuote(null)
+      setChecking(false)
       return
     }
     let cancelled = false
+    setChecking(true)
     quoteOrder({ items, couponCode: appliedCoupon })
-      .then((q) => !cancelled && setQuote(q))
+      .then((q) => {
+        if (cancelled) return
+        setQuote(q)
+        setChecking(false)
+      })
       .catch((e) => {
         if (cancelled) return
         setQuote(null)
         setQuoteError(e.message)
+        setChecking(false)
       })
     return () => {
       cancelled = true
@@ -109,7 +118,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const shirtsOff = offEach.reduce((n, q) => n + q.quantity, 0)
 
   // What the coupon box says: only what the server's quote says
-  const couponNote = !appliedCoupon || quoteError ? '' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
+  const couponNote = !appliedCoupon ? '' : quoteError ? quoteError : checking && user && complete ? 'Checking the coupon…' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
 
   const buy = async () => {
     if (shirts === 0 || !complete) {
@@ -257,7 +266,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
               )}
             </div>
             {couponNote && (
-              <p role="status" className={cn('mt-2.5 rounded border p-2.5 text-xs font-bold', quote?.couponDiscount > 0 ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-800')}>
+              <p role="status" className={cn('mt-2.5 rounded border p-2.5 text-xs font-bold', quoteError ? 'border-red-300 bg-red-100 text-red-800' : !checking && quote?.couponDiscount > 0 ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-800')}>
                 {couponNote}
               </p>
             )}
