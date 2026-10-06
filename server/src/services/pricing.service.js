@@ -47,8 +47,6 @@ const listCouponUses = async (code) => {
         );
 };
 
-const HARDCODED_EARLY_BIRD_COUPONS = new Set(["POORVAPAKSHI", "NAMMANITK", "SAMUDRAPPA69"]);
-
 const fetchCoupon = async (code) => {
     const { data: coupon, error } = await supabase
         .from("payment_coupons")
@@ -71,10 +69,6 @@ const fetchCoupon = async (code) => {
  * and only the first max_uses (and per_user_limit) rows keep their place.
  */
 export const claimCouponSlot = async ({ code, paymentId, userIrisId }) => {
-    if (HARDCODED_EARLY_BIRD_COUPONS.has(code)) {
-        return;
-    }
-
     const coupon = await fetchCoupon(code);
 
     if (!coupon) {
@@ -104,11 +98,7 @@ export const claimCouponSlot = async ({ code, paymentId, userIrisId }) => {
     }
 };
 
-const applyCoupon = async ({ code, subtotalPaise, userIrisId, totalShirts = 1 }) => {
-    if (HARDCODED_EARLY_BIRD_COUPONS.has(code)) {
-        return Math.min(totalShirts * toPaise(30), subtotalPaise);
-    }
-
+const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
     const coupon = await fetchCoupon(code);
 
     // Same message for unknown / inactive so codes cannot be enumerated
@@ -249,10 +239,9 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
 
     const code = normalizeCouponCode(couponCode);
     let discountPaise = 0;
-    const totalShirts = lineItems.reduce((acc, it) => acc + it.quantity, 0);
 
     if (code) {
-        discountPaise = await applyCoupon({ code, subtotalPaise, userIrisId, totalShirts });
+        discountPaise = await applyCoupon({ code, subtotalPaise, userIrisId });
     }
 
     const totalPaise = subtotalPaise - discountPaise;

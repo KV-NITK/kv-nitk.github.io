@@ -10,8 +10,9 @@ import { CASHFREE_MODE, createPayment, newIdempotencyKey, quoteOrder } from '../
 import API_URL from '../../../api/api'
 
 const PHONE = /^[6-9]\d{9}$/
+export const EARLY_BIRD_COUPONS = ['POORVAPAKSHI', 'NAMMANITK', 'SAMUDRAPPA69']
 
-// The end of the shop page: what is being bought, the mobile number, and the
+// The end of the shop page: what is being bought, the mobile number, coupon code, and the
 // one Buy Now for the whole order. Pressing it goes to IRIS first if there is
 // no login, otherwise straight to the payment page. Coming back from that
 // login (?buy=1) it carries on to the payment page by itself. What you pay is whatever
@@ -25,26 +26,34 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
   const [quoteError, setQuoteError] = useState('')
   // Kept in this browser, so it is still there after the IRIS login
   const [phone, setPhone] = useStoredState('merch_phone', '')
+  const [couponInput, setCouponInput] = useStoredState('merch_coupon_input', '')
+  const [appliedCoupon, setAppliedCoupon] = useStoredState('merch_applied_coupon', '')
+
   const [formError, setFormError] = useState('') // '' | 'none' | 'sizes'
   const [payError, setPayError] = useState('')
   const [paying, setPaying] = useState(false)
+
   // Back from the IRIS login with ?buy=1: pay without another press. The flag
   // is read once and removed from the address at once, so a refresh or a
   // failed attempt never repeats it.
   const [params, setParams] = useSearchParams()
   const resume = useRef(params.get('buy') === '1')
+
   useEffect(() => {
     if (!params.has('buy')) return
     params.delete('buy')
     setParams(params, { replace: true })
   }, [params, setParams])
+
   // One key per distinct checkout: reused if Buy Now is pressed again after a
-  // network error, replaced as soon as the order or the phone changes.
+  // network error, replaced as soon as the order, coupon, or phone changes.
   const keyRef = useRef({ signature: '', key: '' })
 
   const items = useMemo(() => lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), [lines])
-  const signature = JSON.stringify(items)
+  const signature = JSON.stringify([items, appliedCoupon])
   const complete = shirts > 0 && lines.reduce((n, l) => n + l.quantity, 0) === shirts
+
+  const isEarlyBird = EARLY_BIRD_COUPONS.includes(appliedCoupon.trim().toUpperCase())
 
   // The order changing clears a refusal that no longer applies
   useEffect(() => {
@@ -60,7 +69,7 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
       return
     }
     let cancelled = false
-    quoteOrder({ items: JSON.parse(signature) })
+    quoteOrder({ items, couponCode: appliedCoupon })
       .then((q) => !cancelled && setQuote(q))
       .catch((e) => {
         if (cancelled) return
@@ -70,10 +79,14 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
     return () => {
       cancelled = true
     }
-  }, [user, complete, signature])
+  }, [user, complete, signature, appliedCoupon])
 
   const unitPrice = (line) => quote?.items.find((l) => l.productId === line.productId)?.unitPrice ?? line.price
-  const total = quote ? quote.total : lines.reduce((sum, l) => sum + l.price * l.quantity, 0)
+
+  const total = quote ? quote.total : lines.reduce((sum, l) => {
+    const effectivePrice = isEarlyBird ? Math.max(1, l.price - 30) : l.price
+    return sum + effectivePrice * l.quantity
+  }, 0)
 
   const buy = async () => {
     if (shirts === 0 || !complete) {
@@ -95,10 +108,15 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
     setPaying(true)
     setPayError('')
     try {
-      const sig = JSON.stringify([items, phone])
+      const sig = JSON.stringify([items, appliedCoupon, phone])
       if (keyRef.current.signature !== sig) keyRef.current = { signature: sig, key: newIdempotencyKey() }
 
-      const payment = await createPayment({ items, customerPhone: phone, idempotencyKey: keyRef.current.key })
+      const payment = await createPayment({
+        items,
+        couponCode: appliedCoupon,
+        customerPhone: phone,
+        idempotencyKey: keyRef.current.key,
+      })
 
       // Same checkout key came back for an order that is already paid
       if (payment.status === 'SUCCESS') {
@@ -136,35 +154,107 @@ export function BuyNow({ lines, shirts, user, onRefused }) {
             <span lang="kn" className="ml-2 font-kn-body text-sm font-bold">ನಿಮ್ಮ ಆರ್ಡರ್</span>
           </h2>
           <ul className="space-y-2 border-b border-[#c2aa84] pb-3">
-            {lines.map((line) => (
-              <li key={line.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
-                <span>
-                  <span className="font-bold">{line.name}</span>
-                  <span className="block text-sm opacity-80">
-                    {line.fit ? `${line.fit} · ` : ''}Size {line.size} · {line.quantity} × ₹{unitPrice(line)}
+            {lines.map((line) => {
+              const origUnitPrice = line.price
+              const effectiveUnitPrice = isEarlyBird
+                ? Math.max(1, origUnitPrice - 30)
+                : unitPrice(line)
+              const isDiscounted = (quote && quote.discount > 0) || (isEarlyBird && effectiveUnitPrice < origUnitPrice)
+
+              return (
+                <li key={line.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
+                  <span>
+                    <span className="font-bold">{line.name}</span>
+                    <span className="block text-sm opacity-80">
+                      {line.fit ? `${line.fit} · ` : ''}Size {line.size} · {line.quantity} × {isDiscounted ? (
+                        <>
+                          <span className="line-through text-red-700 mr-1 font-semibold">₹{origUnitPrice}</span>
+                          <span className="font-bold text-emerald-800">₹{effectiveUnitPrice}</span>
+                        </>
+                      ) : (
+                        `₹${origUnitPrice}`
+                      )}
+                    </span>
                   </span>
-                </span>
-                <span className="font-bold">₹{unitPrice(line) * line.quantity}</span>
-              </li>
-            ))}
+                  <span className="font-bold">
+                    {isDiscounted ? (
+                      <>
+                        <span className="line-through text-red-700 text-xs mr-1 font-normal">₹{origUnitPrice * line.quantity}</span>
+                        <span className="text-emerald-800">₹{effectiveUnitPrice * line.quantity}</span>
+                      </>
+                    ) : (
+                      `₹${origUnitPrice * line.quantity}`
+                    )}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
 
+          {/* Coupon Input Field */}
+          <div className="mt-4 border-b border-[#c2aa84] pb-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#6b4020] mb-1">
+              Early Bird Coupon Code / ಕೂಪನ್ ಕೋಡ್
+            </label>
+            <div className="flex gap-2">
+              <input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                placeholder="Enter coupon code (e.g. POORVAPAKSHI)"
+                maxLength={32}
+                disabled={paying}
+                className="flex-1 rounded border border-[#c2aa84] bg-white px-3 py-2 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-[#8a5530]"
+              />
+              <button
+                type="button"
+                onClick={() => setAppliedCoupon(couponInput.trim().toUpperCase())}
+                className="rounded bg-[#8a5530] px-4 py-2 text-sm font-bold text-[#f3ead5] hover:bg-[#6b4020] transition-colors"
+              >
+                Apply
+              </button>
+              {appliedCoupon && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAppliedCoupon('')
+                    setCouponInput('')
+                  }}
+                  className="rounded border border-[#c2aa84] px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            {appliedCoupon && isEarlyBird && (
+              <div className="mt-2.5 rounded bg-emerald-100 border border-emerald-300 p-2.5 text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                <span>🎉</span>
+                <span>Early Bird Offer Applied! (Regular fit: ₹299, Oversized fit: ₹369).</span>
+              </div>
+            )}
+            {appliedCoupon && !isEarlyBird && !quoteError && (
+              <div className="mt-2.5 rounded bg-amber-100 border border-amber-300 p-2.5 text-xs font-bold text-amber-800 flex items-center gap-1.5">
+                <span>✨</span>
+                <span>Coupon {appliedCoupon} applied!</span>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1 pt-3 text-lg font-bold">
-            {quote && quote.discount > 0 && (
+            {((quote && quote.discount > 0) || isEarlyBird) && (
               <>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm text-[#6b4020]">
                   <span>Subtotal</span>
-                  <span>₹{quote.subtotal}</span>
+                  <span className="line-through">₹{lines.reduce((sum, l) => sum + l.price * l.quantity, 0)}</span>
                 </div>
-                <div className="flex justify-between text-green-700">
-                  <span>Discount</span>
-                  <span>- ₹{quote.discount}</span>
+                <div className="flex justify-between text-sm text-emerald-800">
+                  <span>Early Bird Discount ({appliedCoupon})</span>
+                  <span>- ₹{quote ? quote.discount : (lines.reduce((s, l) => s + l.quantity, 0) * 30)}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between text-xl">
               <span>Total</span>
-              <span>₹{total}</span>
+              <span className="text-emerald-900">₹{total}</span>
             </div>
           </div>
 
