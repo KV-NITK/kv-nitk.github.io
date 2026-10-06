@@ -13,15 +13,6 @@ export const getCashfree = () => {
   const clientSecret = process.env.CASHFREE_CLIENT_SECRET?.trim();
   const environment = process.env.CASHFREE_ENV?.trim() || "SANDBOX";
 
-  console.log("=== CASHFREE DEBUG ===");
-  console.log("CASHFREE_CLIENT_ID:", clientId ? clientId.substring(0, 8) + "..." : "MISSING");
-  console.log("CASHFREE_CLIENT_SECRET:", clientSecret ? clientSecret.substring(0, 12) + "..." : "MISSING");
-  console.log("CASHFREE_ENV raw:", JSON.stringify(environment));
-  console.log("CFEnvironment.PRODUCTION:", CFEnvironment.PRODUCTION);
-  console.log("CFEnvironment.SANDBOX:", CFEnvironment.SANDBOX);
-  const envValue = environment.trim() === "PRODUCTION" ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX;
-  console.log("Using environment value:", envValue);
-  console.log("=== END DEBUG ===");
 
   if (!clientId) {
     throw new Error("Missing CASHFREE_CLIENT_ID");
