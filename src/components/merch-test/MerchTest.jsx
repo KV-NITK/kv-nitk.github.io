@@ -330,10 +330,17 @@ const MerchTest = () => {
               <span>Subtotal</span>
               <span>{rupees(quote.subtotal)}</span>
             </div>
+<<<<<<< Updated upstream
             {discountParts(quote).map((part) => (
               <div key={part.label} className="flex justify-between text-green-700">
                 <span>{part.label}</span>
                 <span>−{rupees(part.amount)}</span>
+=======
+            {quote.discount > 0 && (
+              <div className="flex justify-between text-green-700">
+                <span>Coupon {quote.couponCode}</span>
+                <span>−{rupees(quote.discount)}</span>
+>>>>>>> Stashed changes
               </div>
             ))}
             <div className="flex justify-between text-base font-semibold">
