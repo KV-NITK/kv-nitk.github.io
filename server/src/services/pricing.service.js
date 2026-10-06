@@ -9,6 +9,10 @@ const PENDING_HOLD_MINUTES = 30;
 
 const MAX_LINE_ITEMS = 20;
 
+// Every order with at least one t-shirt gets one goodie, added here and never
+// by the client. It is paid for at its own price and no coupon touches it.
+export const GOODIE_PRODUCT_ID = "goodie";
+
 const toPaise = (rupees) => Math.round(Number(rupees) * 100);
 const toRupees = (paise) => paise / 100;
 
@@ -98,7 +102,7 @@ export const claimCouponSlot = async ({ code, paymentId, userIrisId }) => {
     }
 };
 
-const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
+const applyCoupon = async ({ code, subtotalPaise, discountablePaise, lineItems, userIrisId }) => {
     const coupon = await fetchCoupon(code);
 
     // Same message for unknown / inactive so codes cannot be enumerated
@@ -145,17 +149,24 @@ const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
 
     if (coupon.discount_type === "PERCENT") {
         discountPaise = Math.floor(
-            (subtotalPaise * Number(coupon.discount_value)) / 100
+            (discountablePaise * Number(coupon.discount_value)) / 100
         );
 
         if (coupon.max_discount !== null && coupon.max_discount !== undefined) {
             discountPaise = Math.min(discountPaise, toPaise(coupon.max_discount));
         }
+    } else if (coupon.discount_type === "FLAT_PER_ITEM") {
+        // Rupees off each shirt, so a bigger order saves more. Only MERCH lines count.
+        const shirts = lineItems
+            .filter((line) => line.category === "MERCH")
+            .reduce((n, line) => n + line.quantity, 0);
+
+        discountPaise = toPaise(coupon.discount_value) * shirts;
     } else {
         discountPaise = toPaise(coupon.discount_value);
     }
 
-    discountPaise = Math.min(discountPaise, subtotalPaise);
+    discountPaise = Math.min(discountPaise, discountablePaise);
 
     return discountPaise;
 };
@@ -186,6 +197,10 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
             throw new PaymentError("Invalid cart item");
         }
 
+        if (productId === GOODIE_PRODUCT_ID) {
+            throw new PaymentError("The goodie is added to your order automatically");
+        }
+
         if (!Number.isInteger(quantity) || quantity < 1) {
             throw new PaymentError("Quantity must be a whole number of at least 1");
         }
@@ -196,7 +211,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     const { data: products, error } = await supabase
         .from("payment_products")
         .select("id, name, category, variant, unit_price, max_quantity, active")
-        .in("id", [...quantities.keys()]);
+        .in("id", [...quantities.keys(), GOODIE_PRODUCT_ID]);
 
     if (error) {
         console.error("Failed to fetch products:", error);
@@ -237,11 +252,35 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
+    // The goodie comes with the first shirt. If its row is missing or switched
+    // off, orders go through without it.
+    const shirts = lineItems
+        .filter((line) => line.category === "MERCH")
+        .reduce((n, line) => n + line.quantity, 0);
+    const goodie = productsById.get(GOODIE_PRODUCT_ID);
+    const discountablePaise = subtotalPaise;
+
+    if (shirts > 0 && goodie?.active) {
+        const goodiePaise = toPaise(goodie.unit_price);
+
+        subtotalPaise += goodiePaise;
+
+        lineItems.push({
+            productId: goodie.id,
+            name: goodie.name,
+            category: goodie.category,
+            variant: goodie.variant ?? null,
+            quantity: 1,
+            unitPrice: toRupees(goodiePaise),
+            lineTotal: toRupees(goodiePaise),
+        });
+    }
+
     const code = normalizeCouponCode(couponCode);
     let discountPaise = 0;
 
     if (code) {
-        discountPaise = await applyCoupon({ code, subtotalPaise, userIrisId });
+        discountPaise = await applyCoupon({ code, subtotalPaise, discountablePaise, lineItems, userIrisId });
     }
 
     const totalPaise = subtotalPaise - discountPaise;

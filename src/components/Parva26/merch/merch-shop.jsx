@@ -31,6 +31,7 @@ export function MerchShop() {
   const { subtitles } = usePrefs()
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
+  const [goodie, setGoodie] = useState(null) // the free-with-a-shirt extra, if the shop has one
   const [loadError, setLoadError] = useState('')
   // One size per shirt for each design, by design key: "" is a shirt whose
   // size is not chosen yet. A design with no shirts is not part of the order.
@@ -45,7 +46,10 @@ export function MerchShop() {
       .catch(() => setUser(null))
 
     getProducts()
-      .then((products) => setDesigns(groupDesigns(products)))
+      .then((products) => {
+        setDesigns(groupDesigns(products))
+        setGoodie(products.find((p) => p.category === 'GOODIE') ?? null)
+      })
       .catch((e) => setLoadError(e.message))
   }, [])
 
@@ -110,7 +114,7 @@ export function MerchShop() {
           )}
         </div>
 
-        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
+        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
       </div>
     </div>
   )

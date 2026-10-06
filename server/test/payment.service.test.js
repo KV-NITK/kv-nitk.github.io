@@ -178,6 +178,17 @@ describe("createPayment", () => {
       });
     }
 
+    it("replays an order that includes the goodie the server added", async () => {
+      db.rows("payment_products").push(product("goodie", 25, { category: "GOODIE" }));
+      const first = await createPayment(base);
+      const second = await createPayment(base);
+
+      assert.equal(first.amount, 625); // 2 shirts at 300 and the goodie
+      assert.equal(db.rows("payments")[0].items.some((i) => i.productId === "goodie"), true);
+      assert.deepEqual(second, first);
+      assert.equal(db.rows("payments").length, 1);
+    });
+
     it("returns an already paid order as SUCCESS so the client can go to the receipt", async () => {
       await createPayment(base);
       db.rows("payments")[0].status = "SUCCESS";

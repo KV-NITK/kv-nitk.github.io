@@ -5,8 +5,6 @@ import API_URL from "../../api/api";
 import { itemLabel, rupees } from "./orderFormat";
 import { CASHFREE_MODE, createPayment, getProducts, newIdempotencyKey, quoteOrder } from "../../api/payments";
 
-export const EARLY_BIRD_COUPONS = ["POORVAPAKSHI", "NAMMANITK", "SAMUDRAPPA69"];
-
 // Group variant rows (one per size) into one card per t-shirt.
 const groupProducts = (products) => {
   const groups = new Map();
@@ -44,8 +42,6 @@ const MerchTest = () => {
   const [quoteError, setQuoteError] = useState("");
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
-
-  const isEarlyBird = EARLY_BIRD_COUPONS.includes(appliedCoupon.trim().toUpperCase());
 
   // One idempotency key per distinct checkout, reused if the user clicks Pay again
   const keyRef = useRef({ signature: "", key: "" });
@@ -169,6 +165,9 @@ const MerchTest = () => {
         redirectTarget: "_self",
       });
     } catch (e) {
+      // The server answered with an error, so that attempt is finished (a failed
+      // order is never reused): the next click needs a fresh key. A network error
+      // has no status and keeps the key, so retrying cannot create a second order.
       if (e.status) {
         keyRef.current = { signature: "", key: "" };
       }
@@ -216,16 +215,7 @@ const MerchTest = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold">{group.name}</h2>
-                  <p className="text-sm text-neutral-600">
-                    {isEarlyBird ? (
-                      <>
-                        <span className="line-through text-red-600 mr-1.5">{rupees(group.unitPrice)}</span>
-                        <span className="font-bold text-emerald-700">{rupees(Math.max(1, group.unitPrice - 30))} each</span>
-                      </>
-                    ) : (
-                      `${rupees(group.unitPrice)} each`
-                    )}
-                  </p>
+                  <p className="text-sm text-neutral-600">{rupees(group.unitPrice)} each</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -278,42 +268,32 @@ const MerchTest = () => {
       </div>
 
       {/* Coupon */}
-      <div className="mt-6">
-        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 mb-1">
-          Early Bird Coupon Code
-        </label>
-        <div className="flex gap-2">
-          <input
-            value={coupon}
-            onChange={(e) => setCoupon(e.target.value)}
-            placeholder="Coupon code (e.g. POORVAPAKSHI)"
-            maxLength={32}
-            className="flex-1 rounded border border-neutral-300 px-3 py-2 uppercase font-semibold"
-          />
+      <div className="mt-6 flex gap-2">
+        <input
+          value={coupon}
+          onChange={(e) => setCoupon(e.target.value)}
+          placeholder="Coupon code"
+          maxLength={32}
+          className="flex-1 rounded border border-neutral-300 px-3 py-2 uppercase"
+        />
+        <button
+          type="button"
+          onClick={() => setAppliedCoupon(coupon.trim())}
+          className="rounded border border-neutral-400 px-4 py-2 hover:bg-neutral-100"
+        >
+          Apply
+        </button>
+        {appliedCoupon && (
           <button
             type="button"
-            onClick={() => setAppliedCoupon(coupon.trim().toUpperCase())}
-            className="rounded bg-neutral-900 px-4 py-2 text-white font-semibold hover:bg-neutral-700"
+            onClick={() => {
+              setAppliedCoupon("");
+              setCoupon("");
+            }}
+            className="rounded px-3 py-2 text-neutral-500 hover:underline"
           >
-            Apply
+            Remove
           </button>
-          {appliedCoupon && (
-            <button
-              type="button"
-              onClick={() => {
-                setAppliedCoupon("");
-                setCoupon("");
-              }}
-              className="rounded border border-neutral-300 px-3 py-2 text-neutral-600 hover:bg-neutral-100"
-            >
-              Remove
-            </button>
-          )}
-        </div>
-        {appliedCoupon && isEarlyBird && (
-          <div className="mt-2 rounded bg-emerald-50 border border-emerald-300 p-2.5 text-xs font-bold text-emerald-800">
-            🎉 Early Bird Coupon Applied! (Regular fit: ₹299, Oversized fit: ₹369).
-          </div>
         )}
       </div>
 
@@ -342,25 +322,16 @@ const MerchTest = () => {
             {quote.items.map((it) => (
               <div key={it.productId} className="flex justify-between">
                 <span>{itemLabel(it)}</span>
-                <span>
-                  {quote.discount > 0 || isEarlyBird ? (
-                    <>
-                      <span className="line-through text-red-600 mr-1.5 text-xs">{rupees(it.unitPrice * it.quantity)}</span>
-                      <span className="font-semibold text-emerald-700">{rupees(it.lineTotal)}</span>
-                    </>
-                  ) : (
-                    rupees(it.lineTotal)
-                  )}
-                </span>
+                <span>{rupees(it.lineTotal)}</span>
               </div>
             ))}
             <div className="flex justify-between border-t pt-1">
               <span>Subtotal</span>
               <span>{rupees(quote.subtotal)}</span>
             </div>
-            {(quote.discount > 0 || isEarlyBird) && (
-              <div className="flex justify-between text-emerald-700 font-semibold">
-                <span>Early Bird Coupon ({appliedCoupon})</span>
+            {quote.discount > 0 && (
+              <div className="flex justify-between text-green-700">
+                <span>Coupon {quote.couponCode}</span>
                 <span>−{rupees(quote.discount)}</span>
               </div>
             )}
