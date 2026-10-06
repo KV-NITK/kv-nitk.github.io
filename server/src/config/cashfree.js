@@ -13,7 +13,6 @@ export const getCashfree = () => {
   const clientSecret = process.env.CASHFREE_CLIENT_SECRET?.trim();
   const environment = process.env.CASHFREE_ENV?.trim() || "SANDBOX";
 
-
   if (!clientId) {
     throw new Error("Missing CASHFREE_CLIENT_ID");
   }
@@ -22,10 +21,12 @@ export const getCashfree = () => {
     throw new Error("Missing CASHFREE_CLIENT_SECRET");
   }
 
+  const env = environment.toUpperCase() === "PRODUCTION" ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX;
+
   client = new Cashfree(
-    envValue,
-    clientId.trim(),
-    clientSecret.trim()
+    env,
+    clientId,
+    clientSecret
   );
 
   return client;
