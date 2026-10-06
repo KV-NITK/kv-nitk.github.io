@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getAllOrders } from "../../api/admin";
-import { shirtName } from "@/lib/shirtName";
+import { shirtDesign, shirtName } from "@/lib/shirtName";
 import { STATUS_STYLES, discountParts, itemLabel, rupees } from "../merch-test/orderFormat";
 
 const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -117,13 +117,16 @@ const AdminOrders = () => {
   const paid = useMemo(() => (orders || []).filter((o) => o.status === "SUCCESS"), [orders]);
 
   const summary = useMemo(() => {
-    const counted = { shirts: 0, goodies: 0 };
+    const counted = { shirts: 0, goodies: 0, regular: 0, oversized: 0 };
     const perItem = new Map();
 
     for (const order of paid) {
       for (const it of order.items) {
         if (it.productId === "goodie") counted.goodies += it.quantity;
         else if (isShirt(it)) counted.shirts += it.quantity;
+
+        const design = shirtDesign(it.productId);
+        if (design) counted[design] += it.quantity;
 
         const name = shirtName(it.productId, it.name);
         const key = `${name}|${variantOf(it)}`;
@@ -209,10 +212,12 @@ const AdminOrders = () => {
         </div>
         {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
 
-        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
           <Stat label="Paid orders" value={paid.length} />
           <Stat label="Revenue" value={rupees(summary.revenue)} />
           <Stat label="Shirts" value={summary.shirts} />
+          <Stat label="Regular" value={summary.regular} />
+          <Stat label="Oversized" value={summary.oversized} />
           <Stat label="Goodies" value={summary.goodies} />
           <Stat label="With a coupon" value={summary.withCoupon} />
         </div>
