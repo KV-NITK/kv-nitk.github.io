@@ -88,7 +88,12 @@ export function MerchShop() {
       }}>
       <div className="w-full max-w-[80rem]">
         <div className="flex flex-wrap items-center justify-end gap-4">
-          {user && (
+          {/* Always there: logged out, it goes to the IRIS login and on to the orders */}
+          {user === null ? (
+            <a href={`${API_URL}/auth/iris?redirect=${encodeURIComponent('/my-orders')}`} className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
+              My Orders
+            </a>
+          ) : (
             <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
               My Orders
             </Link>
