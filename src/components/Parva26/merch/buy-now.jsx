@@ -186,13 +186,13 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
           {/* Coupon Input Field */}
           <div className="mt-4 border-b border-[#c2aa84] pb-4">
             <label className="block text-xs font-bold uppercase tracking-wider text-[#6b4020] mb-1">
-              Coupon code / ಕೂಪನ್ ಕೋಡ್
+              Early Bird Coupon Code / ಕೂಪನ್ ಕೋಡ್
             </label>
             <div className="flex gap-2">
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                placeholder="Coupon code"
+                placeholder="Enter coupon code (e.g. POORVAPAKSHI)"
                 maxLength={32}
                 disabled={paying}
                 className="flex-1 rounded border border-[#c2aa84] bg-white px-3 py-2 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-[#8a5530]"
