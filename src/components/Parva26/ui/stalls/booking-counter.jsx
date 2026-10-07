@@ -13,7 +13,7 @@ import { Coupon } from '@p26/ui/coupon'
 // bars counts the coupons left; when they run out the HOUSEFULL board goes
 // up across the window.
 
-export function BookingCounter({ className }) {
+export function BookingCounter({ className, onBook }) {
   const { subtitles } = usePrefs()
   const left = Math.max(0, MEAL.coupons - MEAL.sold)
   const full = left === 0
@@ -47,7 +47,18 @@ export function BookingCounter({ className }) {
             <En className="block text-base font-semibold">All coupons are gone</En>
           </p>
         ) : (
-          <Coupon data-coupon price={MEAL.price} href={MEAL.bookLink} subtitles={subtitles} />
+          <Coupon
+            data-coupon
+            price={MEAL.price}
+            href={onBook ? undefined : MEAL.bookLink}
+            onClick={(e) => {
+              if (onBook) {
+                e.preventDefault()
+                onBook()
+              }
+            }}
+            subtitles={subtitles}
+          />
         )}
       </div>
 

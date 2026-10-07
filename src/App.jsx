@@ -54,6 +54,8 @@ function AppRoutes() {
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/parva-26/market" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Market /></Suspense>} />
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
+        {/* /parva-26/food-coupons is now part of the merch page; redirect old links */}
+        <Route path="/parva-26/food-coupons" element={<Navigate to="/parva-26/merch" replace />} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/merch-test" element={<MerchTest />} />
         <Route path="/payment/status" element={<PaymentStatus />} />

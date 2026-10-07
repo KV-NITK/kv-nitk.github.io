@@ -2,13 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingBag } from 'lucide-react'
 import { En, usePrefs } from '@p26/lib/prefs'
-import { TEE } from '@p26/content'
+import { TEE, MEAL, MENU, eventDay } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
+import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
 import { shirtName } from '@/lib/shirtName'
 import { Tee3D } from '@p26/ui/stalls/tee-3d'
 import { PriceTag, GlassDoor } from '@p26/ui/stalls/showcase-parts'
+import { FeastPoster } from '@p26/ui/stalls/feast-poster'
+import { PERFORATED } from '@p26/ui/coupon'
+
 import API_URL from '../../../api/api'
 import { getProducts } from '../../../api/payments'
 import { useStoredState } from '@p26/lib/storage'
@@ -106,27 +110,37 @@ export function MerchShop() {
           </Link>
         </div>
 
-        {/* The shop's sign, once for all the shirts */}
-        <h1 className="mx-auto mt-6 w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
-          <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
-          <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
-            ಪರ್ವ ಅಂಗಡಿ
-          </span>
-        </h1>
+        <div className="flex flex-col gap-16">
+          {/* ── Food Section ── */}
+          <section>
+            <BhooriBhojanaSection />
+          </section>
 
-        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
-          {designs?.map((design, i) => (
-            <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} picks={picks[design.key] || []} setPicks={(update) => setDesignPicks(design.key, update)} showMissing={attempts > 0 && missingSize(design.key)} attempts={attempts} />
-          ))}
-          {designs?.length === 0 && <p className="col-span-full text-center font-poster text-xl text-[#f3ead5]">No merch on sale right now.</p>}
-          {!designs && (
-            <p role="status" className="col-span-full text-center font-poster text-xl text-[#f3ead5]">
-              {loadError || 'Loading…'}
-            </p>
-          )}
+          {/* ── Merch Section ── */}
+          <section>
+            {/* The shop's sign, once for all the shirts */}
+            <h1 className="mx-auto mt-6 w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
+              <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
+              <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
+                ಪರ್ವ ಅಂಗಡಿ
+              </span>
+            </h1>
+
+            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
+              {designs?.map((design, i) => (
+                <MerchDesignCard key={design.key} design={design} art={TEE.variants[i % TEE.variants.length]} picks={picks[design.key] || []} setPicks={(update) => setDesignPicks(design.key, update)} showMissing={attempts > 0 && missingSize(design.key)} attempts={attempts} />
+              ))}
+              {designs?.length === 0 && <p className="col-span-full text-center font-poster text-xl text-[#f3ead5]">No merch on sale right now.</p>}
+              {!designs && (
+                <p role="status" className="col-span-full text-center font-poster text-xl text-[#f3ead5]">
+                  {loadError || 'Loading…'}
+                </p>
+              )}
+            </div>
+
+            {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
+          </section>
         </div>
-
-        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
       </div>
     </div>
   )
@@ -318,4 +332,107 @@ const TEAK = 'repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparen
 const COUNTER =
   'linear-gradient(180deg, #a26a3a 0 0.45rem, #6b4020 0.45rem 0.6rem, transparent 0.6rem), repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 14px), linear-gradient(180deg, #6e4322, #4a2a12)'
 
+// ── Bhoori Bhojana section ────────────────────────────────────────────────────
+
+// The food-coupon catalog embedded in the merch page. Mirrors the old
+// /parva-26/food-coupons page layout: FeastPoster on the left, BookingCounter
+// on the right; clicking the coupon reveals the MealTicket inline.
+function BhooriBhojanaSection() {
+  const { subtitles } = usePrefs()
+  const [quantity, setQuantity] = useState(0)
+
+  return (
+    <div className="mt-10 mb-24 flex flex-col items-center gap-6">
+      {/* Section header — same red tablet banner style as the page title */}
+      <h2 className="w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
+        <span className="block font-poster text-3xl leading-none tracking-[0.2em]">
+          Bhoori Bhojana · Food Coupons
+        </span>
+        <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
+          ಭೂರಿ ಭೋಜನ · ಬಾಳೆ ಎಲೆ ಊಟ
+        </span>
+      </h2>
+
+      <div className="flex w-full flex-col items-center justify-center gap-10 px-4 py-4 xl:flex-row xl:items-start xl:gap-12">
+        {/* The poster with the banana leaf animation */}
+        <div className="w-full max-w-md shrink-0">
+          <FeastPoster />
+        </div>
+
+        <div className="flex w-full max-w-2xl shrink flex-col gap-6">
+          {/* Menu key: what is served, in traditional order */}
+          <div className="w-full rounded-[6px] p-1 shadow-[0_0.6rem_1rem_-0.3rem_rgba(20,30,20,.55)]" style={{ backgroundImage: 'linear-gradient(180deg, #6a4424, #4a2c14)' }}>
+            <div className="rounded-[3px] px-5 py-4" style={{ backgroundImage: 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(139,42,24,.45), transparent 70%), linear-gradient(180deg, #2f3531, #232826)' }}>
+              <p className="mb-3 text-center font-poster text-base tracking-[0.2em] text-[#f6e3bc]">
+                <En>MENU · </En><span lang="kn" className="font-kn-display text-sm">ಇಂದಿನ ತಟ್ಟೆ</span>
+              </p>
+              <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                {MENU.map((item) => (
+                  <li key={item.id} className="flex flex-col items-center text-center">
+                    <span lang="kn" className="font-kn-display text-sm font-bold text-arishina">{item.kn}</span>
+                    <span className="font-kn-body text-xs text-[#f6e3bc]/75">{item.en}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Price Slate & Booking Button */}
+          <div className="w-full rounded-[6px] p-1 shadow-[0_0.6rem_1rem_-0.3rem_rgba(20,30,20,.55)]" style={{ backgroundImage: 'linear-gradient(180deg, #6a4424, #4a2c14)' }}>
+            <div className="rounded-[3px] px-5 py-4 text-center flex flex-col items-center" style={{ backgroundImage: 'radial-gradient(ellipse 80% 55% at 50% 10%, rgba(139,42,24,.45), transparent 70%), linear-gradient(180deg, #2f3531, #232826)' }}>
+              
+              {/* Top Row: Quantity & Price */}
+              <div className="flex w-full items-center justify-between mb-4 mt-2 px-2">
+                
+                {/* Quantity Counter */}
+                <div className="flex flex-col items-start gap-2">
+                  <span className="font-kn-display text-sm font-semibold text-[#f3ead5]">
+                    <En>Quantity · </En>
+                    <span lang="kn" className="font-kn-body text-sm">ಪ್ರಮಾಣ</span>
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                      className="grid size-9 place-items-center rounded-[4px] bg-[#f3ead5] font-poster text-xl text-[#4a2a12] shadow-[0_2px_3px_rgba(0,0,0,.5)] disabled:opacity-50 transition-transform active:scale-95"
+                      disabled={quantity <= 0}
+                    >
+                      -
+                    </button>
+                    <span className="w-6 text-center font-poster text-2xl tabular-nums text-[#f3ead5]">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                      className="grid size-9 place-items-center rounded-[4px] bg-[#f3ead5] font-poster text-xl text-[#4a2a12] shadow-[0_2px_3px_rgba(0,0,0,.5)] transition-transform active:scale-95"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Chalk Price */}
+                <div className="flex flex-col items-end">
+                  <p className="flex items-center text-[#f4f1e6] [text-shadow:0_0_1px_rgba(244,241,230,.9),0_0_6px_rgba(244,241,230,.25)]">
+                    <span className="font-sans text-5xl font-medium opacity-90 mr-1 mt-1">₹</span>
+                    <span className="text-6xl font-bold tracking-tight" style={{ fontFamily: '"Chalkboard", "Chalkboard SE", "Comic Sans MS", "Akaya Kanadaka", cursive' }}>
+                      {199 * quantity}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <p className="font-kn-display text-[#f6e3bc] text-lg mb-6 text-center">
+                <span lang="kn" className="block">ನವೆಂಬರ್ 1 - ಮಧ್ಯಾಹ್ನ 12:00</span>
+                <En className="block text-sm font-kn-body opacity-90 mt-0.5">1 Nov, 12:00 PM onwards</En>
+              </p>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
