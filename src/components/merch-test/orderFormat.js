@@ -2,7 +2,8 @@ export const rupees = (n) => `₹${Number(n).toFixed(2)}`;
 
 // "T-Shirt A (M) × 2". Older orders have no stored variant, so fall back to the id suffix.
 export const itemLabel = (it) => {
-  const variant = it.variant || (it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
+  const isFood = it.category === 'FOOD' || it.productId.startsWith('bhoori');
+  const variant = it.variant || (!isFood && it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
   return `${it.name}${variant ? ` (${variant})` : ""} × ${it.quantity}`;
 };
 

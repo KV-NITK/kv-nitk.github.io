@@ -1,8 +1,88 @@
 import { getSession } from "../services/session.service.js";
+import { supabase } from "../config/supabase.js";
+
+// In-memory cache for authorized event staff to avoid repeated DB lookups
+const staffCache = new Map(); // irisId -> { staff, expiresAt }
+const STAFF_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+export const clearStaffCache = (irisId) => {
+  if (irisId) {
+    staffCache.delete(irisId);
+  } else {
+    staffCache.clear();
+  }
+};
+
+/**
+ * Middleware to restrict route access to active event staff (VOLUNTEER, ADMIN).
+ * Uses in-memory Map cache to avoid repeated Supabase queries during active scanning.
+ */
+export const requireStaff = async (req, res, next) => {
+  try {
+    const userIrisId = req.user?.irisId;
+
+    if (!userIrisId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    // Check in-memory cache
+    const cached = staffCache.get(userIrisId);
+    if (cached && cached.expiresAt > Date.now()) {
+      req.staff = cached.staff;
+      return next();
+    }
+
+    const { data: staff, error } = await supabase
+      .from("event_staff")
+      .select("iris_id, role, active")
+      .eq("iris_id", userIrisId)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Staff authorization lookup error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to verify staff permissions",
+      });
+    }
+
+    if (!staff) {
+      staffCache.delete(userIrisId);
+      return res.status(403).json({
+        success: false,
+        message: "Access forbidden: Active event staff permissions required",
+      });
+    }
+
+    // Cache valid staff record
+    staffCache.set(userIrisId, {
+      staff,
+      expiresAt: Date.now() + STAFF_CACHE_TTL_MS,
+    });
+
+    req.staff = staff;
+    next();
+  } catch (error) {
+    console.error("Staff middleware unexpected error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Authorization check failed",
+    });
+  }
+};
 
 export const requireAuth = async (req, res, next) => {
   try {
-    const sessionId = req.cookies.session_id;
+    const sessionId =
+      req.cookies?.session_id ||
+      req.headers?.["x-session-id"] ||
+      (req.headers?.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.slice(7).trim()
+        : null);
 
     if (!sessionId) {
       console.warn("requireAuth: No session_id cookie found in request cookies");

@@ -45,8 +45,14 @@ export default defineConfig(({ mode }) => {
     // Open the site at http://kannadavedike.dev.local:<port> (see /etc/hosts), not localhost.
     proxy: {
       '/api': {
-        target: process.env.VITE_DEV_API_PROXY || 'https://kannadavedike.dev.local:5000',
-        secure: false, // the dev server uses a self-signed certificate
+        target: process.env.VITE_API_URL || process.env.VITE_DEV_API_PROXY || 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/auth': {
+        target: process.env.VITE_API_URL || process.env.VITE_DEV_API_PROXY || 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
       },
     },
   }

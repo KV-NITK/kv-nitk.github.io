@@ -30,10 +30,11 @@ import FeedbackResponses from './components/feedback-responses/FeedbackResponses
 // The /parva-26 landing page itself stays unrouted until it is released.
 const Parva26Market = lazy(() => import('./components/Parva26/market/Market'));
 const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
+const ParvaScanner = lazy(() => import('./components/Parva26/scan/Scanner'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/merch-test', '/payment/status', '/my-orders'];
+const STANDALONE_ROUTES = ['/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/parva-26/scan', '/merch-test', '/payment/status', '/my-orders'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/parva-26/market" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Market /></Suspense>} />
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
+        <Route path="/parva-26/scan" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><ParvaScanner /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/merch-test" element={<MerchTest />} />
         <Route path="/payment/status" element={<PaymentStatus />} />

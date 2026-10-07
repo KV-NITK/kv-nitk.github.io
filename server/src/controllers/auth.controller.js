@@ -152,3 +152,48 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+export const devLogin = async (req, res) => {
+  if (isProduction) {
+    return res.status(404).json({
+      success: false,
+      message: "Dev login is disabled in production",
+    });
+  }
+
+  try {
+    const devUser = {
+      irisId: "DEV_USER_001",
+      name: "Dev Staff",
+      email: "dev@nitk.edu.in",
+      rollNo: "DEV001",
+    };
+
+    const { sessionId } = await createSession(
+      devUser.irisId,
+      "user",
+      devUser
+    );
+
+    res.cookie("session_id", sessionId, getCookieOptions(24 * 60 * 60 * 1000));
+    const encodedUser = Buffer.from(JSON.stringify(devUser)).toString("base64");
+    res.cookie("user_meta", encodedUser, getCookieOptions(24 * 60 * 60 * 1000));
+
+    if (req.query.format === "json" || req.headers.accept === "application/json") {
+      return res.json({
+        success: true,
+        user: devUser,
+        sessionId,
+      });
+    }
+
+    const redirectUrl = req.query.redirect || "http://localhost:5173/parva-26/scan";
+    return res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("Dev login error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Dev login failed",
+    });
+  }
+};
