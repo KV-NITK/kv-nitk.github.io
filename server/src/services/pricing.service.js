@@ -321,12 +321,34 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
+    // ── Spec §5.2 Category Bounding Logic ─────────────────────────────────
+    // Coupons are strictly restricted to the merchandise (MERCH) subtotal.
+    // Food pass prices are always fixed and are never discounted.
+    const merchSubtotalPaise = lineItems
+        .filter((item) => item.category === "MERCH")
+        .reduce((sum, item) => sum + toPaise(item.lineTotal), 0);
+
+    const foodSubtotalPaise = lineItems
+        .filter((item) => item.category === "FOOD")
+        .reduce((sum, item) => sum + toPaise(item.lineTotal), 0);
+
     const code = normalizeCouponCode(couponCode);
     let discountPaise = 0;
     let shares = lineItems.map(() => 0);
 
     if (code) {
-        ({ discountPaise, shares } = await applyCoupon({ code, subtotalPaise: discountablePaise, discountablePaise, lineItems, userIrisId }));
+        // Spec §5.2: server rejects any coupon applied to a food-only cart
+        if (merchSubtotalPaise === 0) {
+            throw new PaymentError("Coupons cannot be applied to food pass orders.", 400);
+        }
+        ({ discountPaise, shares } = await applyCoupon({
+            code,
+            // Validation checks (min_order) run against merch subtotal only
+            subtotalPaise: merchSubtotalPaise,
+            discountablePaise: merchSubtotalPaise,
+            lineItems,
+            userIrisId,
+        }));
     }
 
     // What each line pays after the coupon. The goodie's discount is its own

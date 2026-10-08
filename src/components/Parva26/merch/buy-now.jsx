@@ -56,6 +56,11 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const signature = JSON.stringify([items, appliedCoupon])
   const complete = shirts > 0 && lines.reduce((n, l) => n + l.quantity, 0) === shirts
 
+  // Spec §4 Business Domain Logic Matrix — cart-state flags
+  const hasMerch = shirts > 0
+  const hasFood = lines.some((l) => l.category === 'FOOD' || l.productId === 'bhoori-bhojana')
+  const hasOnlyFood = hasFood && !hasMerch
+
   // The order changing clears a refusal that no longer applies
   useEffect(() => {
     setFormError('')
@@ -65,14 +70,17 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   // The price to pay comes from the server, never from the page
   useEffect(() => {
     setQuoteError('')
-    if (!user || !complete) {
+    // Spec §4: order is quotable when: merch is complete OR food-only cart
+    const orderReady = (hasMerch ? complete : false) || hasOnlyFood || (hasFood && hasMerch && complete)
+    if (!user || !orderReady) {
       setQuote(null)
       setChecking(false)
       return
     }
     let cancelled = false
     setChecking(true)
-    quoteOrder({ items, couponCode: appliedCoupon })
+    // Spec §4: coupon only sent to server when merch is in the cart
+    quoteOrder({ items, couponCode: hasMerch ? appliedCoupon : null })
       .then((q) => {
         if (cancelled) return
         setQuote(q)
@@ -87,7 +95,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
     return () => {
       cancelled = true
     }
-  }, [user, complete, signature, appliedCoupon])
+  }, [user, complete, signature, appliedCoupon, hasOnlyFood, hasFood, hasMerch])
 
   // Each line as the server quoted it: list price, what is taken off it, what it costs
   const quoted = (productId) => quote?.items.find((l) => l.productId === productId)
@@ -99,8 +107,8 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   }
 
   // The server adds the goodie to any order with a shirt; this only shows it.
-  // It is listed at its price and the product's own discount comes off it.
-  const goodieShown = lines.length > 0 && goodie
+  // Spec §4: Goodies banner is HIDDEN for food-only orders — gated on hasMerch.
+  const goodieShown = hasMerch && lines.length > 0 && goodie
   const goodieList = quoted(goodie?.id)?.unitPrice ?? goodie?.unitPrice
   const goodieNet = quoted(goodie?.id)?.netLineTotal ?? Math.max(0, goodie?.unitPrice - goodie?.discount)
 
@@ -117,12 +125,15 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const perShirt = offEach.length > 0 && offEach.every((q) => Math.abs(q.discount / q.quantity - offEach[0].discount / offEach[0].quantity) < 0.005) ? offEach[0].discount / offEach[0].quantity : null
   const shirtsOff = offEach.reduce((n, q) => n + q.quantity, 0)
 
-  // What the coupon box says: only what the server's quote says
-  const couponNote = !appliedCoupon ? '' : quoteError ? quoteError : checking && user && complete ? 'Checking the coupon…' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
+  // What the coupon box says: only when hasMerch (spec §4: Coupon Application)
+  const couponNote = !hasMerch ? '' : !appliedCoupon ? '' : quoteError ? quoteError : checking && user && complete ? 'Checking the coupon…' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
 
   const buy = async () => {
-    if (shirts === 0 || !complete) {
-      setFormError(shirts === 0 ? 'none' : 'sizes')
+    // Spec §4: isReady = (hasMerch ? isShirtSelectionComplete : true) && (shirts > 0 || hasFood)
+    const isReady = (hasMerch ? complete : true) && (shirts > 0 || hasFood)
+    if (!isReady) {
+      // Distinguish: nothing at all selected vs. merch sizes missing
+      setFormError(shirts === 0 && !hasFood ? 'none' : 'sizes')
       onRefused()
       return
     }
@@ -145,7 +156,8 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
 
       const payment = await createPayment({
         items,
-        couponCode: appliedCoupon,
+        // Spec §4: coupon code is never sent to the server for food-only orders
+        couponCode: hasMerch ? appliedCoupon : null,
         customerPhone: phone,
         idempotencyKey: keyRef.current.key,
       })
@@ -188,19 +200,27 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
           <ul className="space-y-2 border-b border-[#c2aa84] pb-3">
             {lines.map((line) => {
               const { list, net, perShirt, off } = priced(line)
+              // Spec §5.1: food items render without size selection dropdown
+              const isFood = line.category === 'FOOD' || line.productId === 'bhoori-bhojana'
               return (
                 <li key={line.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
                   <span>
                     <span className="font-bold">{line.name}</span>
                     <span className="block text-sm opacity-80">
-                      Size {line.size} · {line.quantity} ×{' '}
-                      {off ? (
-                        <>
-                          <s className="mr-1 text-red-700">{rupees(list)}</s>
-                          <span className="font-bold text-emerald-800">{rupees(perShirt)}</span>
-                        </>
+                      {isFood ? (
+                        // Food: show qty × price only — no size picker
+                        <>{line.quantity} × {off ? (
+                          <><s className="mr-1 text-red-700">{rupees(list)}</s><span className="font-bold text-emerald-800">{rupees(perShirt)}</span></>
+                        ) : rupees(list)}</>
                       ) : (
-                        rupees(list)
+                        // Merch: show size + qty × price as before
+                        <>Size {line.size} · {line.quantity} ×{' '}
+                          {off ? (
+                            <><s className="mr-1 text-red-700">{rupees(list)}</s><span className="font-bold text-emerald-800">{rupees(perShirt)}</span></>
+                          ) : (
+                            rupees(list)
+                          )}
+                        </>
                       )}
                     </span>
                   </span>
@@ -231,7 +251,8 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
             )}
           </ul>
 
-          {/* Coupon Input Field */}
+          {/* Coupon Input Field — spec §4: HIDDEN for food-only orders */}
+          {hasMerch && (
           <div className="mt-4 border-b border-[#c2aa84] pb-4">
             <label className="block text-xs font-bold uppercase tracking-wider text-[#6b4020] mb-1">
               Early Bird Coupon Code / ಕೂಪನ್ ಕೋಡ್
@@ -271,6 +292,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
               </p>
             )}
           </div>
+          )}
 
           <div className="space-y-1 pt-3 text-lg font-bold">
             {totalOff > 0 && (

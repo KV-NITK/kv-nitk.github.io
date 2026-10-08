@@ -13,6 +13,7 @@ import API_URL from '../../../api/api'
 import { getProducts } from '../../../api/payments'
 import { useStoredState } from '@p26/lib/storage'
 import { BuyNow } from '@p26/merch/buy-now'
+import { BhooriBhojanaSection } from '@p26/merch/BhooriBhojanaSection'
 
 // One card per t-shirt design, with its fit and sizes in the order the
 // catalog lists them. Names, fits, sizes and prices all come from the server;
@@ -33,7 +34,10 @@ export function MerchShop() {
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
   const [goodie, setGoodie] = useState(null) // the free-with-a-shirt extra, if the shop has one
+  const [foodProduct, setFoodProduct] = useState(null) // bhoori-bhojana catalog entry
   const [loadError, setLoadError] = useState('')
+  // Food-pass quantity — persisted so it survives the IRIS login redirect
+  const [foodQty, setFoodQty] = useStoredState('parva_food_qty', 0)
   // One size per shirt for each design, by design key: "" is a shirt whose
   // size is not chosen yet. A design with no shirts is not part of the order.
   // Kept in this browser, so the order is still there after the IRIS login
@@ -51,6 +55,8 @@ export function MerchShop() {
       .then((products) => {
         setDesigns(groupDesigns(products))
         setGoodie(products.find((p) => p.category === 'GOODIE') ?? null)
+        // Spec §5.1: locate food product from catalog by its authoritative id
+        setFoodProduct(products.find((p) => p.id === 'bhoori-bhojana') ?? null)
       })
       .catch((e) => setLoadError(e.message))
   }, [])
@@ -106,6 +112,15 @@ export function MerchShop() {
           </Link>
         </div>
 
+        {/* ── Bhoori Bhojana food-pass section (spec §5.1, Phase 2) ── */}
+        {/* Mounted additively above the Parva Angadi grid; no existing code touched */}
+        <BhooriBhojanaSection
+          quantity={foodQty}
+          onChange={setFoodQty}
+          unitPrice={foodProduct?.unitPrice ?? 199}
+          maxQuantity={foodProduct?.maxQuantity ?? 10}
+        />
+
         {/* The shop's sign, once for all the shirts */}
         <h1 className="mx-auto mt-6 w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
           <span className={cn('block font-poster text-3xl leading-none tracking-[0.2em]', !subtitles && 'sr-only')}>Parva Angadi · Merch</span>
@@ -126,7 +141,27 @@ export function MerchShop() {
           )}
         </div>
 
-        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
+        {/* Spec §5.1: combine shirt and food lines; show cart when either has items */}
+        {(designs?.length > 0 || foodQty > 0) && (() => {
+          // Food line built here; price falls back to MEAL.price if catalog not yet loaded
+          const foodLines = foodQty > 0 ? [{
+            productId: 'bhoori-bhojana',
+            name: foodProduct?.name || 'Bhoori Bhojana Food Pass',
+            price: foodProduct?.unitPrice ?? 199,
+            quantity: foodQty,
+            category: 'FOOD',
+          }] : []
+          const allLines = [...lines, ...foodLines]
+          return (
+            <BuyNow
+              lines={allLines}
+              shirts={shirts}
+              goodie={goodie}
+              user={user}
+              onRefused={() => setAttempts((n) => n + 1)}
+            />
+          )
+        })()}
       </div>
     </div>
   )
