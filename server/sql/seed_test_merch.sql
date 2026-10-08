@@ -15,7 +15,9 @@ INSERT INTO payment_products (id, name, category, group_key, fit, variant, unit_
   ('tshirt-b-m', 'T-Shirt B', 'MERCH', 'tshirt-b', 'Oversized', 'M', 349.00, 5, 2),
   ('tshirt-b-l', 'T-Shirt B', 'MERCH', 'tshirt-b', 'Oversized', 'L', 349.00, 5, 3),
   ('tshirt-b-xl', 'T-Shirt B', 'MERCH', 'tshirt-b', 'Oversized', 'XL', 349.00, 5, 4),
-  ('tshirt-b-xxl', 'T-Shirt B', 'MERCH', 'tshirt-b', 'Oversized', 'XXL', 349.00, 5, 5)
+  ('tshirt-b-xxl', 'T-Shirt B', 'MERCH', 'tshirt-b', 'Oversized', 'XXL', 349.00, 5, 5),
+  ('goodie', 'Parva Sticker & Badge Pack', 'GOODIE', NULL, NULL, NULL, 25.00, 1, 0)
 ON CONFLICT (id) DO UPDATE SET
   fit = EXCLUDED.fit,
+  discount = 25.00,
   sort_order = EXCLUDED.sort_order;

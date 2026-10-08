@@ -146,6 +146,19 @@ export const MERCH_PRODUCTS = [
     sort_order: 5,
     active: true,
   },
+  {
+    id: "goodie",
+    name: "Parva Sticker & Badge Pack",
+    category: "GOODIE",
+    group_key: null,
+    fit: null,
+    variant: null,
+    unit_price: 25.0,
+    discount: 25.0,
+    max_quantity: 1,
+    sort_order: 0,
+    active: true,
+  },
 ];
 
 async function seedMerch() {
