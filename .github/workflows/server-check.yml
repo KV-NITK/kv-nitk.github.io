@@ -1,0 +1,19 @@
+name: Server check
+
+# Manual, read-only: reports what the campus server has (Docker, nginx, ports)
+# so changes to it can be written against the real setup.
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: self-hosted
+    steps:
+      - name: Inspect server
+        run: |
+          export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+          echo "== docker =="; docker --version 2>&1; docker compose version 2>&1; sudo docker ps 2>&1 | head
+          echo "== postgres/psql =="; command -v psql psql16 2>&1; systemctl is-active postgresql 2>&1
+          echo "== listening ports =="; sudo ss -ltnp 2>&1 | awk '{print $1,$4,$6}' | head -30
+          echo "== nginx =="; sudo nginx -v 2>&1; sudo nginx -T 2>/dev/null | grep -nE "^# configuration file|server_name|listen|location|proxy_pass|root " | head -80
+          echo "== disk/mem =="; df -h / /var 2>&1 | head; free -m

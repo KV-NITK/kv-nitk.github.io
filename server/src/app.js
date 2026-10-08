@@ -21,6 +21,8 @@ import paymentRoutes from "./routes/payment.routes.js";
 import paymentWebhookRoutes from "./routes/payment.webhook.routes.js";
 import passRoutes from "./routes/pass.routes.js";
 import { listProductsController } from "./controllers/payment.controller.js";
+import adminRoutes from "./routes/admin.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 import { getAllowedOrigins } from "./config/urls.js";
 
@@ -80,6 +82,8 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/payments", paymentRoutes);
 app.get("/api/products", listProductsController);
 app.use("/api/passes", passRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Serve frontend static build if present in container / root
 const clientBuildPath = path.join(__dirname, "../../build");

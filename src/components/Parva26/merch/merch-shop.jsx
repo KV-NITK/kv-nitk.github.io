@@ -6,6 +6,7 @@ import { TEE } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { cn } from '@/lib/utils'
+import { shirtName } from '@/lib/shirtName'
 import { Tee3D } from '@p26/ui/stalls/tee-3d'
 import { PriceTag, GlassDoor } from '@p26/ui/stalls/showcase-parts'
 import API_URL from '../../../api/api'
@@ -31,12 +32,14 @@ export function MerchShop() {
   const { subtitles } = usePrefs()
   const [user, setUser] = useState(undefined)
   const [designs, setDesigns] = useState(null)
+  const [goodie, setGoodie] = useState(null) // the free-with-a-shirt extra, if the shop has one
   const [loadError, setLoadError] = useState('')
   // One size per shirt for each design, by design key: "" is a shirt whose
   // size is not chosen yet. A design with no shirts is not part of the order.
   // Kept in this browser, so the order is still there after the IRIS login
   const [picks, setPicks] = useStoredState('merch_order', {})
   const [attempts, setAttempts] = useState(0) // Buy Now presses that were refused
+  const [showContact, setShowContact] = useState(false)
 
   useEffect(() => {
     fetch(`${API_URL}/auth/me`, { credentials: "include" })
@@ -45,7 +48,10 @@ export function MerchShop() {
       .catch(() => setUser(null))
 
     getProducts()
-      .then((products) => setDesigns(groupDesigns(products)))
+      .then((products) => {
+        setDesigns(groupDesigns(products))
+        setGoodie(products.find((p) => p.category === 'GOODIE') ?? null)
+      })
       .catch((e) => setLoadError(e.message))
   }, [])
 
@@ -69,7 +75,7 @@ export function MerchShop() {
         const product = sizes.find((p) => p.variant === variant)
         // A size no longer on sale leaves the order incomplete
         if (!product) continue
-        lines.push({ productId: product.id, name: product.name, fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
+        lines.push({ productId: product.id, name: shirtName(product.id, product.name), fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
       }
     }
     return { lines, shirts }
@@ -83,11 +89,21 @@ export function MerchShop() {
       }}>
       <div className="w-full max-w-[80rem]">
         <div className="flex flex-wrap items-center justify-end gap-4">
-          {user && (
-            <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
-              My Orders
-            </Link>
-          )}
+          <div className="relative">
+            <button type="button" onClick={() => setShowContact(!showContact)} className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
+              Contact
+            </button>
+            {showContact && (
+              <div className="absolute top-full right-0 mt-2 bg-[#f3ead5] text-[#4a2a12] p-3 rounded-md shadow-lg z-50 whitespace-nowrap border border-[#4a2a12]/20">
+                <p className="font-bold">Puneeth</p>
+                <a href="tel:+917349064226" className="hover:underline">+91 734 906 4226</a>
+              </div>
+            )}
+          </div>
+          {/* Always there. Logged out, the orders page asks for the IRIS login and brings you back to it */}
+          <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
+            My Orders
+          </Link>
         </div>
 
         {/* The shop's sign, once for all the shirts */}
@@ -110,7 +126,7 @@ export function MerchShop() {
           )}
         </div>
 
-        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
+        {designs?.length > 0 && <BuyNow lines={lines} shirts={shirts} goodie={goodie} user={user} onRefused={() => setAttempts((n) => n + 1)} />}
       </div>
     </div>
   )
@@ -118,8 +134,9 @@ export function MerchShop() {
 
 function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }) {
   const { subtitles } = usePrefs()
-  const [back, setBack] = useState(false)
+  const [back, setBack] = useState(true)
   const [open, setOpen] = useState(false)
+  const [showSizeChart, setShowSizeChart] = useState(false)
   const sizesRef = useRef(null)
   const shopRef = useRef(null)
   const { fit, sizes } = design
@@ -150,6 +167,26 @@ function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }
 
   return (
     <div ref={shopRef} id="angadi" className={cn('relative flex flex-col items-center')}>
+      {showSizeChart && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" 
+          onClick={() => setShowSizeChart(false)}
+        >
+          <div 
+            className="relative max-h-full max-w-2xl overflow-auto rounded-lg bg-[#f3ead5] p-2 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              type="button"
+              onClick={() => setShowSizeChart(false)}
+              className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+            >
+              ✕
+            </button>
+            <img src="/parva-26/tshirt_size_chart.jpeg" alt="Size Chart" className="h-auto w-full object-contain rounded" />
+          </div>
+        </div>
+      )}
       {/* The cabinet */}
       <div className="relative w-full max-w-[24rem] rounded-t-[6px] p-2.5 shadow-[0_1rem_1.4rem_-0.6rem_rgba(20,30,20,.55)] [perspective:1800px]" style={{ backgroundImage: TEAK }}>
         <div
@@ -178,22 +215,37 @@ function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }
             </p>
           )}
 
-          <button
-            type="button"
-            onClick={() => {
-              setBack((b) => !b)
-              setOpen(true)
-            }}
-            className="flex min-h-11 items-center gap-2 self-end rounded-full bg-black/25 px-3 text-[#f3ead5] ring-1 ring-[#c9a052]/50 transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
-          >
-            <span aria-hidden className="size-3 rounded-full shadow-[inset_0_-1px_1px_rgba(0,0,0,.5)]" style={brass} />
-            <span className="text-left leading-tight">
-              <En className="block font-kn-display text-sm font-semibold">{back ? 'See the front' : 'See the back'}</En>
-              <span lang="kn" className="block text-xs">
-                {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
+          <div className="flex gap-2 self-end">
+            <button
+              type="button"
+              onClick={() => setShowSizeChart(true)}
+              className="flex min-h-11 items-center gap-2 rounded-full bg-black/25 px-3 text-[#f3ead5] ring-1 ring-[#c9a052]/50 transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
+            >
+              <span className="text-left leading-tight">
+                <En className="block font-kn-display text-sm font-semibold">Size Chart</En>
+                <span lang="kn" className="block text-xs">
+                  ಗಾತ್ರದ ಪಟ್ಟಿ
+                </span>
               </span>
-            </span>
-          </button>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setBack((b) => !b)
+                setOpen(true)
+              }}
+              className="flex min-h-11 items-center gap-2 rounded-full bg-black/25 px-3 text-[#f3ead5] ring-1 ring-[#c9a052]/50 transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
+            >
+              <span aria-hidden className="size-3 rounded-full shadow-[inset_0_-1px_1px_rgba(0,0,0,.5)]" style={brass} />
+              <span className="text-left leading-tight">
+                <En className="block font-kn-display text-sm font-semibold">{back ? 'See the front' : 'See the back'}</En>
+                <span lang="kn" className="block text-xs">
+                  {back ? 'ಮುಂಭಾಗ ನೋಡಿ' : 'ಹಿಂಭಾಗ ನೋಡಿ'}
+                </span>
+              </span>
+            </button>
+          </div>
         </div>
 
         <fieldset className="mt-4">

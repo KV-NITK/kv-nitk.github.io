@@ -23,7 +23,7 @@ export function TeeShowcase({ className }) {
   const { subtitles } = usePrefs()
   const [variantId, setVariantId] = useState(TEE.variants[0].id)
   const [size, setSize] = useState(null)
-  const [back, setBack] = useState(false)
+  const [back, setBack] = useState(true)
   const [chart, setChart] = useState(false)
   const [hint, setHint] = useState(false)
   const [open, setOpen] = useState(false)
@@ -32,7 +32,7 @@ export function TeeShowcase({ className }) {
   const variant = TEE.variants.find((v) => v.id === variantId)
   const closed = Date.now() > closesAt(TEE.closes)
   const early = TEE.earlySold < TEE.earlyQuota
-  const price = early ? TEE.earlyPrice : TEE.price
+  const price = early ? variant.earlyPrice : variant.price
   const closeDay = eventDay(TEE.closes)
 
   // The door closes behind you once you've walked on.
@@ -76,10 +76,10 @@ export function TeeShowcase({ className }) {
 
           <Tee3D variant={variant} back={back} onTurn={setBack} forward={open} />
 
-          <PriceTag price={TEE.price} early={early ? TEE.earlyPrice : null} />
+          <PriceTag price={variant.price} early={early ? variant.earlyPrice : null} />
 
           {/* Order deadline, on a card propped at the back of the shelf */}
-          <p className="absolute bottom-[5%] left-[4%] rotate-[-2deg] rounded-[2px] bg-[#f3ead5] px-2 py-1 text-[#1d1a17] shadow-[0_2px_4px_rgba(0,0,0,.45)]" style={paper}>
+          <p className="absolute bottom-[5%] left-[4%] rotate-[-2deg] scale-[0.80] origin-bottom-left rounded-[2px] bg-[#f3ead5] px-2 py-1 text-[#1d1a17] shadow-[0_2px_4px_rgba(0,0,0,.45)]" style={paper}>
             <span lang="kn" className="block font-kn-display text-[0.8rem] font-semibold leading-tight">
               ಆರ್ಡರ್ ಕೊನೆಯ ದಿನ
             </span>

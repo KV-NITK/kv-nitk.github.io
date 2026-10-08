@@ -9,6 +9,10 @@ const PENDING_HOLD_MINUTES = 30;
 
 const MAX_LINE_ITEMS = 20;
 
+// Every order with at least one t-shirt gets one goodie, added here and never
+// by the client. It is paid for at its own price and no coupon touches it.
+export const GOODIE_PRODUCT_ID = "goodie";
+
 const toPaise = (rupees) => Math.round(Number(rupees) * 100);
 const toRupees = (paise) => paise / 100;
 
@@ -98,7 +102,32 @@ export const claimCouponSlot = async ({ code, paymentId, userIrisId }) => {
     }
 };
 
-const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
+// Splits a discount over lines in proportion to their weights, in whole paise
+// that add up exactly: each line is rounded down and the leftover paise go to
+// the first lines that can take one.
+const splitDiscount = (totalPaise, weights) => {
+    const sum = weights.reduce((n, w) => n + w, 0);
+
+    if (!sum || !totalPaise) {
+        return weights.map(() => 0);
+    }
+
+    const shares = weights.map((w) => Math.floor((totalPaise * w) / sum));
+    let rest = totalPaise - shares.reduce((n, v) => n + v, 0);
+
+    for (let i = 0; rest > 0 && i < shares.length; i++) {
+        if (shares[i] < weights[i]) {
+            shares[i]++;
+            rest--;
+        }
+    }
+
+    return shares;
+};
+
+// Returns the discount for the whole order and how much of it each line got,
+// both in paise (shares is parallel to lineItems; the goodie always gets 0).
+const applyCoupon = async ({ code, subtotalPaise, discountablePaise, lineItems, userIrisId }) => {
     const coupon = await fetchCoupon(code);
 
     // Same message for unknown / inactive so codes cannot be enumerated
@@ -141,11 +170,30 @@ const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
         throw new PaymentError("You have already used this coupon");
     }
 
+    const linePaise = lineItems.map((line) =>
+        line.productId === GOODIE_PRODUCT_ID ? 0 : toPaise(line.lineTotal)
+    );
+
+    if (coupon.discount_type === "FLAT_PER_ITEM") {
+        // Rupees off each shirt, so a bigger order saves more. Only MERCH lines
+        // count, and a line never goes below zero.
+        const shares = lineItems.map((line, i) =>
+            line.category === "MERCH"
+                ? Math.min(toPaise(coupon.discount_value) * line.quantity, linePaise[i])
+                : 0
+        );
+
+        return {
+            discountPaise: shares.reduce((n, v) => n + v, 0),
+            shares,
+        };
+    }
+
     let discountPaise;
 
     if (coupon.discount_type === "PERCENT") {
         discountPaise = Math.floor(
-            (subtotalPaise * Number(coupon.discount_value)) / 100
+            (discountablePaise * Number(coupon.discount_value)) / 100
         );
 
         if (coupon.max_discount !== null && coupon.max_discount !== undefined) {
@@ -155,9 +203,9 @@ const applyCoupon = async ({ code, subtotalPaise, userIrisId }) => {
         discountPaise = toPaise(coupon.discount_value);
     }
 
-    discountPaise = Math.min(discountPaise, subtotalPaise);
+    discountPaise = Math.min(discountPaise, discountablePaise);
 
-    return discountPaise;
+    return { discountPaise, shares: splitDiscount(discountPaise, linePaise) };
 };
 
 /**
@@ -186,6 +234,10 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
             throw new PaymentError("Invalid cart item");
         }
 
+        if (productId === GOODIE_PRODUCT_ID) {
+            throw new PaymentError("The goodie is added to your order automatically");
+        }
+
         if (!Number.isInteger(quantity) || quantity < 1) {
             throw new PaymentError("Quantity must be a whole number of at least 1");
         }
@@ -195,8 +247,8 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
 
     const { data: products, error } = await supabase
         .from("payment_products")
-        .select("id, name, category, variant, unit_price, max_quantity, active")
-        .in("id", [...quantities.keys()]);
+        .select("id, name, category, variant, unit_price, discount, max_quantity, active")
+        .in("id", [...quantities.keys(), GOODIE_PRODUCT_ID]);
 
     if (error) {
         console.error("Failed to fetch products:", error);
@@ -237,14 +289,63 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
-    const code = normalizeCouponCode(couponCode);
-    let discountPaise = 0;
+    // The goodie comes with the first shirt. If its row is missing or switched
+    // off, orders go through without it.
+    const shirts = lineItems
+        .filter((line) => line.category === "MERCH")
+        .reduce((n, line) => n + line.quantity, 0);
+    const goodie = productsById.get(GOODIE_PRODUCT_ID);
+    const discountablePaise = subtotalPaise;
+    let goodieOffPaise = 0;
 
-    if (code) {
-        discountPaise = await applyCoupon({ code, subtotalPaise, userIrisId });
+    if (shirts > 0 && goodie?.active) {
+        // Listed at unit_price, with the product's own discount taken off: a
+        // goodie with discount equal to its price is shown at its price and given free.
+        const listPaise = toPaise(goodie.unit_price);
+        const offPaise = Math.min(listPaise, toPaise(goodie.discount || 0));
+        const chargedPaise = listPaise - offPaise;
+
+        subtotalPaise += listPaise;
+        goodieOffPaise = offPaise;
+
+        lineItems.push({
+            productId: goodie.id,
+            name: goodie.name,
+            category: goodie.category,
+            variant: goodie.variant ?? null,
+            quantity: 1,
+            unitPrice: toRupees(listPaise),
+            lineTotal: toRupees(listPaise),
+            discount: toRupees(offPaise),
+            netLineTotal: toRupees(chargedPaise),
+        });
     }
 
-    const totalPaise = subtotalPaise - discountPaise;
+    const code = normalizeCouponCode(couponCode);
+    let discountPaise = 0;
+    let shares = lineItems.map(() => 0);
+
+    if (code) {
+        ({ discountPaise, shares } = await applyCoupon({ code, subtotalPaise: discountablePaise, discountablePaise, lineItems, userIrisId }));
+    }
+
+    // What each line pays after the coupon. The goodie's discount is its own
+    // and is not part of the order discount below.
+    lineItems.forEach((line, i) => {
+        if (line.productId === GOODIE_PRODUCT_ID) {
+            return;
+        }
+
+        const paise = toPaise(line.lineTotal);
+
+        line.discount = toRupees(shares[i]);
+        line.netLineTotal = toRupees(paise - shares[i]);
+    });
+
+    // The goodie is listed in the subtotal and given back as a discount, so
+    // subtotal - discount = total and the receipt shows what the customer saved.
+    // couponDiscount and goodieDiscount are the two parts of that discount.
+    const totalPaise = subtotalPaise - discountPaise - goodieOffPaise;
 
     if (totalPaise < MIN_TOTAL_PAISE) {
         throw new PaymentError(
@@ -255,7 +356,9 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     return {
         items: lineItems,
         subtotal: toRupees(subtotalPaise),
-        discount: toRupees(discountPaise),
+        discount: toRupees(discountPaise + goodieOffPaise),
+        couponDiscount: toRupees(discountPaise),
+        goodieDiscount: toRupees(goodieOffPaise),
         total: toRupees(totalPaise),
         couponCode: discountPaise > 0 ? code : null,
         currency: "INR",
