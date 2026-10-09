@@ -27,7 +27,7 @@ export const issuePassesForPayment = async (paymentId) => {
     throw new Error(`Payment ${paymentId} not found`);
   }
 
-  if (payment.status !== "SUCCESS") {
+  if (payment.status !== "SUCCESS" && payment.status !== "PAID") {
     return [];
   }
 
