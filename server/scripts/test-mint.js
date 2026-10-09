@@ -4,12 +4,12 @@ import { issuePassesForPayment } from "../src/services/pass.service.js";
 const paymentId = "bc4ae81e-edde-458b-b907-c579fcf089b9";
 
 async function main() {
-  console.log(`Updating order ${paymentId} in payments table: status = 'PAID'...`);
+  console.log(`Updating order ${paymentId} in payments table: status = 'SUCCESS'...`);
 
   const { data: updatedPayment, error: updateError } = await supabase
     .from("payments")
     .update({
-      status: "PAID",
+      status: "SUCCESS",
       paid_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })

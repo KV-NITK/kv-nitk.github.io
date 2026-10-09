@@ -27,7 +27,10 @@ export const issuePassesForPayment = async (paymentId) => {
     throw new Error(`Payment ${paymentId} not found`);
   }
 
-  if (payment.status !== "SUCCESS" && payment.status !== "PAID") {
+  if (payment.status !== "SUCCESS") {
+    console.warn(
+      `[issuePassesForPayment] Payment ${paymentId} status is '${payment.status}', expected 'SUCCESS'. Skipping pass issuance.`
+    );
     return [];
   }
 
