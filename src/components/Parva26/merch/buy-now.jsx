@@ -53,6 +53,7 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const keyRef = useRef({ signature: '', key: '' })
 
   const items = useMemo(() => lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), [lines])
+  const signature = JSON.stringify([items, appliedCoupon])
   const merchLines = lines.filter((l) => l.category === 'MERCH')
   const complete = shirts > 0 && merchLines.reduce((n, l) => n + l.quantity, 0) === shirts
 
