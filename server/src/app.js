@@ -1,3 +1,9 @@
+import dns from "node:dns";
+
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,6 +19,8 @@ import coordinatorRoutes from "./routes/coordinator.routes.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import paymentWebhookRoutes from "./routes/payment.webhook.routes.js";
+import passRoutes from "./routes/pass.routes.js";
+import { listProductsController } from "./controllers/payment.controller.js";
 import adminRoutes from "./routes/admin.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 
@@ -31,7 +39,14 @@ const allowedOrigins = getAllowedOrigins();
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        (process.env.NODE_ENV !== "production" &&
+          (origin.startsWith("http://localhost:") ||
+            origin.startsWith("http://127.0.0.1:") ||
+            origin.includes("kannadavedike.dev.local")))
+      ) {
         callback(null, true);
       } else {
         callback(null, true);
@@ -59,11 +74,14 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/teams", teamRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/coordinator", coordinatorRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/payments", paymentRoutes);
+app.get("/api/products", listProductsController);
+app.use("/api/passes", passRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
@@ -73,7 +91,7 @@ app.use(express.static(clientBuildPath));
 
 // Fallback to React static build for non-API requests
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/")) return next();
+  if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) return next();
   res.sendFile(path.join(clientBuildPath, "index.html"), (err) => {
     if (err) next();
   });

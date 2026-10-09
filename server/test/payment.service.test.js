@@ -189,6 +189,38 @@ describe("createPayment", () => {
       assert.equal(db.rows("payments").length, 1);
     });
 
+    it("never stores goodie in payments record for food-only orders", async () => {
+      db.rows("payment_products").push(
+        product("bhoori-bhojana", 199, { category: "FOOD" }),
+        product("goodie", 25, { category: "GOODIE" })
+      );
+      await createPayment({ ...base, items: [{ productId: "bhoori-bhojana", quantity: 2 }] });
+      const storedOrder = db.rows("payments")[0];
+      assert.equal(storedOrder.items.some((i) => i.productId === "goodie"), false);
+      assert.equal(storedOrder.items.length, 1);
+      assert.equal(storedOrder.items[0].productId, "bhoori-bhojana");
+    });
+
+    it("stores goodie cleanly in payments record for mixed merch and food orders", async () => {
+      db.rows("payment_products").push(
+        product("bhoori-bhojana", 199, { category: "FOOD" }),
+        product("goodie", 25, { category: "GOODIE" })
+      );
+      await createPayment({
+        ...base,
+        items: [
+          { productId: "tee", quantity: 1 },
+          { productId: "bhoori-bhojana", quantity: 1 },
+        ],
+      });
+      const storedOrder = db.rows("payments")[0];
+      const goodieRow = storedOrder.items.find((i) => i.productId === "goodie");
+      assert.ok(goodieRow, "Goodie must be stored in mixed order");
+      assert.equal(goodieRow.quantity, 1);
+      assert.equal(storedOrder.items.some((i) => i.productId === "bhoori-bhojana"), true);
+      assert.equal(storedOrder.items.some((i) => i.productId === "tee"), true);
+    });
+
     it("returns an already paid order as SUCCESS so the client can go to the receipt", async () => {
       await createPayment(base);
       db.rows("payments")[0].status = "SUCCESS";
@@ -347,6 +379,17 @@ describe("getPaymentStatus", () => {
   it("prefers a successful attempt over a later pending one", async () => {
     cf.getCashfreePayments = async () => [attempt("SUCCESS"), attempt("PENDING", { cf_payment_id: 222 })];
     assert.equal((await getPaymentStatus("p1", "u1")).status, "SUCCESS");
+  });
+
+  it("issues passes for the payment on successful polling fallback", async () => {
+    db.rows("payments")[0].items = [{ productId: "tee", name: "Parva T-Shirt", category: "MERCH", variant: "L", quantity: 1 }];
+    cf.getCashfreePayments = async () => [attempt("SUCCESS")];
+    await getPaymentStatus("p1", "u1");
+    const passes = db.rows("claimable_items");
+    assert.equal(passes.length, 1);
+    assert.equal(passes[0].payment_id, "p1");
+    assert.equal(passes[0].category, "MERCH");
+    assert.equal(passes[0].variant, "L");
   });
 
   it("refuses to confirm a payment whose amount differs from the order", async () => {

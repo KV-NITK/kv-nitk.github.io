@@ -3,6 +3,7 @@ import { supabase } from "../config/supabase.js";
 import { claimCouponSlot, GOODIE_PRODUCT_ID, normalizeCouponCode, quoteOrder } from "./pricing.service.js";
 import { PaymentError } from "./payment.error.js";
 import { createCashfreeOrder, getCashfreePayments } from "./cashfree.service.js";
+import { issuePassesForPayment } from "./pass.service.js";
 
 // A CREATED order younger than this may still be getting its Cashfree session
 const IN_FLIGHT_SECONDS = 60;
@@ -345,7 +346,16 @@ export const getPaymentStatus = async (paymentId, userIrisId) => {
         throw new PaymentError("Payment not found", 404);
     }
 
-    if (payment.status === "SUCCESS" || !payment.provider_payment_session_id) {
+    if (payment.status === "SUCCESS") {
+        try {
+            await issuePassesForPayment(payment.id);
+        } catch (passErr) {
+            console.error("Failed to issue passes in getPaymentStatus (already SUCCESS):", passErr);
+        }
+        return toPaymentView(payment);
+    }
+
+    if (!payment.provider_payment_session_id) {
         return toPaymentView(payment);
     }
 
@@ -422,6 +432,14 @@ export const getPaymentStatus = async (paymentId, userIrisId) => {
     if (updateError) {
         console.error("Failed to update payment status:", updateError);
         throw new Error("Failed to update payment status");
+    }
+
+    if (newStatus === "SUCCESS") {
+        try {
+            await issuePassesForPayment(payment.id);
+        } catch (passErr) {
+            console.error("Failed to issue passes in getPaymentStatus polling fallback:", passErr);
+        }
     }
 
     return toPaymentView(updated ?? payment, updated ? newStatus : "SUCCESS");

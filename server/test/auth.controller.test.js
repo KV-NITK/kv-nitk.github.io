@@ -22,7 +22,7 @@ mockModule("services/session.service.js", {
   deleteSession: async (id) => state.deleted.push(id),
 });
 
-const { irisLogin, irisCallback, logout } = await importSrc("controllers/auth.controller.js");
+const { irisLogin, irisCallback, logout, devLogin } = await importSrc("controllers/auth.controller.js");
 
 const FRONTEND = "http://kannadavedike.dev.local:5174";
 const profile = { reg_no: "2310113", roll_no: "231CV203", first_name: "Abhijith Sogal V", last_name: "  ", email: "a@example.com" };
@@ -173,6 +173,41 @@ describe("IRIS login", () => {
       assert.deepEqual(state.deleted, ["sess-9"]);
       assert.ok(res.cleared.includes("session_id"));
       assert.equal(res.body.success, true);
+    });
+  });
+
+  describe("devLogin", () => {
+    it("creates session for DEV_USER_001, sets cookies, and redirects to scanner", async () => {
+      const res = fakeRes();
+      await devLogin({ query: {}, headers: {} }, res);
+
+      assert.equal(state.created.length, 1);
+      const [userId, type, userProfile] = state.created[0];
+      assert.equal(userId, "DEV_USER_001");
+      assert.equal(type, "user");
+      assert.equal(userProfile.name, "Dev Staff");
+      assert.equal(userProfile.email, "dev@nitk.edu.in");
+      assert.equal(userProfile.rollNo, "DEV001");
+
+      assert.equal(res.cookies.session_id.value, "sess-1");
+      assert.equal(res.cookies.session_id.options.httpOnly, true);
+      assert.ok(res.cookies.user_meta);
+      assert.equal(res.redirectedTo, "http://localhost:5173/parva-26/scan");
+    });
+
+    it("respects custom redirect parameter", async () => {
+      const res = fakeRes();
+      await devLogin({ query: { redirect: "/custom-path" }, headers: {} }, res);
+      assert.equal(res.redirectedTo, "/custom-path");
+    });
+
+    it("returns JSON when format=json is requested", async () => {
+      const res = fakeRes();
+      await devLogin({ query: { format: "json" }, headers: {} }, res);
+      assert.equal(res.body.success, true);
+      assert.equal(res.body.user.irisId, "DEV_USER_001");
+      assert.equal(res.body.sessionId, "sess-1");
+      assert.equal(res.cookies.session_id.value, "sess-1");
     });
   });
 });

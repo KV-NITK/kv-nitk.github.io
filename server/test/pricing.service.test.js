@@ -39,6 +39,21 @@ describe("quoteOrder: goodie", () => {
     assert.equal(q.total, 60);
   });
 
+  it("adds goodie to mixed orders with both merch and food", async () => {
+    const q = await quoteOrder({
+      items: [
+        { productId: "tee", quantity: 1 },
+        { productId: "lunch", quantity: 2 },
+      ],
+      userIrisId: "u1",
+    });
+    const goodieItem = q.items.find((i) => i.productId === "goodie");
+    assert.ok(goodieItem, "Goodie must be present in mixed orders");
+    assert.equal(goodieItem.quantity, 1);
+    assert.equal(q.items.some((i) => i.productId === "lunch"), true);
+    assert.equal(q.items.some((i) => i.productId === "tee"), true);
+  });
+
   it("leaves the goodie out of every coupon, so it is always full price", async () => {
     seed({
       products: [product("tee", 329), goodie()],
