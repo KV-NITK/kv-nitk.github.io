@@ -156,18 +156,10 @@ export const scanPass = async (token, staffIrisId) => {
 
   const cleanToken = typeof token === "string" ? token.trim() : token;
 
-  const tRpc = Date.now();
-  console.log(`[scanPass] Invoking claim_event_pass RPC:`, {
-    p_token: cleanToken,
-    p_staff_iris_id: staffIrisId,
-  });
-
   const { data, error } = await supabase.rpc("claim_event_pass", {
     p_token: cleanToken,
     p_staff_iris_id: staffIrisId,
   });
-
-  console.log(`[scanPass] claim_event_pass RPC completed in ${Date.now() - tRpc}ms, raw response:`, { data, error });
 
   if (error) {
     console.error("Error executing claim_event_pass RPC:", error);
