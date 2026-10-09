@@ -81,7 +81,7 @@ export function MerchShop() {
         const product = sizes.find((p) => p.variant === variant)
         // A size no longer on sale leaves the order incomplete
         if (!product) continue
-        lines.push({ productId: product.id, name: shirtName(product.id, product.name), fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count) })
+        lines.push({ productId: product.id, name: shirtName(product.id, product.name), fit, size: variant, price: product.unitPrice, quantity: Math.min(product.maxQuantity, count), category: 'MERCH' })
       }
     }
     return { lines, shirts }

@@ -53,11 +53,11 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const keyRef = useRef({ signature: '', key: '' })
 
   const items = useMemo(() => lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), [lines])
-  const signature = JSON.stringify([items, appliedCoupon])
-  const complete = shirts > 0 && lines.reduce((n, l) => n + l.quantity, 0) === shirts
+  const merchLines = lines.filter((l) => l.category === 'MERCH')
+  const complete = shirts > 0 && merchLines.reduce((n, l) => n + l.quantity, 0) === shirts
 
   // Spec §4 Business Domain Logic Matrix — cart-state flags
-  const hasMerch = shirts > 0
+  const hasMerch = lines.some((l) => l.category === 'MERCH')
   const hasFood = lines.some((l) => l.category === 'FOOD' || l.productId === 'bhoori-bhojana')
   const hasOnlyFood = hasFood && !hasMerch
 
@@ -129,8 +129,8 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   const couponNote = !hasMerch ? '' : !appliedCoupon ? '' : quoteError ? quoteError : checking && user && complete ? 'Checking the coupon…' : quote ? (quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`) : !user ? 'Log in to see your discount' : !complete ? 'Choose a size for every shirt to see your discount' : 'Checking the coupon…'
 
   const buy = async () => {
-    // Spec §4: isReady = (hasMerch ? isShirtSelectionComplete : true) && (shirts > 0 || hasFood)
-    const isReady = (hasMerch ? complete : true) && (shirts > 0 || hasFood)
+    // Spec §4: isReady = (shirts > 0 ? complete : true) && (shirts > 0 || hasFood)
+    const isReady = (shirts > 0 ? complete : true) && (shirts > 0 || hasFood)
     if (!isReady) {
       // Distinguish: nothing at all selected vs. merch sizes missing
       setFormError(shirts === 0 && !hasFood ? 'none' : 'sizes')
@@ -184,7 +184,8 @@ export function BuyNow({ lines, shirts, goodie, user, onRefused }) {
   useEffect(() => {
     if (!resume.current || user === undefined) return
     resume.current = false
-    if (user && complete && PHONE.test(phone)) buy()
+    const canResume = (shirts > 0 ? complete : true) && (shirts > 0 || hasFood)
+    if (user && canResume && PHONE.test(phone)) buy()
   }, [user])
 
   const error = quoteError || payError

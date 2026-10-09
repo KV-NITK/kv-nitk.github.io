@@ -289,8 +289,9 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
-    // The goodie comes with the first shirt. If its row is missing or switched
+    // The goodie comes with merchandise items. If its row is missing or switched
     // off, orders go through without it.
+    const hasMerch = lineItems.some((line) => line.category === "MERCH");
     const shirts = lineItems
         .filter((line) => line.category === "MERCH")
         .reduce((n, line) => n + line.quantity, 0);
@@ -298,7 +299,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     const discountablePaise = subtotalPaise;
     let goodieOffPaise = 0;
 
-    if (shirts > 0 && goodie?.active) {
+    if (hasMerch && goodie?.active) {
         // Listed at unit_price, with the product's own discount taken off: a
         // goodie with discount equal to its price is shown at its price and given free.
         const listPaise = toPaise(goodie.unit_price);
