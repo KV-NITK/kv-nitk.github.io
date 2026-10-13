@@ -6,7 +6,7 @@ import { MerchShop } from '@p26/merch/merch-shop'
 // the bottom takes the whole order to the payment page.
 export default function Merch() {
   return (
-    <PageShell title="ಪರ್ವ ಅಂಗಡಿ · Parva Angadi" topBar={{ home: '/parva-26', ticket: false }}>
+    <PageShell title="ಪರ್ವ ಅಂಗಡಿ · Parva Angadi" topBar={{ home: '/rcb', ticket: false }}>
       <main>
         <MerchShop />
       </main>

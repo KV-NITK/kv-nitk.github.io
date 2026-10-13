@@ -231,7 +231,7 @@ export default function ParvaScanner() {
       <header className="z-20 flex items-center justify-between border-b border-[#362217] bg-[#140b08]/90 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <Link
-            to="/parva-26"
+            to="/rcb"
             className="flex size-9 items-center justify-center rounded-full bg-[#24130d] text-[#f7b928] transition-colors hover:bg-[#3d1f14]"
             aria-label="Back to Parva"
           >

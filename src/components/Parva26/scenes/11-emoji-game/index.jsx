@@ -217,7 +217,7 @@ function LogSheet({ results, reels, total, solved, now, day, name, setName, subt
   const m = Math.floor((left % 3_600_000) / 60_000)
 
   const share = async () => {
-    const text = `ಯಾವ ಸಿನಿಮಾ? ${results.map((r) => (r.solved ? '🎞️' : '⬛')).join('')} ${solved}/${PER_DAY} · ${total}\n${window.location.origin}/parva-26#emoji-game`
+    const text = `ಯಾವ ಸಿನಿಮಾ? ${results.map((r) => (r.solved ? '🎞️' : '⬛')).join('')} ${solved}/${PER_DAY} · ${total}\n${window.location.origin}/rcb#emoji-game`
     try {
       if (navigator.share) await navigator.share({ text })
       else {

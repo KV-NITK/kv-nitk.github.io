@@ -70,7 +70,7 @@ function Fallback() {
       <div>
         <En as="p" className="font-kn-display text-2xl font-bold text-gandha">{MARKET.failed.en}</En>
         <p lang="kn" className="mt-1 text-gandha/75">{MARKET.failed.kn}</p>
-        <Link to="/parva-26" className="mt-6 inline-block rounded-sm bg-arishina px-5 py-3 font-kn-display text-xl font-extrabold text-theatre">
+        <Link to="/rcb" className="mt-6 inline-block rounded-sm bg-arishina px-5 py-3 font-kn-display text-xl font-extrabold text-theatre">
           <En className="block">{PLACES[0].en}</En>
           <span lang="kn" className="block text-base font-bold">{PLACES[0].kn}</span>
         </Link>

@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
 // landing page; the three shops are stand-ins until their panels are built.
 export default function Market() {
   return (
-    <PageShell title="ಪರ್ವ ಸಂತೆ · Parva Market" topBar={{ home: '/parva-26', ticket: false }}>
+    <PageShell title="ಪರ್ವ ಸಂತೆ · Parva Market" topBar={{ home: '/rcb', ticket: false }}>
       <MarketPage />
     </PageShell>
   )
