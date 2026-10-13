@@ -26,7 +26,7 @@ const mode = process.argv[2] === 'baseline' ? 'baseline' : 'current'
 // countdowns tick between runs).
 const TOLERANCE = 0.004
 
-const SCENES = ['title', 'certificate', 'gandhada-gudi', 'fan-pass', 'now-showing', 'guests', 'interval', 'parva-sante', 'release-day', 'timeline', 'emoji-game', 'credits']
+const SCENES = ['title', 'certificate', 'gandhada-gudi', 'now-showing', 'guests', 'interval', 'parva-sante', 'release-day', 'timeline', 'emoji-game', 'credits']
 const VIEWPORTS = {
   laptop: { viewport: { width: 1366, height: 860 } },
   phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true },

@@ -3,7 +3,6 @@ import { FilmFrame } from '@p26/film/film-frame'
 import { TitleScene } from '@p26/scenes/02-title'
 import { CertificateScene } from '@p26/scenes/03-certificate'
 import { GandhadaGudiScene } from '@p26/scenes/04-gandhada-gudi'
-import { FanPassScene } from '@p26/scenes/05-fan-pass'
 import { NowShowingScene } from '@p26/scenes/06-now-showing'
 import { GuestsScene } from '@p26/scenes/07-guests'
 import { IntervalScene } from '@p26/scenes/08-interval'
@@ -23,7 +22,6 @@ export default function Parva26() {
         <TitleScene />
         <CertificateScene />
         <GandhadaGudiScene />
-        <FilmFrame><FanPassScene /></FilmFrame>
         <FilmFrame><NowShowingScene /></FilmFrame>
         <GuestsScene />
         <IntervalScene />

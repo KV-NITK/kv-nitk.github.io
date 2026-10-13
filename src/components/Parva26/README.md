@@ -10,7 +10,7 @@ scenes/         one folder per scene, numbered as in the spec
   00-intro/       parked: lamp, smoke letters, countdown leader, curtain
   02-title/       the hall and hero: index.jsx + title card, show board,
                   tickets, audience, arch, walls, name board, forest.js, air.js
-  03-certificate/ 04-gandhada-gudi/  05-fan-pass/ (parked)  06-now-showing/
+  03-certificate/ 04-gandhada-gudi/  06-now-showing/
   07-guests/      wall of honour: guest-frame.jsx and its parts
   08-interval/    the move out through the doors into the Parva Market
   09-release-day/ Samudrappa's cutout, flowers (petals.js), banner, signs

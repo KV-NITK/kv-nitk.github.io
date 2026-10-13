@@ -53,7 +53,7 @@ export function PlacePrompt({ placeId, onUse }) {
         open ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-[160%] opacity-0'
       )}
     >
-      {usable ? (
+      {!shown ? null : usable ? (
         <button type="button" onClick={() => onUse(shown.id)} className={cn(box, 'cursor-pointer focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-kumkuma')}>
           {body}
           <span aria-hidden className="pointer-events-none absolute inset-0 rounded-sm opacity-40 mix-blend-multiply" style={paper} />

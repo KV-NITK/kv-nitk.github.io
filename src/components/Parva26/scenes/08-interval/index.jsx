@@ -44,9 +44,15 @@ export function IntervalScene() {
         return
       }
       const { overlay, screen, card, dim, house, doors, left, right } = move.current
+      // Open once the scroll is past nearly all of the move. Read from the
+      // scroll position itself, on every scroll and re-measure: a page that
+      // arrives already scrolled past (coming back from a stall) doesn't
+      // always get a progress update from the trigger.
       let opened = null
-      const opening = (self) => {
-        const now = self.progress > 0.95
+      const opening = () => {
+        const st = tl.scrollTrigger
+        if (!st) return
+        const now = window.scrollY >= st.start + (st.end - st.start) * 0.95
         if (now === opened) return
         opened = now
         setOpen(now)
@@ -67,11 +73,12 @@ export function IntervalScene() {
           scrub: 0.5,
           invalidateOnRefresh: true,
           onToggle: (self) => promote(self.isActive),
-          onUpdate: opening,
-          onRefresh: opening,
         },
       })
       triggerRef.current = tl.scrollTrigger
+      window.addEventListener('scroll', opening, { passive: true })
+      ScrollTrigger.addEventListener('refresh', opening)
+      opening()
 
       tl.to({}, { duration: 0.1 })
         // The worn reel jumps once
@@ -95,6 +102,8 @@ export function IntervalScene() {
 
       return () => {
         promote(false)
+        window.removeEventListener('scroll', opening)
+        ScrollTrigger.removeEventListener('refresh', opening)
         triggerRef.current = null
       }
     },

@@ -16,8 +16,8 @@ export const FEET_ORIGIN = { x: 0.5, y: 0.92 }
 // Frame number of a facing at a step of the walk (0–3).
 export const frameOf = (facing, step = 0) => FACING_ROW[facing] * FRAMES_PER_ROW + step
 
-// TODO(content): proofread the Kannada.
+// The ids stay 'boy' and 'girl': they are what a visitor's pick is stored as.
 export const CHARACTERS = [
-  { id: 'boy', sheet: boy, kn: 'ಹುಡುಗ', en: 'Boy' },
-  { id: 'girl', sheet: girl, kn: 'ಹುಡುಗಿ', en: 'Girl' },
+  { id: 'boy', sheet: boy, kn: 'ಕೃಷ್ಣ', en: 'Krishna' },
+  { id: 'girl', sheet: girl, kn: 'ರುಕ್ಮಿಣಿ', en: 'Rukmini' },
 ]

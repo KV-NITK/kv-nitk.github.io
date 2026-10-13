@@ -35,7 +35,7 @@ export function CharacterPicker({ onPick, onClose }) {
             key={c.id}
             type="button"
             onClick={() => onPick(c.id)}
-            data-en={`Walk the market as the ${c.en.toLowerCase()}`}
+            data-en={`Walk the market as ${c.en}`}
             className="group relative flex cursor-pointer flex-col items-center rounded-sm bg-arishina px-[max(0.5rem,2cqw)] pb-[1.5cqh] pt-[2cqh] text-theatre shadow-[0_0.8rem_1.2rem_rgba(0,0,0,.55)] transition-transform duration-200 hover:-translate-y-1.5 hover:-rotate-1 focus-visible:-translate-y-1.5 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-kumkuma motion-reduce:transition-none"
           >
             <span

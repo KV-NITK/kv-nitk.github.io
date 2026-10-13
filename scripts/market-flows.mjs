@@ -47,7 +47,7 @@ const check = (name, ok, extra = '') => { console.log(ok ? 'PASS' : 'FAIL', name
 const box = () => page.locator('#parva-sante')
 const pos = () => page.evaluate(() => ({ x: Math.round(window.__p26Market.walker.x), y: Math.round(window.__p26Market.walker.y), near: window.__p26Market.nearId }))
 const world = () => page.evaluate(() => { const L = window.__p26Market.opts.layout; return { W: L.width, H: L.height, door: L.door, shops: L.shops, spawn: L.spawn, wallY: L.wallY } })
-const put = (x, y) => page.evaluate(([x, y]) => { const s = window.__p26Market; s.path = []; s.pending = null; s.walker.x = x; s.walker.y = y }, [x, y])
+const put = (x, y) => page.evaluate(([x, y]) => { const s = window.__p26Market; s.path = []; s.walker.x = x; s.walker.y = y }, [x, y])
 const scrollY = () => page.evaluate(() => Math.round(window.scrollY))
 // world -> page coordinates, through the canvas box (FIT scaling)
 const toPage = (wx, wy) => page.evaluate(([wx, wy]) => {
@@ -76,7 +76,7 @@ check('the stalls are buttons too', await page.getByRole('link', { name: /Merch/
 // 2. The start screen is inside the box; no game before a role
 check('start screen asks who walks', await box().getByText('Pick who walks').isVisible())
 check('no game before choosing', (await page.locator('#parva-sante canvas').count()) === 0)
-await box().getByRole('button', { name: /ಹುಡುಗಿ|Girl/ }).click()
+await box().getByRole('button', { name: /ರುಕ್ಮಿಣಿ|Rukmini/ }).click()
 await page.waitForFunction(() => window.__p26Market?.walker, null, { polling: 200, timeout: 30000 })
 check('role remembered', (await page.evaluate(() => localStorage.getItem('parva26:market:character'))) === '"girl"')
 const W = await world()
@@ -148,8 +148,11 @@ if (!phone) {
   const rb = await box().boundingBox()
   const p0 = await pos()
   const y0 = await scrollY()
-  await swipe(rb.x + rb.width / 2, rb.y + rb.height * 0.7, 300)
-  await page.waitForTimeout(800)
+  // (the first synthetic gesture after a load is sometimes dropped: try twice)
+  for (let i = 0; i < 2 && (await scrollY()) === y0; i++) {
+    await swipe(rb.x + rb.width / 2, rb.y + rb.height * 0.7, 300)
+    await page.waitForTimeout(800)
+  }
   // (a synthetic swipe scrolls less than a finger, so any scroll will do)
   check('a swipe on the game scrolls the page', (await scrollY()) > y0, `${y0} -> ${await scrollY()}`)
   const p1 = await pos()
@@ -186,7 +189,8 @@ await box().getByRole('button', { name: /Back to the show/ }).click()
 await page.waitForFunction(() => { const r = document.getElementById('release-day')?.getBoundingClientRect(); return r && Math.abs(r.top) < innerHeight * 0.6 }, null, { polling: 200, timeout: 8000 })
   .then(() => check('the door scrolls on to the next scene', true), () => check('the door scrolls on to the next scene', false))
 
-// 11. Tapping the merch stall walks there and goes in; back returns to the market
+// 11. Tapping the merch stall walks there and raises its prompt, but only the
+// prompt goes in; back returns to the market
 await page.goto('about:blank')
 await page.goto(`${BASE}/rcb?debug#parva-sante`)
 await page.waitForFunction(() => window.__p26Market?.walker, null, { polling: 200, timeout: 30000 })
@@ -195,10 +199,19 @@ await centreBox()
 if (!phone) await box().getByRole('button', { name: /Click to play/ }).click()
 const merch = (await world()).shops.find((s) => s.id === 'merch')
 await tap(await toPage(merch.x, merch.base - merch.h / 2))
-await page.waitForURL('**/parva-26/merch', { timeout: 15000 }).then(() => check('tapping the merch stall goes into the shop', true), async () => check('tapping the merch stall goes into the shop', false, page.url() + ' ' + JSON.stringify(await pos())))
-await page.waitForFunction(() => document.title.includes('Parva Angadi'), null, { polling: 200, timeout: 15000 })
+await page.waitForFunction(() => window.__p26Market.nearId === 'merch' && !window.__p26Market.path.length, null, { polling: 200, timeout: 15000 })
+  .then(() => check('tapping the merch stall walks there', true), async () => check('tapping the merch stall walks there', false, JSON.stringify(await pos())))
+await page.waitForTimeout(1000)
+check('...and does not open the shop by itself', page.url().includes('/rcb'))
+const enter = box().getByRole('button', { name: /Parva Angadi/ })
+check('...but raises its prompt', await enter.isVisible())
+await enter.click()
+await page.waitForURL('**/parva-26/merch', { timeout: 15000 }).then(() => check('the prompt goes into the shop', true), () => check('the prompt goes into the shop', false, page.url()))
+// The landing page stays (hidden) under the loading screen until the shop is in
+await page.waitForFunction(() => document.title.includes('Parva Angadi') && !document.getElementById('parva-sante'), null, { polling: 200, timeout: 15000 })
 check('the shop opens at its top', (await scrollY()) === 0, String(await scrollY()))
 check('merch counted as visited', (await page.evaluate(() => localStorage.getItem('parva26:market:visited'))) === '["merch"]')
+await page.evaluate(() => { window.__p26Market = null }) // the old scene's, from before the shop
 await page.goBack()
 await page.waitForFunction(() => { const b = document.getElementById('parva-sante')?.getBoundingClientRect(); return b && b.top > 0 && b.bottom < innerHeight }, null, { polling: 200, timeout: 20000 })
   .then(() => check('back returns to the market', true), async () => check('back returns to the market', false, page.url() + ' ' + JSON.stringify(await page.evaluate(() => ({ y: scrollY, top: document.getElementById('parva-sante')?.getBoundingClientRect().top })))))
@@ -206,13 +219,21 @@ await page.waitForFunction(() => window.__p26Market?.arrows, null, { polling: 20
 check('no arrow over a visited stall', await page.evaluate(() => !window.__p26Market.arrows.has('merch')))
 check('legend folds into ?', await box().getByRole('button', { name: 'How to play' }).isVisible())
 
+// 11b. Into the shop by the button, and back by a link in the app (as the
+// shop's logo does): the game must run again, not sit paused and empty
+await page.getByRole('link', { name: /Merch/ }).last().click()
+await page.waitForFunction(() => !document.getElementById('parva-sante'), null, { polling: 200, timeout: 15000 })
+await page.evaluate(() => { window.__p26Market = null; history.pushState({ idx: 99, key: 'flows', usr: null }, '', '/rcb?debug#parva-sante'); dispatchEvent(new PopStateEvent('popstate', { state: history.state })) })
+await page.waitForFunction(() => window.__p26Market?.walker && !window.__p26Market.game.isPaused, null, { polling: 200, timeout: 30000 })
+  .then(() => check('a link back to the market runs the game again', true), async () => check('a link back to the market runs the game again', false, JSON.stringify(await page.evaluate(() => { const sp = document.getElementById('interval').parentElement; const r = sp.getBoundingClientRect(); return { scene: !!window.__p26Market, paused: window.__p26Market?.game.isPaused, y: Math.round(scrollY), spacerTop: Math.round(r.top + scrollY), spacerH: Math.round(r.height), sectionH: document.getElementById('interval').offsetHeight, vh: innerHeight, boxTop: Math.round(document.getElementById('parva-sante').getBoundingClientRect().top), active: document.activeElement?.tagName } }))))
+
 // 12. Change role, in the box
 await box().getByRole('button', { name: /Change role/ }).click()
 check('change role opens the start screen', await box().getByText('Pick who walks').isVisible())
 await page.keyboard.press('Escape')
 check('Escape closes it', (await box().getByText('Pick who walks').count()) === 0)
 await box().getByRole('button', { name: /Change role/ }).click()
-await box().getByRole('button', { name: /ಹುಡುಗ(?!ಿ)|Boy/ }).click()
+await box().getByRole('button', { name: /ಕೃಷ್ಣ|Krishna/ }).click()
 await page.waitForFunction(() => window.__p26Market?.opts.character.id === 'boy', null, { polling: 200, timeout: 30000 })
   .then(() => check('picking the other role switches walker', true), () => check('picking the other role switches walker', false))
 

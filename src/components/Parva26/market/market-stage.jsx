@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { En } from '@p26/lib/prefs'
 import { save, useStoredState } from '@p26/lib/storage'
-import { useOnScreen } from '@p26/lib/on-screen'
+import { ScrollTrigger } from '@p26/lib/gsap'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { CharacterPicker } from '@p26/market/character-picker'
 import { MarketWorld } from '@p26/market/market-world'
@@ -29,6 +29,42 @@ const WIDE = '(min-width: 640px)'
 const BOX = 'aspect-[3/4] w-[min(100%,calc(65svh*3/4))] sm:aspect-video sm:w-[min(100%,80rem,calc(64svh*16/9))]'
 const GAME_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'e', 'E'])
 
+// How far the box is from the screen: 0 on it, else the distance in screens.
+// Measured on scroll, resize and each scroll-trigger re-measure rather than
+// with an IntersectionObserver: the pins above re-insert the interval into
+// the page as they are rebuilt, and an observer can lose track of the box
+// then and report it off screen for good, which would leave the game paused.
+function useScreensAway(ref) {
+  const [away, setAway] = useState(Infinity)
+  useEffect(() => {
+    let raf = 0
+    const measure = () => {
+      raf = 0
+      const el = ref.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const vh = window.innerHeight
+      const gap = r.bottom < 0 ? -r.bottom : r.top > vh ? r.top - vh : 0
+      // Rounded to tenths, so scrolling doesn't re-render on every pixel
+      setAway(r.width === 0 ? Infinity : Math.round((gap / vh) * 10) / 10)
+    }
+    const soon = () => {
+      if (!raf) raf = requestAnimationFrame(measure)
+    }
+    measure()
+    window.addEventListener('scroll', soon, { passive: true })
+    window.addEventListener('resize', soon)
+    ScrollTrigger.addEventListener('refresh', soon)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', soon)
+      window.removeEventListener('resize', soon)
+      ScrollTrigger.removeEventListener('refresh', soon)
+    }
+  }, [ref])
+  return away
+}
+
 function useMatches(query) {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
   useEffect(() => {
@@ -54,8 +90,9 @@ export function MarketStage({ ready = true, className }) {
   const [nudge, setNudge] = useState(0) // keys pressed before clicking the game
 
   // Load when close, run only when seen
-  const close = useOnScreen(boxRef, { rootMargin: '150% 0px' })
-  const seen = useOnScreen(boxRef)
+  const away = useScreensAway(boxRef)
+  const close = away <= 1.5
+  const seen = away === 0
   const [armed, setArmed] = useState(false)
   useEffect(() => {
     if (close) setArmed(true)

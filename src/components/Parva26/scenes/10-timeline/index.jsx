@@ -200,13 +200,13 @@ function Projected({ entry, index, reduced, subtitles }) {
       </div>
       {last && (
         <a
-          href="#fan-pass"
+          href="#parva-sante"
           className="absolute inset-x-3 top-[4.3rem] flex min-h-11 flex-col items-center justify-center rounded-2xl bg-arishina/95 px-4 py-1 text-center text-theatre shadow-[0_4px_10px_rgba(0,0,0,.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina sm:inset-x-auto sm:bottom-1 sm:left-1/2 sm:top-auto sm:-translate-x-1/2 sm:flex-row sm:gap-2 sm:whitespace-nowrap sm:rounded-full sm:py-0"
         >
           <span lang="kn" className="font-kn-display text-base font-bold">
             ಮುಂದಿನ ಫ್ರೇಮ್ ನಿಮ್ಮದು
           </span>
-          {subtitles && <span className="text-sm font-semibold leading-tight"><span className="hidden sm:inline">· </span>The next frame is yours: make your fan pass</span>}
+          {subtitles && <span className="text-sm font-semibold leading-tight"><span className="hidden sm:inline">· </span>The next frame is yours: get the Parva tee at the market</span>}
         </a>
       )}
     </div>

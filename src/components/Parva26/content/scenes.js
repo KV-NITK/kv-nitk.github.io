@@ -12,7 +12,6 @@ export const SCENES = [
   { scene: 2, id: 'title', act: 'first-half', kn: 'ಪರ್ವ', en: 'Parva 2026' },
   { scene: 3, id: 'certificate', act: 'first-half', kn: 'ಪ್ರಮಾಣ ಪತ್ರ', en: 'Certificate' },
   { scene: 4, id: 'gandhada-gudi', act: 'first-half', kn: 'ಗಂಧದ ಗುಡಿ', en: 'Why sandalwood' },
-  { scene: 5, id: 'fan-pass', act: 'first-half', kn: 'ಅಭಿಮಾನಿ ಪಾಸ್', en: 'Fan Pass' },
   { scene: 6, id: 'now-showing', act: 'first-half', kn: 'ಇಂದೇ ನೋಡಿ', en: 'Now Showing' },
   { scene: 7, id: 'guests', act: 'first-half', kn: 'ವಿಶೇಷ ಪಾತ್ರದಲ್ಲಿ', en: 'Special Appearance' },
   { scene: 8, id: 'interval', act: 'interval', kn: 'ವಿರಾಮ', en: 'Interval' },

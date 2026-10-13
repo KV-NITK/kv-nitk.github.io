@@ -9,19 +9,16 @@ import { RowSevenNeighbour } from '@p26/scenes/02-title/audience'
 import { MEAL } from '@p26/content'
 import { cn } from '@/lib/utils'
 
-// The row in front of you (brief, Scene 2). The three main actions are
-// tickets tucked behind the top rail of the seat straight ahead: hovering one
-// lifts it and dips the others, and clicking pulls it out and flies it at the
-// camera before cutting to its section. The golden fan pass sits in the middle
-// because it's the main promotion.
+// The row in front of you (brief, Scene 2). The main actions are tickets
+// tucked behind the top rail of the seat straight ahead: hovering one lifts
+// it and dips the others, and clicking pulls it out and flies it at the
+// camera before cutting to its section, the market in the interval.
 //
-// On a phone there is room for one thing to do: the food coupon, as a wide
-// ticket with its price (`PhoneFace`). The fan pass and
-// merch tickets wait for the booking scene (`hideOnPhone`).
+// On a phone the food coupon is a wide ticket with its price (`PhoneFace`);
+// a ticket can wait for the market instead (`hideOnPhone`).
 const TICKETS = [
   // Food coupons are not on sale.
   // { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
-  { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket, hideOnPhone: true },
   { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 
@@ -223,32 +220,6 @@ function BookTicket({ kn, en, lit }) {
         <span className="font-poster text-[1.9rem] leading-none text-[#fff3b8] [text-shadow:0_1px_0_rgba(40,70,20,.7)]">₹{MEAL.price}</span>
       </span>
       <Sheen lit={lit} />
-    </span>
-  )
-}
-
-// Gold foil inside a sandalwood border. It glows faintly: it's the main promotion.
-function GoldenTicket({ kn, en, lit }) {
-  return (
-    <span
-      className="relative block rounded-[5px] p-[5px] shadow-[0_0_22px_rgba(242,193,46,.45)]"
-      style={{
-        backgroundImage:
-          'repeating-linear-gradient(90deg, rgba(90,50,20,.18) 0 1px, transparent 1px 4px), linear-gradient(180deg, #d8a870, #b98450)',
-      }}
-    >
-      <span
-        className="relative flex h-[5.8rem] w-[6.4rem] flex-col items-center justify-center gap-0.5 rounded-[3px] pb-6 text-center text-[#5a1c0a] outline-1 -outline-offset-4 outline-dotted outline-[#7a4a1c]/50 sm:h-[7rem] sm:w-[9.4rem] sm:pb-7"
-        style={{
-          backgroundImage:
-            'linear-gradient(125deg, #f9e39a 0%, #e0b24a 30%, #f6d67e 48%, #c99532 70%, #f2d27c 100%)',
-        }}
-      >
-        <span aria-hidden className="font-poster text-[0.6rem] tracking-[0.3em] text-[#7a3a12]/80">★ ಪರ್ವ ★</span>
-        <span lang="kn" className="block whitespace-nowrap font-kn-display text-base font-extrabold leading-tight [text-shadow:0_1px_0_rgba(255,240,190,.6)] sm:text-2xl">{kn}</span>
-        <Caption en={en} className="text-[#6b2a0e]/85" />
-        <Sheen lit={lit} />
-      </span>
     </span>
   )
 }

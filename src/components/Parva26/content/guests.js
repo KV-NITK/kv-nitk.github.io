@@ -1,6 +1,16 @@
+import karajagiPhoto from '@p26/assets/guests/gururaj-karajagi.webp'
+import nagabharanaPhoto from '@p26/assets/guests/ts-nagabharana.webp'
+import krishnegowdaPhoto from '@p26/assets/guests/krishnegowda.webp'
+import sulibelePhoto from '@p26/assets/guests/chakravarthi-sulibele.webp'
+import hegdePhoto from '@p26/assets/guests/santosh-hegde.webp'
 import baligarPhoto from '@p26/assets/guests/shambhu-baligar.webp'
-import bhavvanaPhoto from '@p26/assets/guests/bhavvana-rao.webp'
+import kiranPhoto from '@p26/assets/guests/kiran-raj.webp'
+import naveenPhoto from '@p26/assets/guests/naveen-shankar.webp'
+import shravanPhoto from '@p26/assets/guests/shravan.webp'
+import nithinPhoto from '@p26/assets/guests/nithin-kamath.webp'
 import vinayakPhoto from '@p26/assets/guests/vinayak-kulkarni.webp'
+import harshaPhoto from '@p26/assets/guests/shree-harsha.webp'
+import bhavanaPhoto from '@p26/assets/guests/bhavvana-rao.webp'
 
 // Scene 7: ವಿಶೇಷ ಪಾತ್ರದಲ್ಲಿ · Special Appearance, the lobby's wall of honour.
 // This year's guests stay under a veil until their reveal date. The server
@@ -18,11 +28,23 @@ export const GUESTS = [
   { id: 'g4', place: 4, revealDate: '2026-10-25', role: { kn: 'ಗೌರವ ಅತಿಥಿ', en: 'Guest of Honour' }, teaser: { kn: 'ಒಂದು ಸುಳಿವು: ರಂಗಭೂಮಿ', en: 'One clue: the stage' } },
 ]
 
-// Guests of past Parvas, framed on the same wall with their lamps lit. The
-// photos are cropped from the Parva 2025 guest posters.
-// TODO(content): confirm the Kannada spellings with each guest.
+// Guests of past Parvas, framed on the same wall with their lamps lit, in
+// the order of the "Guests till now" page of the 2026 brochure. Photos are
+// cropped to 3:4 around the face.
+// TODO(content): confirm the Kannada spellings with each guest; a `role`
+// ({ kn, en }) puts a ribbon under a guest's nameplate.
 export const PAST_GUESTS = [
-  { id: 'baligar', year: 2025, photo: baligarPhoto, name: { kn: 'ಡಾ. ಶಂಭು ಬಳಿಗಾರ', en: 'Dr. Shambhu Baligar' }, role: { kn: 'ಮುಖ್ಯ ಅತಿಥಿ', en: 'Chief Guest' }, when: { kn: 'ನವೆಂಬರ್ 1, 2025 · SJA', en: '1 Nov 2025, SJA' }, line: 'Opened Parva 2025.' },
-  { id: 'bhavvana', year: 2025, photo: bhavvanaPhoto, name: { kn: 'ಭಾವನಾ ರಾವ್', en: 'Bhavvana Rao' }, role: { kn: 'ಗೌರವ ಅತಿಥಿ', en: 'Guest of Honour' }, when: { kn: 'ನವೆಂಬರ್ 2, 2025 · SJA', en: '2 Nov 2025, SJA' }, line: 'Guest of honour on the second day.' },
-  { id: 'vinayak', year: 2025, photo: vinayakPhoto, name: { kn: 'ವಿನಾಯಕ ಕುಲಕರ್ಣಿ', en: 'Vinayak Kulkarni' }, role: { kn: 'ಹಾಸ್ಯ ಕಲಾವಿದ', en: 'Stand-up comic' }, when: { kn: 'ನವೆಂಬರ್ 2, 2025 · ರಾತ್ರಿ 9', en: '2 Nov 2025, 9 PM' }, line: 'Stand-up comedy at SJA.' },
+  { id: 'karajagi', photo: karajagiPhoto, name: { kn: 'ಡಾ. ಗುರುರಾಜ ಕರಜಗಿ', en: 'Dr. Gururaj Karajagi' } },
+  { id: 'nagabharana', photo: nagabharanaPhoto, name: { kn: 'ಟಿ. ಎಸ್. ನಾಗಾಭರಣ', en: 'T. S. Nagabharana' } },
+  { id: 'krishnegowda', photo: krishnegowdaPhoto, name: { kn: 'ಪ್ರೊ. ಕೃಷ್ಣೇಗೌಡ', en: 'Prof. Krishnegowda' } },
+  { id: 'sulibele', photo: sulibelePhoto, name: { kn: 'ಚಕ್ರವರ್ತಿ ಸೂಲಿಬೆಲೆ', en: 'Chakravarthi Sulibele' } },
+  { id: 'hegde', photo: hegdePhoto, name: { kn: 'ನ್ಯಾ. ಎನ್. ಸಂತೋಷ್ ಹೆಗ್ಡೆ', en: 'Justice N. Santosh Hegde' } },
+  { id: 'baligar', photo: baligarPhoto, name: { kn: 'ಡಾ. ಶಂಭು ಬಳಿಗಾರ', en: 'Dr. Shambhu Baligar' } },
+  { id: 'kiran', photo: kiranPhoto, name: { kn: 'ಕಿರಣ್ ರಾಜ್', en: 'Kiran Raj' } },
+  { id: 'naveen', photo: naveenPhoto, name: { kn: 'ನವೀನ್ ಶಂಕರ್', en: 'Naveen Shankar' } },
+  { id: 'shravan', photo: shravanPhoto, name: { kn: 'ಶ್ರವಣ್', en: 'Shravan' } },
+  { id: 'nithin', photo: nithinPhoto, name: { kn: 'ನಿತಿನ್ ಕಾಮತ್', en: 'Nithin Kamath' } },
+  { id: 'vinayak', photo: vinayakPhoto, name: { kn: 'ವಿನಾಯಕ ಕುಲಕರ್ಣಿ', en: 'Vinayak Kulkarni' } },
+  { id: 'harsha', photo: harshaPhoto, name: { kn: 'ಶ್ರೀಹರ್ಷ', en: 'Shree Harsha' } },
+  { id: 'bhavana', photo: bhavanaPhoto, name: { kn: 'ಭಾವನಾ ರಾವ್', en: 'Bhavana Rao' } },
 ]

@@ -85,7 +85,6 @@ export function GuestsScene() {
     // The preview guest is chosen once; it shouldn't jump as the clock ticks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const pastYears = [...new Set(PAST_GUESTS.map((g) => g.year))].sort((a, b) => b - a)
 
   // Veils and lamps only move while the wall is on screen.
   const live = useOnScreen(stageRef)
@@ -105,8 +104,10 @@ export function GuestsScene() {
     }
   }, [open])
 
-  // On a laptop the section holds for about a screen while the camera pans
-  // along the wall; the rope barrier in front moves faster, for depth.
+  // On a laptop the section holds while the camera pans along the wall, for
+  // longer the longer the wall (0.6 of a pixel of scroll per pixel of wall,
+  // and at least 1.1 screens); the rope barrier in front moves faster, for
+  // depth.
   // The wall and rope only ever slide (never scale), so they keep their own
   // layers for as long as the scene is near the screen: dropping the layer
   // after each scroll, as the hero does, would re-raster the whole wall on
@@ -128,7 +129,14 @@ export function GuestsScene() {
         near.observe(stageRef.current)
         gsap
           .timeline({
-            scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=110%', pin: true, scrub: 0.6, invalidateOnRefresh: true },
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top top',
+              end: () => `+=${Math.max(window.innerHeight * 1.1, distance() * 0.6)}`,
+              pin: true,
+              scrub: 0.6,
+              invalidateOnRefresh: true,
+            },
           })
           .to({}, { duration: 0.1 })
           .to(wall, { x: () => -distance(), ease: 'none', duration: 1 })
@@ -179,24 +187,16 @@ export function GuestsScene() {
             <Pilaster />
 
             {/* Guests of past Parvas */}
-            {pastYears.map((year) => (
-              <div key={year} className="relative flex flex-col items-center px-4 pb-14 pt-4 lg:justify-center lg:px-[7cqh] lg:pb-[13cqh] lg:pt-[13cqh]">
-                <BrassPlate as="h3" kn={`ಪರ್ವ ${year}ರ ಅತಿಥಿಗಳು`} en={`Guests of Parva ${year}`} subtitles={subtitles} />
-                <ul className="mt-2 grid w-full max-w-md grid-cols-2 justify-items-center gap-x-3 gap-y-8 [&>li:last-child:nth-child(odd)]:col-span-2 lg:mt-[1cqh] lg:flex lg:w-auto lg:max-w-none lg:gap-[3.6cqh]">
-                  {PAST_GUESTS.filter((g) => g.year === year).map((guest) => (
-                    <li key={guest.id} data-guest={guest.id}>
-                      <GuestFrame
-                        guest={{ ...guest, card: { when: guest.when, line: guest.line } }}
-                        past
-                        open={open === guest.id}
-                        onToggle={toggle(guest.id)}
-                        className={SIZES.past}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <div className="relative flex flex-col items-center px-4 pb-14 pt-4 lg:justify-center lg:px-[7cqh] lg:pb-[13cqh] lg:pt-[13cqh]">
+              <BrassPlate as="h3" kn="ಇದುವರೆಗಿನ ಅತಿಥಿಗಳು" en="Guests till now" subtitles={subtitles} />
+              <ul className="mt-2 grid w-full max-w-md grid-cols-2 justify-items-center gap-x-3 gap-y-8 [&>li:last-child:nth-child(odd)]:col-span-2 lg:mt-[1cqh] lg:flex lg:w-auto lg:max-w-none lg:gap-[3.6cqh]">
+                {PAST_GUESTS.map((guest) => (
+                  <li key={guest.id} data-guest={guest.id}>
+                    <GuestFrame guest={guest} past open={open === guest.id} onToggle={toggle(guest.id)} className={SIZES.past} />
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <Pilaster />
 

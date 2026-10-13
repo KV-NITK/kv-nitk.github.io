@@ -20,9 +20,10 @@ const TAP_SLOP = 12
 
 // The forecourt: a fixed camera on the painted ground, the theatre, the
 // stalls and the lamps, with the visitor's walker moving over it. It reports
-// two things to the page: which place the walker is standing at (onNear) and
-// when they use it (onAction), by pressing E or by tapping the place and
-// letting the walker go there.
+// two things to the page: which place the walker is standing at (onNear),
+// where the page raises the place's prompt, and when they use it with the
+// E key (onAction). Tapping a place walks there; going in is always the
+// visitor's own choice, from the prompt or E, never automatic.
 //
 // So that nobody has to guess what to do: a bouncing arrow hangs over each
 // open stall until it has been visited (`visited`), a trail of footprints
@@ -34,7 +35,6 @@ export class ForecourtScene extends Phaser.Scene {
     this.opts = opts
     this.facing = 'down'
     this.path = [] // the points a tap sent the walker through
-    this.pending = null // the place a tap asked to use once there
     this.nearId = null
     this.stuck = 0
   }
@@ -123,8 +123,8 @@ export class ForecourtScene extends Phaser.Scene {
     this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E')
     this.keys.E.on('down', () => this.nearId && this.use(this.nearId))
 
-    // A tap on a place sends the walker to it and uses it on arrival; a tap
-    // on the ground just sends the walker there. Both count on release, and
+    // A tap on a place sends the walker to stand at it, where its prompt
+    // rises; a tap on the ground sends the walker there. Both count on release, and
     // only if the pointer stayed put: a swipe that starts on the game is the
     // page scrolling, which the browser takes over (and cancels the touch).
     this.input.on('pointerup', (pointer, over) => {
@@ -133,7 +133,7 @@ export class ForecourtScene extends Phaser.Scene {
       const place = id && this.places.find((p) => p.id === id)
       const b = L.bounds
       const to = place ? place.stand : { x: Phaser.Math.Clamp(pointer.worldX, b.x0, b.x1), y: Phaser.Math.Clamp(pointer.worldY, b.y0, b.y1) }
-      this.walkTo(to, place ? id : null)
+      this.walkTo(to)
       this.mark(to)
     })
 
@@ -151,7 +151,6 @@ export class ForecourtScene extends Phaser.Scene {
 
     if (vx || vy) {
       this.path = []
-      this.pending = null
       this.ring.setVisible(false)
     } else if (this.path.length) {
       const next = this.path[0]
@@ -184,7 +183,7 @@ export class ForecourtScene extends Phaser.Scene {
       if (this.path.length && Math.hypot(w.x - before.x, w.y - before.y) < step * 0.25) {
         if (++this.stuck > 8) {
           this.path = []
-          this.pending = null
+          this.ring.setVisible(false)
           this.stuck = 0
         }
       } else {
@@ -233,13 +232,10 @@ export class ForecourtScene extends Phaser.Scene {
     this.input.keyboard?.resetKeys()
   }
 
-  // Send the walker to a point, round whatever is in the way; `place` is a
-  // place to use once there.
-  walkTo(point, place = null) {
+  // Send the walker to a point, round whatever is in the way.
+  walkTo(point) {
     this.path = findPath(this.opts.layout, { x: this.walker.x, y: this.walker.y }, point)
-    this.pending = place
     this.stuck = 0
-    if (!this.path.length) this.pending = null
   }
 
   // The place the walker is standing at, if any, reported when it changes.
@@ -260,15 +256,12 @@ export class ForecourtScene extends Phaser.Scene {
     }
   }
 
-  // A tap asked to use a place: do it if the walker really got there.
   arrive() {
     this.ring.setVisible(false)
     this.updateNear()
-    if (this.pending && this.pending === this.nearId) this.use(this.pending)
-    this.pending = null
   }
 
-  // Using a place takes down its arrow: it has been found.
+  // Using a place with E takes down its arrow: it has been found.
   use(id) {
     const arrow = this.arrows.get(id)
     if (arrow) {
