@@ -20,9 +20,10 @@ import { cn } from '@/lib/utils'
 // merch tickets wait for the booking scene (`hideOnPhone`).
 const LEFT = Math.max(0, MEAL.coupons - MEAL.sold)
 const TICKETS = [
-  { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}${LEFT ? ` · ${LEFT} left` : ' · sold out'}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
+  // Food coupons are not on sale.
+  // { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}${LEFT ? ` · ${LEFT} left` : ' · sold out'}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
   { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket, hideOnPhone: true },
-  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag, hideOnPhone: true },
+  { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 
 // Sized by --seat (how much of the seat shows below its rail) and --peek (how

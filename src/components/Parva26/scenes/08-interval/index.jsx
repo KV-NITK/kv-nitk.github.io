@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { En, usePrefs } from '@p26/lib/prefs'
 import { sayLine } from '@p26/chrome/subtitle-strip'
-import { FeastPoster } from '@p26/ui/stalls/feast-poster'
-import { BookingCounter } from '@p26/ui/stalls/booking-counter'
+// import { FeastPoster } from '@p26/ui/stalls/feast-poster'
+// import { BookingCounter } from '@p26/ui/stalls/booking-counter'
 import { Coupon } from '@p26/ui/coupon'
 import { Flourish } from '@p26/ui/flourish'
 import { MEAL } from '@p26/content'
@@ -143,9 +143,11 @@ export function IntervalScene() {
       <div ref={lobbyRef} data-lobby data-lit="" className="group/lobby relative overflow-hidden px-4 pb-24 pt-[7.5rem] sm:px-8" style={LOBBY}>
         <TubeLight />
         <Dado />
-        <div className="relative z-10 mx-auto grid max-w-[80rem] justify-items-center gap-14 lg:grid-cols-[1fr_1.1fr_1.15fr] lg:items-end lg:gap-6">
+        <div className="relative z-10 mx-auto grid max-w-[80rem] justify-items-center gap-14 lg:max-w-[28rem] lg:items-end lg:gap-6">
+          {/* Food coupons are not on sale: poster and booking window are off.
           <FeastPoster className="w-full max-w-[21rem]" />
           <BookingCounter className="w-full" />
+          */}
           <TeeShowcase className="w-full" />
         </div>
       </div>

@@ -205,8 +205,8 @@ function TicketStub() {
   return (
     <a
       href="#interval"
-      aria-label="Book food coupons and merch"
-      data-en="Book · food coupons and merch"
+      aria-label="Book merch"
+      data-en="Book · merch"
       className={cn('group pointer-events-auto relative block shrink-0 rounded-sm', focusRing)}
     >
       <span ref={swingRef} className="relative block origin-top pt-2.5">

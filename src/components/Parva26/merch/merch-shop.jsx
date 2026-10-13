@@ -13,7 +13,8 @@ import API_URL from '../../../api/api'
 import { getProducts } from '../../../api/payments'
 import { useStoredState } from '@p26/lib/storage'
 import { BuyNow } from '@p26/merch/buy-now'
-import { BhooriBhojanaSection } from '@p26/merch/BhooriBhojanaSection'
+// Food coupons are not on sale: the section and its order line are commented out.
+// import { BhooriBhojanaSection } from '@p26/merch/BhooriBhojanaSection'
 
 // One card per t-shirt design, with its fit and sizes in the order the
 // catalog lists them. Names, fits, sizes and prices all come from the server;
@@ -112,14 +113,14 @@ export function MerchShop() {
           </Link>
         </div>
 
-        {/* ── Bhoori Bhojana food-pass section (spec §5.1, Phase 2) ── */}
-        {/* Mounted additively above the Parva Angadi grid; no existing code touched */}
+        {/* Bhoori Bhojana food coupons are not on sale right now.
         <BhooriBhojanaSection
           quantity={foodQty}
           onChange={setFoodQty}
           unitPrice={foodProduct?.unitPrice ?? 199}
           maxQuantity={foodProduct?.maxQuantity ?? 10}
         />
+        */}
 
         {/* The shop's sign, once for all the shirts */}
         <h1 className="mx-auto mt-6 w-fit rounded-[6px] bg-kumkuma px-8 pb-2 pt-1.5 text-center text-[#fff4dc] shadow-[inset_0_-3px_0_rgba(0,0,0,.2),0_0.5rem_1rem_rgba(0,0,0,.4)]">
@@ -142,16 +143,17 @@ export function MerchShop() {
         </div>
 
         {/* Spec §5.1: combine shirt and food lines; show cart when either has items */}
-        {(designs?.length > 0 || foodQty > 0) && (() => {
+        {designs?.length > 0 && (() => {
           // Food line built here; price falls back to MEAL.price if catalog not yet loaded
-          const foodLines = foodQty > 0 ? [{
-            productId: 'bhoori-bhojana',
-            name: foodProduct?.name || 'Bhoori Bhojana Food Pass',
-            price: foodProduct?.unitPrice ?? 199,
-            quantity: foodQty,
-            category: 'FOOD',
-          }] : []
-          const allLines = [...lines, ...foodLines]
+          // Food coupons are not on sale: only shirts go into the order.
+          // const foodLines = foodQty > 0 ? [{
+          //   productId: 'bhoori-bhojana',
+          //   name: foodProduct?.name || 'Bhoori Bhojana Food Pass',
+          //   price: foodProduct?.unitPrice ?? 199,
+          //   quantity: foodQty,
+          //   category: 'FOOD',
+          // }] : []
+          const allLines = [...lines]
           return (
             <BuyNow
               lines={allLines}
