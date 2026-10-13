@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { Routes, Route, BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 
 import './App.css';
@@ -32,8 +32,8 @@ import NotFound from './components/NotFound/NotFound';
 // Loaded on its own, so these don't pull in the rest of the site's code
 // and the rest of the site doesn't pull in their fonts and effects.
 // The Parva 2026 landing page is served at /rcb; /parva-26 itself is a 404.
+// The Parva Market lives in its interval, so its old address leads there.
 const Parva26 = lazy(() => import('./components/Parva26/Parva26'));
-const Parva26Market = lazy(() => import('./components/Parva26/market/Market'));
 const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
 const ParvaScanner = lazy(() => import('./components/Parva26/scan/Scanner'));
 
@@ -56,7 +56,7 @@ function AppRoutes() {
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/rcb" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
-        <Route path="/parva-26/market" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Market /></Suspense>} />
+        <Route path="/parva-26/market" element={<Navigate to="/rcb#parva-sante" replace />} />
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
         <Route path="/parva-26/scan" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><ParvaScanner /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />

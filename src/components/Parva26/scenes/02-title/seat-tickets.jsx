@@ -16,12 +16,11 @@ import { cn } from '@/lib/utils'
 // because it's the main promotion.
 //
 // On a phone there is room for one thing to do: the food coupon, as a wide
-// ticket with its price and how many are left (`phoneOnly`). The fan pass and
+// ticket with its price (`PhoneFace`). The fan pass and
 // merch tickets wait for the booking scene (`hideOnPhone`).
-const LEFT = Math.max(0, MEAL.coupons - MEAL.sold)
 const TICKETS = [
   // Food coupons are not on sale.
-  // { id: 'bhojana', href: '#bhoori-bhojana', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}${LEFT ? ` · ${LEFT} left` : ' · sold out'}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
+  // { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
   { id: 'pass', href: '#fan-pass', kn: 'ನಿಮ್ಮ ಪಾಸ್', en: 'Get your fan pass', label: 'Get your fan pass', tilt: 2, Face: GoldenTicket, hideOnPhone: true },
   { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
@@ -202,7 +201,7 @@ function LeafMark({ className }) {
 }
 
 // The phone's one ticket: the same banana-leaf green, wide enough for the
-// price and the coupons left on its stub.
+// price on its stub.
 function BookTicket({ kn, en, lit }) {
   return (
     <span
@@ -220,10 +219,8 @@ function BookTicket({ kn, en, lit }) {
         <Caption en="Book food coupon" className="text-[0.65rem] text-[#f6efd6]/85" />
       </span>
       <span aria-hidden className="my-2 border-r border-dashed border-[#f6efd6]/40" />
-      <span className="flex w-[6.2rem] shrink-0 flex-col items-center justify-start gap-1 pb-2 pt-2.5 text-center">
+      <span className="flex w-[6.2rem] shrink-0 flex-col items-center justify-center pb-2 pt-2.5 text-center">
         <span className="font-poster text-[1.9rem] leading-none text-[#fff3b8] [text-shadow:0_1px_0_rgba(40,70,20,.7)]">₹{MEAL.price}</span>
-        <span lang="kn" className="font-kn-body text-[0.8rem] font-bold leading-none">{LEFT ? `ಇನ್ನು ${LEFT}` : 'ಮುಗಿದಿದೆ'}</span>
-        <Caption en={LEFT ? 'left' : 'sold out'} className="text-[0.6rem] text-[#f6efd6]/80" />
       </span>
       <Sheen lit={lit} />
     </span>

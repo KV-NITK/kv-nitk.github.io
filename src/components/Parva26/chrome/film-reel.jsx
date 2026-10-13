@@ -28,9 +28,12 @@ export function FilmReel() {
     let fade = 0
     const update = () => {
       raf = 0
+      // Leaving for another page (the merch shop) can scroll the window
+      // after the reel is gone but before this effect is cleaned up
+      if (!barRef.current) return
       barRef.current.dataset.scrolling = 'true'
       clearTimeout(fade)
-      fade = setTimeout(() => { barRef.current.dataset.scrolling = 'false' }, 1500)
+      fade = setTimeout(() => { if (barRef.current) barRef.current.dataset.scrolling = 'false' }, 1500)
       const y = window.scrollY
       const max = document.documentElement.scrollHeight - window.innerHeight
       const progress = max > 0 ? Math.min(y / max, 1) : 0

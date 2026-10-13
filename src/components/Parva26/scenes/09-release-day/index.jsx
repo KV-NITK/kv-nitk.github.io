@@ -50,6 +50,8 @@ export function ReleaseDayScene() {
     const phone = window.innerWidth < 640
     thrower.current = createPetalThrower(canvasRef.current, pileRef.current, { max: phone ? 80 : 150 })
     const layout = () => {
+      // A resize can land as the page leaves, after the board is gone
+      if (!boardRef.current) return
       const w = stage.clientWidth
       const h = stage.clientHeight
       const scale = Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(1_400_000 / (w * h)))

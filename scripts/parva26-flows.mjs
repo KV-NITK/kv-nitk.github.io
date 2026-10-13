@@ -1,7 +1,8 @@
-// Interaction check for the Parva 2026 page (/parva-26): plays the main
-// flows with motion on (unveiling a guest, the lobby's Book link and tee
-// showcase, throwing flowers to 10,000, the rewind bench, a round of the
-// emoji game, the credits' drift) and reports PASS or FAIL for each.
+// Interaction check for the Parva 2026 page (/rcb): plays the main flows
+// with motion on (unveiling a guest, the Book link into the interval's
+// market, throwing flowers to 10,000, the rewind bench, a round of the
+// emoji game, the credits' drift) and reports PASS or FAIL for each. The
+// market game itself has its own check: scripts/market-flows.mjs.
 //
 //   node scripts/parva26-flows.mjs
 //
@@ -13,7 +14,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 const cache = join(homedir(), '.cache', 'ms-playwright')
 const browser = await chromium.launch({ executablePath: join(cache, readdirSync(cache).find((d) => d.startsWith('chromium_headless_shell')), 'chrome-headless-shell-linux64', 'chrome-headless-shell') })
-const URL = process.env.P26_URL ?? 'http://localhost:5198/parva-26'
+const URL = process.env.P26_URL ?? 'http://localhost:5198/rcb'
 const results = []
 const ok = (name, pass, detail = '') => results.push(`${pass ? 'PASS' : 'FAIL'} ${name}${detail ? ` (${detail})` : ''}`)
 const errors = []
@@ -37,27 +38,12 @@ await page.waitForTimeout(500)
 ok('guest info card', await page.isVisible('[data-guest="g1"] a[href="/events"]'))
 await page.close()
 
-// Interval: Book link, Buy needs a size, door, variants, tee turns, size chart
+// Interval: the Book link skips the doors and lands on the market's game
 page = await open()
-await page.click('a[aria-label="Book food coupons and merch"]')
+await page.click('a[aria-label="Book merch"]')
 await page.waitForTimeout(1500)
-ok('Book lands in the lobby', await page.evaluate(() => { const r = document.getElementById('bhoori-bhojana').getBoundingClientRect(); return r.top >= 0 && r.top < innerHeight }))
-await page.click('#angadi a[data-en="Buy the Parva tee"]')
-ok('Buy asks for a size', (await page.textContent('#angadi [role="status"]')).includes('Pick a size'))
-await page.click('#angadi button[aria-label="Open the showcase"]')
-await page.waitForTimeout(900)
-await page.click('#angadi button[aria-label="Sandal"]')
-await page.click('#angadi button[aria-label="M"]')
-const tee = await page.$('#angadi [role="img"]')
-const b = await tee.boundingBox()
-await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2)
-await page.mouse.down()
-await page.mouse.move(b.x + b.width / 2 + 220, b.y + b.height / 2, { steps: 10 })
-await page.mouse.up()
-await page.waitForTimeout(900)
-ok('tee turns to the back', (await tee.getAttribute('aria-label')).includes('Sandal, back'))
-await page.click('#angadi button[aria-expanded="false"]:has-text("ಅಳತೆ ಪಟ್ಟಿ")')
-ok('size chart opens', await page.isVisible('#angadi table'))
+ok('Book lands on the market', await page.evaluate(() => { const r = document.getElementById('parva-sante').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight }))
+ok('the stalls are buttons too', await page.isVisible('#interval a[href="/parva-26/merch"]'))
 await page.close()
 
 // Release day: holding the basket throws a stream; 10,000 brings the banner

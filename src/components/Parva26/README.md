@@ -12,7 +12,7 @@ scenes/         one folder per scene, numbered as in the spec
                   tickets, audience, arch, walls, name board, forest.js, air.js
   03-certificate/ 04-gandhada-gudi/  05-fan-pass/ (parked)  06-now-showing/
   07-guests/      wall of honour: guest-frame.jsx and its parts
-  08-interval/    the move out and the lobby
+  08-interval/    the move out through the doors into the Parva Market
   09-release-day/ Samudrappa's cutout, flowers (petals.js), banner, signs
   10-timeline/    the rewind bench and era title cards
   11-emoji-game/  the projection booth game
@@ -21,11 +21,12 @@ chrome/         on every screen: page shell (fonts, prefs, theatre
                 background), top bar, film reel, subtitle strip, cursor
 film/           the on-screen look: film layer, film frame, ink filter
 ui/             pieces used by more than one scene (coupon, flourish, bulbs,
-                the ಪರ್ವ lettering); stalls/ is what is sold: feast poster,
-                booking counter, tee showcase
-market/         the Parva Market page (/parva-26/market): Market.jsx, the role
-                picker, the place prompt, and world/ (the Phaser forecourt:
-                layout, path finding, painted art, the two walkers)
+                the ಪರ್ವ lettering); stalls/ is what the merch page draws:
+                the tee and its showcase parts, and the feast poster
+market/         the Parva Market game, a box in the interval (market-stage.jsx):
+                the role picker, the place prompt, and world/ (the Phaser
+                forecourt: layout, path finding, painted art, the two walkers).
+                /parva-26/market redirects to it
 lib/            gsap, prefs (Sub, En), useOnScreen, storage, willChange, text
 styles/         materials, textures, carving (style objects)
 content/        everything the team will change, one file per topic;
@@ -56,5 +57,5 @@ node scripts/parva26-check.mjs baseline              # before the change
 node scripts/parva26-check.mjs                       # after: compares shots
 P26_SUBTITLES=off node scripts/parva26-check.mjs     # the same, subtitles off
 node scripts/parva26-flows.mjs                       # plays the interactions
-node scripts/market-flows.mjs [phone]                # the market page's
+node scripts/market-flows.mjs [phone]                # the market game's
 ```

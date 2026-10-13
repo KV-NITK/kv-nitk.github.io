@@ -7,18 +7,27 @@ import { drawGround } from '@p26/market/world/art/ground'
 import { drawTheatre } from '@p26/market/world/art/theatre'
 import { drawShop } from '@p26/market/world/art/shop'
 import { drawLamp } from '@p26/market/world/art/lamp'
+import { drawArrow, drawFootprint, drawRing } from '@p26/market/world/art/marks'
 
 const FACINGS = ['down', 'left', 'right', 'up']
 // How fast the walker goes, in forecourt widths per second, and how fast its
 // legs go to match (they read as sliding if the legs lag the ground).
 const WALK_SPEED = 0.38
 const STEP_RATE = 12
+// How far a finger or mouse may move, in screen pixels, and still be a tap.
+// Anything more is a scroll of the page, not a step.
+const TAP_SLOP = 12
 
-// The forecourt: a fixed camera on the painted ground, the theatre, three
-// shops and the lamps, with the visitor's walker moving over it. It reports
+// The forecourt: a fixed camera on the painted ground, the theatre, the
+// stalls and the lamps, with the visitor's walker moving over it. It reports
 // two things to the page: which place the walker is standing at (onNear) and
 // when they use it (onAction), by pressing E or by tapping the place and
 // letting the walker go there.
+//
+// So that nobody has to guess what to do: a bouncing arrow hangs over each
+// open stall until it has been visited (`visited`), a trail of footprints
+// leads from the start to the first one until the walker moves, and a ring
+// marks where a tap sent the walker.
 export class ForecourtScene extends Phaser.Scene {
   constructor(opts) {
     super('forecourt')
@@ -45,7 +54,7 @@ export class ForecourtScene extends Phaser.Scene {
     this.add.image(0, 0, 'ground').setOrigin(0).setDepth(-1000)
     this.add.image(L.theatre.x, L.wallY, 'theatre').setOrigin(0.5, 1).setDepth(L.wallY - 1)
 
-    // Where you can go: the theatre door and the shops
+    // Where you can go: the theatre door and the stalls
     const door = this.add.zone(L.door.x, L.wallY - 110, 280, 230).setInteractive({ useHandCursor: true })
     door.setData('place', 'theatre')
     this.places = [{ ...PLACES.find((p) => p.id === 'theatre'), stand: L.door, radius: 130 }]
@@ -57,6 +66,44 @@ export class ForecourtScene extends Phaser.Scene {
       this.places.push({ ...place, stand: s.stand, radius: 150 })
     }
     for (const lamp of L.lamps) this.add.image(lamp.x, lamp.base, 'lamp').setOrigin(0.5, 1).setDepth(lamp.base)
+
+    // Arrows over the open stalls not visited yet
+    tex('arrow', drawArrow())
+    this.arrows = new Map()
+    for (const s of L.shops) {
+      if (!PLACES.find((p) => p.id === s.id)?.go || this.opts.visited.includes(s.id)) continue
+      const arrow = this.add.image(s.x, s.base - s.h - 18, 'arrow').setOrigin(0.5, 1).setDepth(5000)
+      this.tweens.add({ targets: arrow, y: arrow.y - 26, duration: 520, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 })
+      this.arrows.set(s.id, arrow)
+    }
+
+    // Footprints from the start to the first open stall, until the walker moves
+    tex('footprint', drawFootprint())
+    this.trail = []
+    const first = L.shops.find((s) => this.arrows.has(s.id))
+    if (first) {
+      const way = [L.spawn, ...findPath(L, L.spawn, first.stand)]
+      let step = 0
+      for (let i = 1; i < way.length; i++) {
+        const a = way[i - 1]
+        const b = way[i]
+        const len = Math.hypot(b.x - a.x, b.y - a.y)
+        const angle = Math.atan2(b.y - a.y, b.x - a.x)
+        // Left, right, left: each print a little off the line of the walk
+        for (let d = i === 1 ? 70 : 0; d < len - (i === way.length - 1 ? 50 : 0); d += 64, step++) {
+          const side = step % 2 ? 11 : -11
+          const x = a.x + ((b.x - a.x) * d) / len - Math.sin(angle) * side
+          const y = a.y + ((b.y - a.y) * d) / len + Math.cos(angle) * side
+          this.trail.push(this.add.image(x, y, 'footprint').setRotation(angle + Math.PI / 2).setAlpha(0).setDepth(-500).setScale(L.walker.scale * 1.6))
+        }
+      }
+      // They appear one after another, as if someone had just walked there
+      this.trail.forEach((print, i) => this.tweens.add({ targets: print, alpha: 0.65, delay: 400 + i * 90, duration: 250 }))
+    }
+
+    // Where a tap sent the walker
+    tex('ring', drawRing())
+    this.ring = this.add.image(0, 0, 'ring').setDepth(-400).setVisible(false)
 
     // The walker
     for (const facing of FACINGS) {
@@ -74,20 +121,20 @@ export class ForecourtScene extends Phaser.Scene {
       .setDepth(L.spawn.y)
 
     this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E')
-    this.keys.E.on('down', () => this.nearId && this.opts.onAction(this.nearId))
+    this.keys.E.on('down', () => this.nearId && this.use(this.nearId))
 
     // A tap on a place sends the walker to it and uses it on arrival; a tap
-    // on the ground just sends the walker there.
-    this.input.on('gameobjectdown', (_pointer, obj) => {
-      const id = obj.getData('place')
-      const place = this.places.find((p) => p.id === id)
-      if (!place) return
-      this.walkTo(place.stand, id)
-    })
-    this.input.on('pointerdown', (pointer, over) => {
-      if (over.length) return
+    // on the ground just sends the walker there. Both count on release, and
+    // only if the pointer stayed put: a swipe that starts on the game is the
+    // page scrolling, which the browser takes over (and cancels the touch).
+    this.input.on('pointerup', (pointer, over) => {
+      if (!this.isTap(pointer)) return
+      const id = over.find((obj) => obj.getData('place'))?.getData('place')
+      const place = id && this.places.find((p) => p.id === id)
       const b = L.bounds
-      this.walkTo({ x: Phaser.Math.Clamp(pointer.worldX, b.x0, b.x1), y: Phaser.Math.Clamp(pointer.worldY, b.y0, b.y1) })
+      const to = place ? place.stand : { x: Phaser.Math.Clamp(pointer.worldX, b.x0, b.x1), y: Phaser.Math.Clamp(pointer.worldY, b.y0, b.y1) }
+      this.walkTo(to, place ? id : null)
+      this.mark(to)
     })
 
     if (new URLSearchParams(window.location.search).has('debug')) window.__p26Market = this
@@ -105,6 +152,7 @@ export class ForecourtScene extends Phaser.Scene {
     if (vx || vy) {
       this.path = []
       this.pending = null
+      this.ring.setVisible(false)
     } else if (this.path.length) {
       const next = this.path[0]
       const dx = next.x - w.x
@@ -122,6 +170,7 @@ export class ForecourtScene extends Phaser.Scene {
 
     const moving = vx !== 0 || vy !== 0
     if (moving) {
+      this.clearTrail()
       const speed = L.width * WALK_SPEED
       const len = Math.hypot(vx, vy)
       const step = Math.min(speed * dt, toGo)
@@ -150,6 +199,38 @@ export class ForecourtScene extends Phaser.Scene {
     }
 
     this.updateNear()
+  }
+
+  // Phaser hears the whole window's mouse, so a click elsewhere on the page
+  // would count too: a tap starts and ends on the forecourt itself.
+  isTap(pointer) {
+    if (pointer.wasCanceled || pointer.button !== 0) return false
+    const canvas = this.game.canvas
+    if (pointer.downElement !== canvas || pointer.upElement !== canvas) return false
+    return pointer.getDistance() <= TAP_SLOP * this.scale.displayScale.x
+  }
+
+  // A ring on the ground where the walker is going, gone on arrival.
+  mark({ x, y }) {
+    if (!this.path.length) return
+    const scale = this.opts.layout.walker.scale
+    this.tweens.killTweensOf(this.ring)
+    this.ring.setPosition(x, y).setVisible(true).setScale(scale * 1.7)
+    this.tweens.add({ targets: this.ring, scale: scale * 1.15, duration: 380, ease: 'Back.easeOut' })
+  }
+
+  clearTrail() {
+    if (!this.trail.length) return
+    const trail = this.trail
+    this.trail = []
+    this.tweens.killTweensOf(trail)
+    this.tweens.add({ targets: trail, alpha: 0, duration: 500, onComplete: () => trail.forEach((print) => print.destroy()) })
+  }
+
+  // The page took the keyboard back: let go of any keys held down, so the
+  // walker doesn't keep walking.
+  releaseKeys() {
+    this.input.keyboard?.resetKeys()
   }
 
   // Send the walker to a point, round whatever is in the way; `place` is a
@@ -181,8 +262,20 @@ export class ForecourtScene extends Phaser.Scene {
 
   // A tap asked to use a place: do it if the walker really got there.
   arrive() {
+    this.ring.setVisible(false)
     this.updateNear()
-    if (this.pending && this.pending === this.nearId) this.opts.onAction(this.pending)
+    if (this.pending && this.pending === this.nearId) this.use(this.pending)
     this.pending = null
+  }
+
+  // Using a place takes down its arrow: it has been found.
+  use(id) {
+    const arrow = this.arrows.get(id)
+    if (arrow) {
+      this.tweens.killTweensOf(arrow)
+      arrow.destroy()
+      this.arrows.delete(id)
+    }
+    this.opts.onAction(id)
   }
 }

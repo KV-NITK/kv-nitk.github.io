@@ -1,5 +1,4 @@
 import { En } from '@p26/lib/prefs'
-import { TEE } from '@p26/content'
 import { brass } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
@@ -21,60 +20,6 @@ export function PriceTag({ price, early }) {
           <span className="block font-kn-display text-xl font-extrabold leading-tight">₹{price}</span>
         )}
       </p>
-    </div>
-  )
-}
-
-// A red paper flag: the First Day First Show price, and how many are left.
-export function EarlyFlag({ subtitles }) {
-  return (
-    <p className="-rotate-2 bg-kumkuma px-3 py-1.5 text-[#fff4dc] shadow-[0_3px_5px_rgba(0,0,0,.4)]" style={{ clipPath: 'polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%)' }}>
-      <En className="block font-kn-display text-base font-bold leading-tight">First Day First Show price</En>
-      <span lang="kn" className="block text-[0.8rem] font-semibold leading-tight">
-        ಮೊದಲ ದಿನ ಮೊದಲ ಆಟ
-      </span>
-      <span className="block text-base font-bold leading-tight">
-        {TEE.earlySold}/{TEE.earlyQuota}
-        {subtitles && ' sold · '}
-        <span lang="kn" className="text-sm">ಮಾರಾಟ</span>
-      </span>
-    </p>
-  )
-}
-
-export function SizeChart({ subtitles }) {
-  return (
-    <div className="mt-3 rotate-[-0.6deg] bg-paper px-3 py-2 text-pen shadow-[0_3px_6px_rgba(0,0,0,.4)]" style={paper}>
-      <table className="w-full text-center text-base">
-        <caption className="text-left font-kn-display text-sm font-semibold">
-          <En>Size, in inches · </En>
-          <span lang="kn" className="font-kn-body text-xs">ಅಳತೆ (ಇಂಚುಗಳಲ್ಲಿ)</span>
-        </caption>
-        <thead>
-          <tr className="font-kn-display text-sm">
-            <th scope="col" className="font-semibold">
-              {subtitles ? 'Size' : <span lang="kn">ಅಳತೆ</span>}
-            </th>
-            <th scope="col" className="font-semibold">
-              {subtitles ? 'Chest' : <span lang="kn">ಎದೆ</span>}
-            </th>
-            <th scope="col" className="font-semibold">
-              {subtitles ? 'Length' : <span lang="kn">ಉದ್ದ</span>}
-            </th>
-          </tr>
-        </thead>
-        <tbody className="font-semibold">
-          {TEE.sizes.map((s) => (
-            <tr key={s.id} className="border-t border-pen/15">
-              <th scope="row" className="font-poster text-lg font-normal">
-                {s.id}
-              </th>
-              <td>{s.chest}</td>
-              <td>{s.length}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   )
 }

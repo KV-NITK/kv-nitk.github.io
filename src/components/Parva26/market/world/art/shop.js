@@ -1,10 +1,9 @@
 import { INK, FONT, makeCanvas, rrect, vgrad, hgrad, fitText, bulbs, rng, grain } from './paint'
 
-// Stand-in shopfronts for the forecourt, painted once. Each stands on its
-// bottom edge. The food and merch shops are stalls against the back wall
-// (awning, counter, goods); the photo studio is a free-standing cabin.
-// TODO(art): replace with the final shop art; the doors and the shop panels
-// are the next step.
+// Stand-in stalls for the forecourt, painted once, against the back wall
+// (awning, counter, goods). Each stands on its bottom edge. A stall with
+// nowhere to go yet (no `go`) has a plank across it: coming soon.
+// TODO(art): replace with the final stall art.
 export function drawShop(place, w, h) {
   const c = makeCanvas(w, h)
   const g = c.getContext('2d')
@@ -12,13 +11,15 @@ export function drawShop(place, w, h) {
   g.lineWidth = 3
   g.lineJoin = 'round'
   g.lineCap = 'round'
-  if (place.kind === 'photo') cabin(g, place, w, h)
-  else stall(g, place, w, h)
+  stall(g, place, w, h)
+  if (!place.go) soonPlank(g, w, h)
   grain(g, w, h, 40 + place.id.length, 4000, 0.08)
   return c
 }
 
-// The shop's name on a hanging board, Kannada big and English under it.
+// The stall's name on a hanging board, Kannada big and English under it,
+// both big enough to read on a phone, where the forecourt is drawn at about
+// a third of its size.
 function signBoard(g, place, x, y, w, h, rim, ink) {
   rrect(g, x - 5, y - 5, w + 10, h + 10, 12)
   g.fillStyle = rim
@@ -28,14 +29,43 @@ function signBoard(g, place, x, y, w, h, rim, ink) {
   g.fillStyle = vgrad(g, y, y + h, '#2a0a10', '#18060a')
   g.fill()
   g.textAlign = 'center'
-  const kn = fitText(g, place.kn, FONT.card, w - 30, Math.min(34, h * 0.48))
+  const sign = place.sign ?? { kn: place.kn, en: place.en.split(' · ')[0] }
+  const kn = fitText(g, sign.kn, FONT.card, w - 30, Math.min(42, h * 0.5))
   g.font = `${kn}px ${FONT.card}`
   g.fillStyle = ink
-  g.fillText(place.kn, x + w / 2, y + h * 0.47)
-  const en = place.en.split(' · ')[0]
-  g.font = `14px ${FONT.poster}`
-  g.fillStyle = 'rgba(241,223,192,.85)'
-  g.fillText(en.toUpperCase(), x + w / 2, y + h - 6)
+  g.fillText(sign.kn, x + w / 2, y + h * 0.5)
+  g.font = `${fitText(g, sign.en.toUpperCase(), FONT.poster, w - 30, 30)}px ${FONT.poster}`
+  g.fillStyle = '#f7ecd0'
+  g.fillText(sign.en.toUpperCase(), x + w / 2, y + h - 9)
+}
+
+// A rough plank nailed across the front: the stall is shut for now.
+function soonPlank(g, w, h) {
+  const counterTop = h - 100
+  // The stall behind it is dark
+  g.fillStyle = 'rgba(12,6,4,.45)'
+  g.fillRect(14, 124, w - 28, counterTop - 124)
+  g.save()
+  g.translate(w / 2, counterTop - 48)
+  g.rotate(-0.08)
+  const pw = w * 0.84
+  rrect(g, -pw / 2, -32, pw, 64, 6)
+  g.fillStyle = hgrad(g, -pw / 2, pw / 2, '#c49a66', '#a87c4c', '#c49a66')
+  g.fill()
+  g.stroke()
+  for (const nx of [-pw / 2 + 16, pw / 2 - 16]) {
+    g.fillStyle = '#3a3532'
+    g.beginPath()
+    g.arc(nx, 0, 4, 0, Math.PI * 2)
+    g.fill()
+  }
+  g.textAlign = 'center'
+  g.fillStyle = '#3d2410'
+  g.font = `700 ${fitText(g, 'ಶೀಘ್ರದಲ್ಲೇ', FONT.display, pw - 60, 30, 700)}px ${FONT.display}`
+  g.fillText('ಶೀಘ್ರದಲ್ಲೇ', 0, 4)
+  g.font = `22px ${FONT.poster}`
+  g.fillText('COMING SOON', 0, 26)
+  g.restore()
 }
 
 function scallopedAwning(g, x, y, w, drop, a, b, stripe = 42) {
@@ -177,82 +207,5 @@ function stall(g, place, w, h) {
   // Awning, bulbs along its lip, and the sign above it
   scallopedAwning(g, 0, 62, w, 62, awnA, awnB)
   bulbs(g, 14, 134, w - 14, 134, 34, 4.2, food ? 11 : 12)
-  signBoard(g, place, w * 0.12, 4, w * 0.76, 68, '#d6a65a', '#f2c12e')
-}
-
-function cabin(g, place, w, h) {
-  const baseY = h - 6
-  // Body: a painted wooden booth with the curtain drawn back
-  g.fillStyle = vgrad(g, 96, baseY, '#6b3f22', '#3e2412')
-  g.fillRect(14, 96, w - 28, baseY - 96)
-  g.strokeRect(14, 96, w - 28, baseY - 96)
-  // The studio inside: a painted backdrop, a stool and a flash lamp
-  const ix = 46
-  const iw = w - 92
-  const iy = 122
-  const ih = baseY - 122 - 10
-  g.fillStyle = vgrad(g, iy, iy + ih, '#f6c46a', '#e07a4a', '#5a2e5e')
-  g.fillRect(ix, iy, iw, ih)
-  g.fillStyle = '#2f6b4a'
-  g.beginPath()
-  g.moveTo(ix, iy + ih)
-  for (let x = 0; x <= iw; x += 24) g.lineTo(ix + x, iy + ih - 52 - 26 * Math.abs(Math.sin(x * 0.05)))
-  g.lineTo(ix + iw, iy + ih)
-  g.closePath()
-  g.fill()
-  g.fillStyle = '#fbe7b5'
-  g.beginPath()
-  g.arc(ix + iw * 0.7, iy + 46, 22, 0, Math.PI * 2)
-  g.fill()
-  g.strokeRect(ix, iy, iw, ih)
-  // Stool
-  g.fillStyle = '#8a5a30'
-  g.beginPath()
-  g.ellipse(w / 2, baseY - 70, 34, 10, 0, 0, Math.PI * 2)
-  g.fill()
-  g.stroke()
-  g.fillRect(w / 2 - 24, baseY - 70, 6, 56)
-  g.fillRect(w / 2 + 18, baseY - 70, 6, 56)
-  // Curtain panels drawn back to each side
-  for (const side of [-1, 1]) {
-    const x0 = side < 0 ? ix - 8 : w - ix - 38
-    g.fillStyle = hgrad(g, x0, x0 + 46, '#7e1424', '#b2203a', '#6a0f1e', '#9a1a2e')
-    g.beginPath()
-    g.moveTo(x0, iy - 8)
-    g.lineTo(x0 + 46, iy - 8)
-    g.lineTo(x0 + (side < 0 ? 30 : 16), baseY - 10)
-    g.lineTo(x0 + (side < 0 ? 0 : -14), baseY - 10)
-    g.closePath()
-    g.fill()
-    g.stroke()
-  }
-  // Roof with a sign
-  g.fillStyle = vgrad(g, 66, 100, '#a91c33', '#6a0f1e')
-  g.beginPath()
-  g.moveTo(-4, 104)
-  g.lineTo(26, 82)
-  g.lineTo(w - 26, 82)
-  g.lineTo(w + 4, 104)
-  g.closePath()
-  g.fill()
-  g.stroke()
-  bulbs(g, 6, 106, w - 6, 106, 30, 4.2, 14)
-  signBoard(g, place, w * 0.14, 4, w * 0.72, 74, '#d6a65a', '#f2c12e')
-  // A flash lamp on a stand at the right, and a strip of photos at the left
-  g.fillStyle = '#3a3532'
-  g.fillRect(w - 36, baseY - 120, 6, 114)
-  g.strokeRect(w - 36, baseY - 120, 6, 114)
-  const flash = g.createRadialGradient(w - 33, baseY - 128, 2, w - 33, baseY - 128, 22)
-  flash.addColorStop(0, '#ffffff')
-  flash.addColorStop(0.6, '#fff0b8')
-  flash.addColorStop(1, 'rgba(255,240,184,0)')
-  g.fillStyle = flash
-  g.fillRect(w - 60, baseY - 154, 54, 54)
-  for (let i = 0; i < 3; i++) {
-    g.fillStyle = '#f7ecd0'
-    g.fillRect(8, 140 + i * 40, 34, 34)
-    g.strokeRect(8, 140 + i * 40, 34, 34)
-    g.fillStyle = ['#c8955f', '#d9c7a0', '#9a6a40'][i]
-    g.fillRect(12, 144 + i * 40, 26, 26)
-  }
+  signBoard(g, place, w * 0.08, 6, w * 0.84, 92, '#d6a65a', '#f2c12e')
 }

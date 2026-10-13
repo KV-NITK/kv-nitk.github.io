@@ -13,7 +13,7 @@ export const FONT = {
 // A canvas can only draw a font that has loaded, and these load by script
 // subset, so ask for the Kannada glyphs explicitly.
 export function loadFonts() {
-  const kn = 'ಶ್ರೀ ಗಂಧದ ಗುಡಿ ಚಿತ್ರಮಂದಿರ ಭೂರಿ ಭೋಜನ ಪರ್ವ ಅಂಗಡಿ ಫೋಟೋ ಸ್ಟುಡಿಯೋ'
+  const kn = 'ಶ್ರೀ ಗಂಧದ ಗುಡಿ ಚಿತ್ರಮಂದಿರ ಭೂರಿ ಭೋಜನ ಪರ್ವ ಅಂಗಡಿ ಶೀಘ್ರದಲ್ಲೇ'
   return Promise.all([
     document.fonts.load('40px "Akaya Kanadaka"', kn),
     document.fonts.load('700 40px "Baloo Tamma 2 Variable"', kn),

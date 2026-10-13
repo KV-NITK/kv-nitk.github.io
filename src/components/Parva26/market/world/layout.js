@@ -1,6 +1,6 @@
-// Where everything stands on the forecourt, in world pixels. A phone held
-// upright gets a tall forecourt, anything else a wide one; both are fitted to
-// the screen, so the numbers only matter relative to each other. `base` is the
+// Where everything stands on the forecourt, in world pixels. A narrow game
+// box (a phone) gets a 3:4 forecourt, anything else a 16:9 one; both are
+// fitted to the box, so the numbers only matter relative to each other. `base` is the
 // ground line a building stands on, and the walker's feet are what is tested
 // against the blockers.
 //
@@ -13,7 +13,8 @@ function walkerFor(portrait) {
   return { scale, halfWidth: 44 * scale, up: 16 * scale, down: 8 * scale }
 }
 
-function shop(id, kind, x, base, w, h, wallY, free) {
+// A stall against the back wall: it can't be walked behind.
+function shop(id, kind, x, base, w, h, wallY) {
   const half = w / 2
   return {
     id,
@@ -22,11 +23,7 @@ function shop(id, kind, x, base, w, h, wallY, free) {
     base,
     w,
     h,
-    // A shop on the back wall can't be walked behind; a free-standing one is
-    // blocked around its foot, deep enough that you don't vanish behind it.
-    blocker: free
-      ? { x0: x - half * 0.86, x1: x + half * 0.86, y0: base - 150, y1: base }
-      : { x0: x - half + 10, x1: x + half - 10, y0: wallY, y1: base },
+    blocker: { x0: x - half + 10, x1: x + half - 10, y0: wallY, y1: base },
     // Where you stand to use it, and how close counts as at the door.
     stand: { x, y: base + 60 },
   }
@@ -34,21 +31,19 @@ function shop(id, kind, x, base, w, h, wallY, free) {
 
 export function layoutFor(portrait) {
   const width = portrait ? 1080 : 1920
-  const height = portrait ? 1800 : 1080
+  const height = portrait ? 1440 : 1080
   const wallY = portrait ? 640 : 470
   const theatre = { x: width / 2, width: portrait ? 960 : 760, top: portrait ? 70 : 40 }
   const door = { x: width / 2, y: wallY + 46 }
 
   const shops = portrait
     ? [
-        shop('food', 'food', 270, 1020, 420, 330, wallY, false),
-        shop('merch', 'merch', 810, 1020, 420, 330, wallY, false),
-        shop('photo', 'photo', 540, 1470, 340, 380, wallY, true),
+        shop('food', 'food', 270, 1020, 420, 330, wallY),
+        shop('merch', 'merch', 810, 1020, 420, 330, wallY),
       ]
     : [
-        shop('food', 'food', 330, 650, 420, 330, wallY, false),
-        shop('merch', 'merch', 1590, 650, 420, 330, wallY, false),
-        shop('photo', 'photo', 960, 930, 340, 380, wallY, true),
+        shop('food', 'food', 330, 650, 420, 330, wallY),
+        shop('merch', 'merch', 1590, 650, 420, 330, wallY),
       ]
 
   const lampBase = (x, y) => ({ x, base: y, blocker: { x0: x - 14, x1: x + 14, y0: y - 10, y1: y } })
@@ -69,7 +64,7 @@ export function layoutFor(portrait) {
     // The walkable area, for the feet.
     bounds: { x0: 60, x1: width - 60, y0: wallY + 10, y1: height - 30 },
     blockers: [...shops.map((s) => s.blocker), ...lamps.map((l) => l.blocker)],
-    spawn: portrait ? { x: 300, y: 1260 } : { x: 620, y: 780 },
+    spawn: portrait ? { x: 540, y: 1230 } : { x: 960, y: 850 },
   }
 }
 
