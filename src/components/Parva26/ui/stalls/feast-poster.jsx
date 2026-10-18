@@ -9,17 +9,27 @@ import { cn } from '@/lib/utils'
 // it comes into view the dishes are served onto it one at a time, in the
 // menu's order. Hovering or tapping a dish names it in the subtitle strip.
 
-// Where each dish sits on the 400 × 220 leaf.
+// Where each dish sits on the 400 × 220 leaf, laid out the traditional way:
+// salt and pickle at the left tip, salads, palya and the curries in katoris
+// along the far half, rice, mudde, rotti and the fried things in front, and
+// the sweets and buttermilk toward the right.
 const PLACES = {
-  chapati: [78, 108],
-  sukka: [160, 64],
-  kabab: [226, 70],
-  bowl: [288, 50],
-  gheeRice: [168, 142],
-  rice: [252, 150],
-  vada: [106, 180],
-  sweet: [196, 192],
-  curd: [342, 110],
+  uppu: [40, 62],
+  uppinkai: [64, 50],
+  kosambri: [100, 50],
+  palya: [140, 46],
+  ennegai: [182, 44],
+  bassaru: [224, 44],
+  rasa: [266, 48],
+  payasa: [310, 58],
+  majjige: [352, 88],
+  happala: [44, 122],
+  rotti: [96, 118],
+  mudde: [150, 112],
+  bajji: [150, 172],
+  rice: [210, 142],
+  chitranna: [278, 148],
+  mysorePak: [336, 142],
 }
 
 export function FeastPoster({ className }) {
@@ -83,7 +93,7 @@ export function FeastPoster({ className }) {
           <Leaf />
           {MENU.map((item, i) => {
             const [x, y] = PLACES[item.dish] ?? [200, 110]
-            const Dish = DISHES[item.dish] ?? DISHES.bowl
+            const Dish = DISHES[item.dish] ?? DISHES.palya
             return (
               <g
                 key={item.id}
@@ -203,111 +213,206 @@ function Katori({ x, y, fill, rim = 30, children }) {
 }
 
 // A little heap of pieces for dry dishes.
-function Heap({ x, y, colors, n = 26, spread = 22 }) {
+function Heap({ x, y, colors, n = 26, spread = 22, size = 3.4 }) {
   const bits = []
   for (let i = 0; i < n; i++) {
     const a = i * 2.39996
     const r = Math.sqrt(i / n) * spread
     bits.push(
-      <circle key={i} cx={x + Math.cos(a) * r} cy={y + Math.sin(a) * r * 0.7} r={3.4 - (r / spread) * 1.4} fill={colors[i % colors.length]} />
+      <circle key={i} cx={x + Math.cos(a) * r} cy={y + Math.sin(a) * r * 0.7} r={size - (r / spread) * size * 0.4} fill={colors[i % colors.length]} />
     )
   }
   return bits
 }
 
+// A soft shadow under a dish served straight onto the leaf.
+const Shadow = ({ x, y, rx, ry, dy = 8 }) => <ellipse cx={x + 3} cy={y + dy} rx={rx} ry={ry} fill="#10240b" opacity=".3" />
+
 const DISHES = {
-  chapati: ({ x, y }) => (
+  // A pinch of salt
+  uppu: ({ x, y }) => (
     <g>
-      <circle cx={x + 8} cy={y + 10} r="44" fill="#10240b" opacity=".35" />
-      <circle cx={x + 6} cy={y + 6} r="44" fill="#b98145" />
-      <circle cx={x + 3} cy={y + 3} r="44" fill="#d6a462" />
-      <circle cx={x} cy={y} r="44" fill="#e8c083" />
+      <Shadow x={x} y={y} rx="7" ry="3.5" dy={3} />
+      <Heap x={x} y={y} colors={['#ffffff', '#eef0f2', '#dfe3e6']} n={10} spread={5} size={2} />
+    </g>
+  ),
+  // A dab of mango pickle: red masala with a piece of mango
+  uppinkai: ({ x, y }) => (
+    <g>
+      <Shadow x={x} y={y} rx="10" ry="5" dy={4} />
+      <Heap x={x} y={y} colors={['#b3260f', '#d4421a', '#8f1c0b']} n={12} spread={7} size={2.6} />
+      <path d={`M${x - 3} ${y - 4} q5 -3 8 1 q-3 4 -8 -1 Z`} fill="#e9b949" stroke="#8f1c0b" strokeWidth=".6" />
+    </g>
+  ),
+  // Kosambri: soaked moong dal with cucumber, carrot and coconut
+  kosambri: ({ x, y }) => (
+    <g>
+      <Shadow x={x} y={y} rx="17" ry="8" dy={5} />
+      <Heap x={x} y={y} colors={['#f2d16b', '#e8c04f', '#9ccb6a', '#f08a3c', '#fbf6e8']} n={26} spread={15} size={2.6} />
+    </g>
+  ),
+  // Palya: chopped beans and carrot with grated coconut
+  palya: ({ x, y }) => (
+    <g>
+      <Shadow x={x} y={y} rx="17" ry="8" dy={5} />
+      <Heap x={x} y={y} colors={['#4f8f2a', '#6ea83a', '#f3ecd6', '#e07a2e', '#3f7a1e']} n={26} spread={15} size={2.8} />
+    </g>
+  ),
+  // Ennegai: whole small brinjals in a dark masala gravy
+  ennegai: ({ x, y }) => (
+    <Katori x={x} y={y} fill="#7a2e12" rim={19}>
       {[
-        [-18, -12, 7],
-        [12, -20, 5],
-        [20, 8, 8],
-        [-6, 18, 6],
-        [-24, 14, 4],
-        [4, -2, 3],
-        [26, -6, 3.5],
-      ].map(([dx, dy, r]) => (
-        <ellipse key={`${dx}${dy}`} cx={x + dx} cy={y + dy} rx={r} ry={r * 0.7} fill="#8a5424" opacity=".55" />
+        [-6, -1],
+        [5, -2],
+      ].map(([dx, dy]) => (
+        <g key={dx}>
+          <ellipse cx={x + dx} cy={y + dy} rx="5.5" ry="3.4" fill="#4b1d4f" />
+          <ellipse cx={x + dx - 1.5} cy={y + dy - 1.2} rx="2" ry="1" fill="#a06aa6" opacity=".6" />
+          <path d={`M${x + dx + 4.5} ${y + dy} l3 -1.5`} stroke="#4f7a2a" strokeWidth="1.6" strokeLinecap="round" />
+        </g>
       ))}
-      <path d={`M${x - 30} ${y - 26} A44 44 0 0 1 ${x + 22} ${y - 38}`} stroke="#fff4dc" strokeOpacity=".35" strokeWidth="2" fill="none" />
-    </g>
+    </Katori>
   ),
-  sukka: ({ x, y }) => (
-    <g>
-      <ellipse cx={x + 3} cy={y + 8} rx="28" ry="15" fill="#10240b" opacity=".3" />
-      <Heap x={x} y={y} colors={['#b5621d', '#d98c3a', '#8a4212', '#e7a95a']} n={34} spread={26} />
-    </g>
+  // Bassaru: thin lentil and greens curry
+  bassaru: ({ x, y }) => (
+    <Katori x={x} y={y} fill="#7d7a2c" rim={19}>
+      <path d={`M${x - 9} ${y - 1} q4 -3 8 0 q4 3 8 0`} stroke="#4f6a1a" strokeWidth="1.6" fill="none" />
+      <circle cx={x + 6} cy={y - 3} r="1.4" fill="#2f5a14" />
+    </Katori>
   ),
-  kabab: ({ x, y }) => (
-    <g>
-      <ellipse cx={x + 3} cy={y + 9} rx="30" ry="15" fill="#10240b" opacity=".3" />
+  // Rasam: clear and tomato red, with a curry leaf and mustard seeds
+  rasa: ({ x, y }) => (
+    <Katori x={x} y={y} fill="#c2461d" rim={19}>
+      <ellipse cx={x - 3} cy={y - 2} rx="4.5" ry="1.6" fill="#3f7a1e" transform={`rotate(-20 ${x - 3} ${y - 2})`} />
       {[
-        [-16, -6, -20],
-        [4, -10, 15],
-        [18, 4, -8],
-        [-6, 8, 30],
-        [-22, 10, 5],
+        [4, -1],
+        [7, 1],
+        [2, 2],
+      ].map(([dx, dy]) => (
+        <circle key={dx} cx={x + dx} cy={y + dy} r=".9" fill="#2a1408" />
+      ))}
+    </Katori>
+  ),
+  // Payasa: creamy, with a cashew and raisins
+  payasa: ({ x, y }) => (
+    <Katori x={x} y={y} fill="#efd9a8" rim={19}>
+      <path d={`M${x - 5} ${y - 2} a2.6 2.6 0 1 1 4 2`} stroke="#c9a062" strokeWidth="2" fill="none" />
+      <circle cx={x + 5} cy={y - 1} r="1.6" fill="#5a2a14" />
+      <circle cx={x + 1} cy={y + 2} r="1.4" fill="#5a2a14" />
+    </Katori>
+  ),
+  // Majjige: buttermilk in a steel tumbler, seen from above
+  majjige: ({ x, y }) => (
+    <g>
+      <circle cx={x + 3} cy={y + 4} r="15" fill="#10240b" opacity=".35" />
+      <circle cx={x} cy={y} r="15" fill="url(#p26-steel)" />
+      <circle cx={x} cy={y} r="12" fill="#f4f1e6" />
+      <circle cx={x - 3} cy={y + 2} r="1.2" fill="#3f7a1e" />
+      <circle cx={x + 3} cy={y - 2} r="1" fill="#3f7a1e" />
+      <circle cx={x} cy={y} r="15" fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="1.2" />
+    </g>
+  ),
+  // Happala: a big crisp disc with blisters
+  happala: ({ x, y }) => (
+    <g>
+      <circle cx={x + 4} cy={y + 5} r="22" fill="#10240b" opacity=".3" />
+      <circle cx={x} cy={y} r="22" fill="#ecd59a" />
+      {[
+        [-9, -8, 3],
+        [7, -11, 2.4],
+        [11, 4, 3.2],
+        [-4, 9, 2.6],
+        [-13, 5, 2],
+        [2, -1, 1.8],
+      ].map(([dx, dy, r]) => (
+        <circle key={`${dx}${dy}`} cx={x + dx} cy={y + dy} r={r} fill="#fbeec4" stroke="#c9a85c" strokeWidth=".5" />
+      ))}
+    </g>
+  ),
+  // Jolada rotti: a pale jowar flatbread with light char spots
+  rotti: ({ x, y }) => (
+    <g>
+      <circle cx={x + 5} cy={y + 6} r="25" fill="#10240b" opacity=".35" />
+      <circle cx={x + 2} cy={y + 2} r="25" fill="#cbb487" />
+      <circle cx={x} cy={y} r="25" fill="#ece0c2" />
+      {[
+        [-10, -7, 3.4],
+        [8, -12, 2.6],
+        [12, 5, 3.8],
+        [-4, 11, 3],
+        [-14, 7, 2],
+        [3, -1, 1.8],
+      ].map(([dx, dy, r]) => (
+        <ellipse key={`${dx}${dy}`} cx={x + dx} cy={y + dy} rx={r} ry={r * 0.7} fill="#8a6a3a" opacity=".45" />
+      ))}
+    </g>
+  ),
+  // Ragi mudde: a smooth dark ball
+  mudde: ({ x, y }) => (
+    <g>
+      <Shadow x={x} y={y} rx="16" ry="7" dy={11} />
+      <circle cx={x} cy={y} r="16" fill="#6a4a3c" />
+      <circle cx={x - 2} cy={y - 2} r="14" fill="#7d5a4a" />
+      <ellipse cx={x - 6} cy={y - 7} rx="5" ry="3" fill="#fff" opacity=".18" />
+    </g>
+  ),
+  // Menasinakai bajji: two long chillies fried in golden batter
+  bajji: ({ x, y }) => (
+    <g>
+      {[
+        [-10, -2, -12],
+        [10, 3, 8],
       ].map(([dx, dy, rot]) => (
-        <g key={`${dx}${dy}`} transform={`translate(${x + dx} ${y + dy}) rotate(${rot})`}>
-          <rect x="-11" y="-7" width="22" height="14" rx="6" fill="#a8320f" />
-          <rect x="-9" y="-6" width="16" height="6" rx="3" fill="#d4552a" opacity=".8" />
-          <circle cx="4" cy="2" r="1.6" fill="#3f7a1e" />
+        <g key={dx} transform={`translate(${x + dx} ${y + dy}) rotate(${rot})`}>
+          <ellipse cx="2" cy="4" rx="17" ry="6" fill="#10240b" opacity=".3" />
+          <ellipse cx="0" cy="0" rx="17" ry="6" fill="#c98a2e" />
+          <ellipse cx="-2" cy="-1.5" rx="12" ry="3" fill="#e2aa4a" opacity=".8" />
+          <path d="M16 -1 q4 -1 6 -4" stroke="#3f7a1e" strokeWidth="1.8" fill="none" strokeLinecap="round" />
         </g>
       ))}
     </g>
   ),
-  bowl: ({ x, y }) => (
-    <Katori x={x} y={y} fill="#8a4518">
-      <path d={`M${x - 12} ${y - 2} q8 -6 16 0 q6 4 12 -1`} stroke="#c9752f" strokeWidth="2" fill="none" />
-      <circle cx={x + 8} cy={y - 3} r="2" fill="#3f7a1e" />
-    </Katori>
-  ),
-  curd: ({ x, y }) => (
-    <Katori x={x} y={y} fill="#f7f4ec" rim={26}>
-      <ellipse cx={x - 6} cy={y - 3} rx="8" ry="2.5" fill="#fff" />
-    </Katori>
-  ),
-  gheeRice: ({ x, y }) => (
-    <g>
-      <ellipse cx={x + 3} cy={y + 12} rx="34" ry="14" fill="#10240b" opacity=".3" />
-      <path d={`M${x - 34} ${y + 8} C${x - 30} ${y - 26} ${x + 30} ${y - 26} ${x + 34} ${y + 8} C${x + 18} ${y + 16} ${x - 18} ${y + 16} ${x - 34} ${y + 8} Z`} fill="#dca436" />
-      <Heap x={x} y={y - 2} colors={['#f1c65a', '#e8b340', '#fbe39a']} n={30} spread={24} />
-      <ellipse cx={x + 10} cy={y - 8} rx="4" ry="2.4" fill="#f4e3b8" />
-      <ellipse cx={x - 12} cy={y + 2} rx="4" ry="2.4" fill="#f4e3b8" />
-    </g>
-  ),
+  // Anna: a mound of white rice with a spoon of ghee
   rice: ({ x, y }) => (
     <g>
-      <ellipse cx={x + 3} cy={y + 12} rx="34" ry="14" fill="#10240b" opacity=".3" />
+      <Shadow x={x} y={y} rx="34" ry="14" dy={12} />
       <path d={`M${x - 34} ${y + 8} C${x - 30} ${y - 28} ${x + 30} ${y - 28} ${x + 34} ${y + 8} C${x + 18} ${y + 16} ${x - 18} ${y + 16} ${x - 34} ${y + 8} Z`} fill="#e9e4d6" />
       <Heap x={x} y={y - 3} colors={['#fbfaf5', '#f1ede2', '#ffffff']} n={34} spread={25} />
       <ellipse cx={x + 2} cy={y - 10} rx="7" ry="4" fill="#f2c94c" />
     </g>
   ),
-  vada: ({ x, y }) => (
+  // Mavinakai chitranna: turmeric rice with raw mango, peanuts and curry leaves
+  chitranna: ({ x, y }) => (
     <g>
+      <Shadow x={x} y={y} rx="28" ry="12" dy={10} />
+      <path d={`M${x - 28} ${y + 6} C${x - 25} ${y - 22} ${x + 25} ${y - 22} ${x + 28} ${y + 6} C${x + 15} ${y + 13} ${x - 15} ${y + 13} ${x - 28} ${y + 6} Z`} fill="#e3b72e" />
+      <Heap x={x} y={y - 2} colors={['#f6d34a', '#f0c63a', '#fbe17a']} n={30} spread={20} />
       {[
-        [-12, -2],
-        [14, 4],
-      ].map(([dx, dy]) => (
-        <g key={dx}>
-          <circle cx={x + dx + 2} cy={y + dy + 4} r="17" fill="#10240b" opacity=".3" />
-          <circle cx={x + dx} cy={y + dy} r="17" fill="#b06a24" />
-          <circle cx={x + dx - 3} cy={y + dy - 3} r="12" fill="#cf8a3a" opacity=".7" />
-          <circle cx={x + dx} cy={y + dy} r="5" fill="#3a7a2c" />
-        </g>
+        [-8, -6, 20],
+        [9, -2, -30],
+      ].map(([dx, dy, rot]) => (
+        <ellipse key={dx} cx={x + dx} cy={y + dy} rx="4.5" ry="1.8" fill="#2f6a1a" transform={`rotate(${rot} ${x + dx} ${y + dy})`} />
       ))}
+      <circle cx={x + 2} cy={y - 9} r="2" fill="#c08a4a" />
+      <circle cx={x - 12} cy={y + 2} r="2" fill="#c08a4a" />
+      <rect x={x + 10} y={y - 11} width="5" height="3.4" rx="1" fill="#d9e8a0" />
     </g>
   ),
-  sweet: ({ x, y }) => (
+  // Mysore pak: a golden, porous square
+  mysorePak: ({ x, y }) => (
     <g>
-      <ellipse cx={x + 3} cy={y + 9} rx="16" ry="8" fill="#10240b" opacity=".35" />
-      <circle cx={x} cy={y} r="16" fill="#5e2f14" />
-      <circle cx={x - 5} cy={y - 6} r="5" fill="#fff" opacity=".22" />
+      <rect x={x - 11} y={y - 7} width="24" height="22" rx="3" fill="#10240b" opacity=".35" />
+      <rect x={x - 13} y={y - 11} width="24" height="22" rx="3" fill="#c98a1e" />
+      <rect x={x - 13} y={y - 11} width="24" height="7" rx="3" fill="#e9b13a" />
+      {[
+        [-7, 0],
+        [0, 3],
+        [5, -1],
+        [-3, 6],
+        [6, 6],
+      ].map(([dx, dy]) => (
+        <circle key={`${dx}${dy}`} cx={x + dx} cy={y + dy} r="1.2" fill="#8a5a12" opacity=".6" />
+      ))}
     </g>
   ),
 }

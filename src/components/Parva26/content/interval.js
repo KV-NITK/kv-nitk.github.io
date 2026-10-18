@@ -2,8 +2,8 @@
 // and the Parva tee. Prices, stock and orders come from the server; these
 // are the words and pictures around them.
 // TODO(content): stand-ins from Parva 2025's food coupon (OSC, 12:00 PM,
-// ₹199) moved to this year's last day; confirm the day, time, place, price
-// and the menu with its serving order (from the caterer).
+// ₹199) moved to this year's last day; confirm the day, time, place and
+// price. The menu below is the real one.
 export const MEAL = {
   day: '2026-11-01',
   time: { kn: 'ಮಧ್ಯಾಹ್ನ 12:00', en: '12:00 PM' },
@@ -13,15 +13,22 @@ export const MEAL = {
 
 // Served onto the leaf in this order. `dish` picks the drawing.
 export const MENU = [
-  { id: 'chapati', dish: 'chapati', kn: 'ಚಪಾತಿ', en: 'Chapati' },
-  { id: 'sukka', dish: 'sukka', kn: 'ಸುಕ್ಕ', en: 'Sukka, a dry coconut masala' },
-  { id: 'kabab', dish: 'kabab', kn: 'ಕಬಾಬ್', en: 'Kabab' },
-  { id: 'gassi', dish: 'bowl', kn: 'ಗಸಿ', en: 'Gassi, a coconut curry' },
-  { id: 'ghee-rice', dish: 'gheeRice', kn: 'ತುಪ್ಪದ ಅನ್ನ', en: 'Ghee rice' },
-  { id: 'rice', dish: 'rice', kn: 'ಅನ್ನ', en: 'Rice' },
-  { id: 'vada', dish: 'vada', kn: 'ವಡೆ', en: 'Vada' },
-  { id: 'sweet', dish: 'sweet', kn: 'ಸಿಹಿ', en: 'A sweet' },
-  { id: 'curd', dish: 'curd', kn: 'ಮೊಸರು', en: 'Curd' },
+  { id: 'uppu', dish: 'uppu', kn: 'ಉಪ್ಪು', en: 'Uppu, salt' },
+  { id: 'uppinkai', dish: 'uppinkai', kn: 'ಉಪ್ಪಿನಕಾಯಿ', en: 'Uppinkai, pickle' },
+  { id: 'happala', dish: 'happala', kn: 'ಹಪ್ಪಳ', en: 'Happala, papad' },
+  { id: 'kosambri', dish: 'kosambri', kn: 'ಕೋಸಂಬರಿ', en: 'Kosambri, a lentil salad' },
+  { id: 'mysore-pak', dish: 'mysorePak', kn: 'ಮೈಸೂರು ಪಾಕ್', en: 'Mysore pak' },
+  { id: 'menasinakai-bajji', dish: 'bajji', kn: 'ಮೆಣಸಿನಕಾಯಿ ಬಜ್ಜಿ', en: 'Menasinakai bajji, chilli fritters' },
+  { id: 'jolada-rotti', dish: 'rotti', kn: 'ಜೋಳದ ರೊಟ್ಟಿ', en: 'Jolada rotti, jowar flatbread' },
+  { id: 'ennegai', dish: 'ennegai', kn: 'ಎಣ್ಣೆಗಾಯಿ', en: 'Ennegai, stuffed brinjal curry' },
+  { id: 'payasa', dish: 'payasa', kn: 'ಪಾಯಸ', en: 'Payasa, a sweet pudding' },
+  { id: 'mudde', dish: 'mudde', kn: 'ಮುದ್ದೆ', en: 'Ragi mudde' },
+  { id: 'bassaru', dish: 'bassaru', kn: 'ಬಸ್ಸಾರು', en: 'Bassaru, a lentil and greens curry' },
+  { id: 'palya', dish: 'palya', kn: 'ಪಲ್ಯ', en: 'Palya, a vegetable stir-fry' },
+  { id: 'mavinakai-chitranna', dish: 'chitranna', kn: 'ಮಾವಿನಕಾಯಿ ಚಿತ್ರಾನ್ನ', en: 'Mavinakai chitranna, raw mango rice' },
+  { id: 'anna', dish: 'rice', kn: 'ಅನ್ನ', en: 'Anna, rice' },
+  { id: 'rasa', dish: 'rasa', kn: 'ರಸಂ', en: 'Rasam' },
+  { id: 'majjige', dish: 'majjige', kn: 'ಮಜ್ಜಿಗೆ', en: 'Majjige, buttermilk' },
 ]
 
 // How the merch shop draws each tee design, in the catalog's order (the
