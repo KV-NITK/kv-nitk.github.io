@@ -39,19 +39,17 @@ describe("quoteOrder: goodie", () => {
     assert.equal(q.total, 60);
   });
 
-  it("adds goodie to mixed orders with both merch and food", async () => {
-    const q = await quoteOrder({
-      items: [
-        { productId: "tee", quantity: 1 },
-        { productId: "lunch", quantity: 2 },
-      ],
-      userIrisId: "u1",
-    });
-    const goodieItem = q.items.find((i) => i.productId === "goodie");
-    assert.ok(goodieItem, "Goodie must be present in mixed orders");
-    assert.equal(goodieItem.quantity, 1);
-    assert.equal(q.items.some((i) => i.productId === "lunch"), true);
-    assert.equal(q.items.some((i) => i.productId === "tee"), true);
+  it("refuses a cart that mixes merch and food coupons (food is booked on its own page)", async () => {
+    await rejects(
+      quoteOrder({
+        items: [
+          { productId: "tee", quantity: 1 },
+          { productId: "lunch", quantity: 2 },
+        ],
+        userIrisId: "u1",
+      }),
+      "booked on their own"
+    );
   });
 
   it("leaves the goodie out of every coupon, so it is always full price", async () => {
@@ -103,7 +101,7 @@ describe("quoteOrder: goodie", () => {
 
 describe("quoteOrder: price per line", () => {
   beforeEach(() => seed({ products: [product("reg", 329), product("over", 399), product("lunch", 60, { category: "FOOD" }), product("goodie", 25, { category: "GOODIE", discount: 25 })] }));
-  const cart = [{ productId: "reg", quantity: 2 }, { productId: "over", quantity: 1 }, { productId: "lunch", quantity: 1 }];
+  const cart = [{ productId: "reg", quantity: 2 }, { productId: "over", quantity: 1 }];
   const line = (q, id) => q.items.find((i) => i.productId === id);
 
   it("gives each shirt line its own discount with a per-item coupon", async () => {
@@ -111,10 +109,9 @@ describe("quoteOrder: price per line", () => {
     const q = await quoteOrder({ items: cart, couponCode: "EARLY", userIrisId: "u1" });
     assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [60, 598]); // 2 x (329 -> 299)
     assert.deepEqual([line(q, "over").discount, line(q, "over").netLineTotal], [30, 369]); // 399 -> 369
-    assert.deepEqual([line(q, "lunch").discount, line(q, "lunch").netLineTotal], [0, 60]); // food untouched
-    assert.equal(q.subtotal, 658 + 399 + 60 + 25);
+    assert.equal(q.subtotal, 658 + 399 + 25);
     assert.deepEqual([q.couponDiscount, q.goodieDiscount, q.discount], [90, 25, 115]); // 30 x 3 shirts, plus the goodie
-    assert.equal(q.total, 598 + 369 + 60);
+    assert.equal(q.total, 598 + 369);
     assert.equal(q.subtotal - q.discount, q.total);
     assert.equal(q.couponCode, "EARLY");
   });
@@ -131,7 +128,22 @@ describe("quoteOrder: price per line", () => {
   it("has net equal to list price on every line when there is no coupon", async () => {
     const q = await quoteOrder({ items: cart, userIrisId: "u1" });
     assert.deepEqual([line(q, "reg").discount, line(q, "reg").netLineTotal], [0, 658]);
-    assert.equal(q.total, 658 + 399 + 60);
+    assert.equal(q.total, 658 + 399);
+  });
+
+  it("keeps a higher list price on the line for show, but charges the unit price", async () => {
+    seed({ products: [product("lunch", 249, { category: "FOOD", list_price: 289 })] });
+    const q = await quoteOrder({ items: [{ productId: "lunch", quantity: 2 }], userIrisId: "u1" });
+    assert.deepEqual([line(q, "lunch").unitPrice, line(q, "lunch").listPrice], [249, 289]);
+    assert.equal(q.total, 498);
+    assert.equal(q.discount, 0); // the list price is display only
+  });
+
+  it("leaves listPrice off a line whose list price is missing or not higher", async () => {
+    seed({ products: [product("a", 100), product("b", 100, { list_price: 100 })] });
+    const q = await quoteOrder({ items: [{ productId: "a", quantity: 1 }, { productId: "b", quantity: 1 }], userIrisId: "u1" });
+    assert.equal("listPrice" in line(q, "a"), false);
+    assert.equal("listPrice" in line(q, "b"), false);
   });
 });
 
@@ -216,13 +228,13 @@ describe("quoteOrder: coupons", () => {
 
   it("takes a per-item coupon off every shirt, not once per order", async () => {
     seed({
-      products: [product("regular", 329), product("over", 399), product("lunch", 100, { category: "FOOD" })],
+      products: [product("regular", 329), product("over", 399)],
       coupons: [coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 })],
     });
-    const cart = [{ productId: "regular", quantity: 2 }, { productId: "over", quantity: 1 }, { productId: "lunch", quantity: 1 }];
+    const cart = [{ productId: "regular", quantity: 2 }, { productId: "over", quantity: 1 }];
     const q = await quoteOrder({ items: cart, couponCode: "early", userIrisId: "u1" });
-    assert.equal(q.discount, 90); // 3 shirts x 30; the lunch is not discounted
-    assert.equal(q.total, 329 * 2 + 399 + 100 - 90);
+    assert.equal(q.discount, 90); // 3 shirts x 30
+    assert.equal(q.total, 329 * 2 + 399 - 90);
     assert.equal((await quoteOrder({ items: [{ productId: "regular", quantity: 1 }], couponCode: "EARLY", userIrisId: "u2" })).total, 299);
     assert.equal((await quoteOrder({ items: [{ productId: "over", quantity: 1 }], couponCode: "EARLY", userIrisId: "u3" })).total, 369);
   });
@@ -354,8 +366,14 @@ describe("listProducts", () => {
   it("returns only active products in the shape the UI needs", async () => {
     seed({ products: [product("tee-m", 299, { group_key: "tee", variant: "M" }), product("hidden", 5, { active: false })] });
     assert.deepEqual(await listProducts(), [
-      { id: "tee-m", name: "Product tee-m", category: "MERCH", groupKey: "tee", fit: null, variant: "M", unitPrice: 299, discount: 0, maxQuantity: 5 },
+      { id: "tee-m", name: "Product tee-m", category: "MERCH", groupKey: "tee", fit: null, variant: "M", unitPrice: 299, listPrice: null, discount: 0, maxQuantity: 5 },
     ]);
+  });
+
+  it("returns a list price only when it is higher than the unit price", async () => {
+    seed({ products: [product("food", 249, { list_price: 289 }), product("same", 100, { list_price: 100 })] });
+    const byId = Object.fromEntries((await listProducts()).map((p) => [p.id, p.listPrice]));
+    assert.deepEqual(byId, { food: 289, same: null });
   });
 });
 

@@ -107,7 +107,9 @@ describe("pass service", () => {
     const merchPasses = passes.filter((p) => p.category === "MERCH");
     assert.equal(merchPasses.length, 1);
     assert.equal(merchPasses[0].variant, "M");
-    assert.equal(merchPasses[0].item_index, 1);
+    // Numbered across the whole order, so (payment_id, item_index) is unique
+    assert.equal(merchPasses[0].item_index, 3);
+    assert.equal(new Set(passes.map((p) => p.item_index)).size, passes.length);
 
     // Passes stored in DB
     assert.equal(db.rows("claimable_items").length, 3);

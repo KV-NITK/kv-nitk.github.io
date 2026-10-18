@@ -3,7 +3,8 @@ import { mock } from "node:test";
 const srcUrl = (path) => new URL(`../../src/${path}`, import.meta.url).href;
 
 export const mockModule = (path, exports) =>
-  mock.module(srcUrl(path), { namedExports: exports, exports });
+  // namedExports works on Node 22 (CI) and 24; Node 24 refuses it together with `exports`
+  mock.module(srcUrl(path), { namedExports: exports });
 
 // Replace the Supabase client module with a fake before the code under test is imported
 export const mockSupabase = (client) =>

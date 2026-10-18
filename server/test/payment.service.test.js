@@ -201,24 +201,28 @@ describe("createPayment", () => {
       assert.equal(storedOrder.items[0].productId, "bhoori-bhojana");
     });
 
-    it("stores goodie cleanly in payments record for mixed merch and food orders", async () => {
+    it("refuses an order that mixes merch and food coupons, and stores nothing", async () => {
       db.rows("payment_products").push(
         product("bhoori-bhojana", 199, { category: "FOOD" }),
         product("goodie", 25, { category: "GOODIE" })
       );
-      await createPayment({
-        ...base,
-        items: [
-          { productId: "tee", quantity: 1 },
-          { productId: "bhoori-bhojana", quantity: 1 },
-        ],
-      });
-      const storedOrder = db.rows("payments")[0];
-      const goodieRow = storedOrder.items.find((i) => i.productId === "goodie");
-      assert.ok(goodieRow, "Goodie must be stored in mixed order");
-      assert.equal(goodieRow.quantity, 1);
-      assert.equal(storedOrder.items.some((i) => i.productId === "bhoori-bhojana"), true);
-      assert.equal(storedOrder.items.some((i) => i.productId === "tee"), true);
+      await assert.rejects(
+        createPayment({
+          ...base,
+          items: [
+            { productId: "tee", quantity: 1 },
+            { productId: "bhoori-bhojana", quantity: 1 },
+          ],
+        }),
+        (e) => e.name === "PaymentError" && e.message.includes("booked on their own")
+      );
+      assert.equal(db.rows("payments").length, 0);
+    });
+
+    it("saves a food coupon order with purpose FOOD_COUPON", async () => {
+      db.rows("payment_products").push(product("bhoori-bhojana", 249, { category: "FOOD" }));
+      await createPayment({ ...base, items: [{ productId: "bhoori-bhojana", quantity: 2 }] });
+      assert.equal(db.rows("payments")[0].purpose, "FOOD_COUPON");
     });
 
     it("returns an already paid order as SUCCESS so the client can go to the receipt", async () => {
