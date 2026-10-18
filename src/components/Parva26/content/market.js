@@ -27,7 +27,6 @@ export const MARKET = {
 // soon. `kind` picks how a stall is drawn and `sign` is what its board says.
 export const PLACES = [
   { id: 'theatre', scroll: 'release-day', kn: 'ಪ್ರದರ್ಶನ ಮುಂದುವರಿಸಿ', en: 'Back to the show' },
-  // Food coupons are not on sale right now: the stall stands, shut.
-  { id: 'food', kind: 'food', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Bhoori Bhojana · food coupon', sign: { kn: 'ಭೂರಿ ಭೋಜನ', en: 'Food coupon' } },
+  { id: 'food', kind: 'food', go: '/parva-26/coupon', kn: 'ಭೂರಿ ಭೋಜನ', en: 'Bhoori Bhojana · food coupon', sign: { kn: 'ಭೂರಿ ಭೋಜನ', en: 'Food coupon' } },
   { id: 'merch', kind: 'merch', go: '/parva-26/merch', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Parva Angadi · merch', sign: { kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch' } },
 ]

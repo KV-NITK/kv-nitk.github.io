@@ -17,8 +17,7 @@ import { cn } from '@/lib/utils'
 // On a phone the food coupon is a wide ticket with its price (`PhoneFace`);
 // a ticket can wait for the market instead (`hideOnPhone`).
 const TICKETS = [
-  // Food coupons are not on sale.
-  // { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
+  { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
   { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 

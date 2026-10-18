@@ -13,6 +13,7 @@ const TARGET_ROUTES = [
   { path: "/events", name: "Events Page" },
   { path: "/social", name: "Social Initiatives" },
   { path: "/parva-26/merch", name: "Parva 2026 Merch Shop" },
+  { path: "/parva-26/coupon", name: "Parva 2026 Food Coupons" },
   { path: "/parva-26/market", name: "Parva 2026 Market" },
   { path: "/hh-2026", name: "Hotte Hunnime 2026" },
   { path: "/team-registration", name: "Team Registration" },

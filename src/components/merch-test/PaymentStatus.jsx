@@ -47,6 +47,7 @@ const PaymentStatus = () => {
             localStorage.removeItem("merch_cart");
             localStorage.removeItem("merch_order");
             localStorage.removeItem("merch_phone");
+            localStorage.removeItem("parva_food_qty");
           }
           return;
         }
@@ -76,6 +77,8 @@ const PaymentStatus = () => {
 
   const final = payment && FINAL.has(payment.status);
   const message = final ? MESSAGES[payment.status] : null;
+  // Food coupons and merch are sold on separate pages; go back to the one this order came from
+  const isFood = payment?.items.some((it) => it.category === "FOOD");
 
   return (
     <div className="min-h-screen bg-neutral-100 px-4 py-10">
@@ -123,12 +126,18 @@ const PaymentStatus = () => {
           <p className="mt-3 text-sm text-neutral-600">{payment.failureReason}</p>
         )}
 
+        {payment?.status === "SUCCESS" && (
+          <p className="mt-3 text-sm text-neutral-700">
+            Your {isFood ? "food coupon" : "pickup"} QR codes are in My orders, one per item. Each works once.
+          </p>
+        )}
+
         <div className="mt-6 flex gap-4 text-sm">
           <Link to="/my-orders" className="underline">
             My orders
           </Link>
-          <Link to="/parva-26/merch" className="underline">
-            Back to merch
+          <Link to={isFood ? "/parva-26/coupon" : "/parva-26/merch"} className="underline">
+            {isFood ? "Back to food coupons" : "Back to merch"}
           </Link>
         </div>
       </div>
