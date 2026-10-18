@@ -136,6 +136,35 @@ describe("pass service", () => {
     assert.equal(db.rows("claimable_items").length, 1);
   });
 
+  it("stores the product id on every pass (the column is NOT NULL)", async () => {
+    const paymentId = crypto.randomUUID();
+    db.rows("payments").push({
+      id: paymentId,
+      user_iris_id: "user-pid",
+      status: "SUCCESS",
+      items: [{ productId: "bhoori-bhojana", name: "Food Pass", category: "FOOD", quantity: 2 }],
+    });
+
+    const passes = await issuePassesForPayment(paymentId);
+    assert.deepEqual(passes.map((p) => p.product_id), ["bhoori-bhojana", "bhoori-bhojana"]);
+  });
+
+  it("getUserPasses issues passes for a paid order that has none yet", async () => {
+    const paid = crypto.randomUUID();
+    const unpaid = crypto.randomUUID();
+    db.rows("payments").push(
+      { id: paid, user_iris_id: "user-late", status: "SUCCESS", items: [{ productId: "bhoori-bhojana", name: "Food Pass", category: "FOOD", quantity: 3 }] },
+      { id: unpaid, user_iris_id: "user-late", status: "PENDING", items: [{ productId: "bhoori-bhojana", name: "Food Pass", category: "FOOD", quantity: 1 }] }
+    );
+
+    const passes = await getUserPasses("user-late");
+    assert.equal(passes.length, 3);
+    assert.ok(passes.every((p) => p.payment_id === paid));
+
+    // Asking again does not issue a second set
+    assert.equal((await getUserPasses("user-late")).length, 3);
+  });
+
   it("does not issue passes if payment status is not SUCCESS", async () => {
     const paymentId = crypto.randomUUID();
     db.rows("payments").push({

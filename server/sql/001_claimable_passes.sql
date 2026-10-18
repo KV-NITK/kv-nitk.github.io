@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS event_staff (
 CREATE TABLE IF NOT EXISTS claimable_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     payment_id UUID NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+    product_id TEXT NOT NULL, -- the payment_products id, e.g. 'bhoori-bhojana', 'tshirt-a-l'
     user_iris_id TEXT NOT NULL,
     category TEXT NOT NULL CHECK (category IN ('FOOD', 'MERCH')),
     item_name TEXT NOT NULL,

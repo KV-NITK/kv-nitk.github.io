@@ -86,6 +86,8 @@ export const issuePassesForPayment = async (paymentId) => {
         payment_id: payment.id,
         user_iris_id: payment.user_iris_id,
         category,
+        // Required by the table (NOT NULL); without it every insert fails
+        product_id: String(item.productId || ""),
         item_name: itemName,
         variant,
         item_index: ++itemIndex,
@@ -127,12 +129,51 @@ export const issuePassesForPayment = async (paymentId) => {
 };
 
 /**
+ * Issues passes for any of the user's paid orders that have none yet. Passes
+ * are normally issued when the payment succeeds (webhook or status check), but
+ * if that failed, or the buyer never came back to the status page, opening My
+ * Orders makes them. Best effort: a failure here never hides the passes that
+ * already exist.
+ */
+const issueMissingPasses = async (userIrisId) => {
+  try {
+    const { data: paid, error } = await supabase
+      .from("payments")
+      .select("id, items")
+      .eq("user_iris_id", userIrisId)
+      .eq("status", "SUCCESS");
+
+    if (error || !paid?.length) return;
+
+    const { data: issued } = await supabase
+      .from("claimable_items")
+      .select("payment_id")
+      .eq("user_iris_id", userIrisId);
+
+    const hasPasses = new Set((issued || []).map((row) => row.payment_id));
+
+    const needsPasses = (payment) =>
+      !hasPasses.has(payment.id) &&
+      Array.isArray(payment.items) &&
+      payment.items.some((item) => ["FOOD", "MERCH"].includes(String(item.category || "").toUpperCase()));
+
+    for (const payment of paid.filter(needsPasses)) {
+      await issuePassesForPayment(payment.id);
+    }
+  } catch (err) {
+    console.error("Failed to issue missing passes:", err);
+  }
+};
+
+/**
  * Fetches user's claimable passes ordered by created_at desc.
  */
 export const getUserPasses = async (userIrisId) => {
   if (!userIrisId) {
     throw new Error("User identity is required");
   }
+
+  await issueMissingPasses(userIrisId);
 
   const { data, error } = await supabase
     .from("claimable_items")
