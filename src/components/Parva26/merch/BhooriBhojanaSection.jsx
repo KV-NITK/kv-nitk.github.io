@@ -147,7 +147,8 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, listPrice,
                     {listPrice > unitPrice && (
                       <div className="mb-1 flex items-center gap-2">
                         <span className="-rotate-3 whitespace-nowrap rounded-[3px] bg-arishina px-2 py-0.5 font-poster text-lg leading-tight tracking-wide text-theatre shadow-[0_2px_3px_rgba(0,0,0,.5)]">
-                          <En>Save </En>₹{listPrice - unitPrice}
+                          {/* For the whole basket, like the struck price beside it */}
+                          <En>Save </En>₹{(listPrice - unitPrice) * Math.max(quantity, 1)}
                           <span lang="kn" className="ml-1 font-kn-display text-xs font-bold">
                             ಉಳಿತಾಯ
                           </span>
