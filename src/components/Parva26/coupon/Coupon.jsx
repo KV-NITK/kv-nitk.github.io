@@ -27,6 +27,7 @@ export default function Coupon() {
   const [user, setUser] = useState(undefined)
   const [product, setProduct] = useState(undefined) // null = not on sale
   const [loadError, setLoadError] = useState('')
+  const [showContact, setShowContact] = useState(false)
   // Kept in this browser, so they are still there after the IRIS login
   const [quantity, setQuantity] = useStoredState('parva_food_qty', 1)
   const [phone, setPhone] = useStoredState('merch_phone', '')
@@ -132,7 +133,19 @@ export default function Coupon() {
     <PageShell title="ಭೂರಿ ಭೋಜನ · Food Coupon" topBar={{ home: '/rcb#parva-sante', ticket: false }}>
       <main className="min-h-screen p-4 pb-20 pt-24" style={{ backgroundColor: '#3f2a18' }}>
         <div className="mx-auto w-full max-w-[80rem]">
-          <div className="mb-6 flex justify-end">
+          <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
+            {/* Same contact as the merch shop */}
+            <div className="relative">
+              <button type="button" onClick={() => setShowContact(!showContact)} className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
+                Contact
+              </button>
+              {showContact && (
+                <div className="absolute right-0 top-full z-50 mt-2 whitespace-nowrap rounded-md border border-[#4a2a12]/20 bg-[#f3ead5] p-3 text-[#4a2a12] shadow-lg">
+                  <p className="font-bold">Puneeth</p>
+                  <a href="tel:+917349064226" className="hover:underline">+91 734 906 4226</a>
+                </div>
+              )}
+            </div>
             <Link to="/my-orders" className="rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5">
               My Orders
             </Link>

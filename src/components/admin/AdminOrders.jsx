@@ -27,9 +27,21 @@ const formatDate = (iso) => {
   });
 };
 
-const variantOf = (it) => it.variant || (it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
-
 const isShirt = (it) => it.category === "MERCH" || /^tshirt/.test(it.productId);
+
+// Only shirt ids end in a size; a food coupon (bhoori-bhojana) has none
+const variantOf = (it) => it.variant || (isShirt(it) && it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
+
+const isFood = (it) => it.category === "FOOD";
+
+// Food coupons are sold on their own, so an order is one or the other
+const isFoodOrder = (order) => order.items.some(isFood);
+
+const TYPE_FILTERS = [
+  ["ALL", "Merch and food"],
+  ["MERCH", "Merch only"],
+  ["FOOD", "Food coupons only"],
+];
 
 const readPass = () => {
   try {
@@ -58,9 +70,9 @@ const discountOf = (order) => {
 const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
 const downloadCsv = (orders) => {
-  const header = ["Date", "Order ID", "Name", "Phone", "Email", "IRIS ID", "Items", "Coupon", "Subtotal", "Coupon discount", "Goodie discount", "Amount", "Status"];
+  const header = ["Date", "Order ID", "Type", "Name", "Phone", "Email", "IRIS ID", "Items", "Coupon", "Subtotal", "Coupon discount", "Goodie discount", "Amount", "Status"];
   const rows = orders.map((o) => [
-    formatDate(o.createdAt), o.orderId, o.name, o.phone, o.email, o.irisId,
+    formatDate(o.createdAt), o.orderId, isFoodOrder(o) ? "Food coupons" : "Merch", o.name, o.phone, o.email, o.irisId,
     o.items.map(itemLabel).join("; "), o.couponCode, o.subtotal, discountOf(o).coupon, discountOf(o).goodie, o.amount, o.status,
   ]);
   const text = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
@@ -95,6 +107,7 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("SUCCESS");
+  const [type, setType] = useState("ALL");
   const [search, setSearch] = useState("");
 
   const load = useCallback(async (pass) => {
@@ -129,12 +142,13 @@ const AdminOrders = () => {
   const paid = useMemo(() => (orders || []).filter((o) => o.status === "SUCCESS"), [orders]);
 
   const summary = useMemo(() => {
-    const counted = { shirts: 0, goodies: 0, regular: 0, oversized: 0 };
+    const counted = { shirts: 0, goodies: 0, regular: 0, oversized: 0, food: 0 };
     const perItem = new Map();
 
     for (const order of paid) {
       for (const it of order.items) {
         if (it.productId === "goodie") counted.goodies += it.quantity;
+        else if (isFood(it)) counted.food += it.quantity;
         else if (isShirt(it)) counted.shirts += it.quantity;
 
         const design = shirtDesign(it.productId);
@@ -158,6 +172,7 @@ const AdminOrders = () => {
       ...counted,
       rows,
       revenue: paid.reduce((n, o) => n + o.amount, 0),
+      foodRevenue: paid.filter(isFoodOrder).reduce((n, o) => n + o.amount, 0),
       withCoupon: paid.filter((o) => o.couponCode).length,
     };
   }, [paid]);
@@ -167,10 +182,11 @@ const AdminOrders = () => {
 
     return (orders || []).filter((o) => {
       if (status !== "ALL" && o.status !== status) return false;
+      if (type !== "ALL" && isFoodOrder(o) !== (type === "FOOD")) return false;
       if (!q) return true;
       return [o.name, o.phone, o.email, o.irisId, o.orderId, o.couponCode].some((v) => (v || "").toLowerCase().includes(q));
     });
-  }, [orders, status, search]);
+  }, [orders, status, type, search]);
 
   if (!orders) {
     return (
@@ -235,9 +251,12 @@ const AdminOrders = () => {
         </div>
         {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
 
-        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
+        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
           <StatCard label="Paid orders" value={paid.length} />
           <StatCard label="Revenue" value={rupees(summary.revenue)} />
+          <StatCard label="Merch revenue" value={rupees(summary.revenue - summary.foodRevenue)} />
+          <StatCard label="Food revenue" value={rupees(summary.foodRevenue)} />
+          <StatCard label="Food coupons" value={summary.food} />
           <StatCard label="Shirts" value={summary.shirts} />
           <StatCard label="Regular" value={summary.regular} />
           <StatCard label="Oversized" value={summary.oversized} />
@@ -271,6 +290,16 @@ const AdminOrders = () => {
               className="rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-neutral-400 shadow-sm"
             >
               {STATUS_FILTERS.map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              aria-label="Order type"
+              className="rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-neutral-400 shadow-sm"
+            >
+              {TYPE_FILTERS.map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
@@ -308,6 +337,7 @@ const AdminOrders = () => {
                   <td className="whitespace-nowrap px-4 py-3.5 font-medium text-neutral-800">{o.phone || "—"}</td>
                   <td className="px-4 py-3.5 font-medium text-neutral-800">{o.email || "—"}</td>
                   <td className="px-4 py-3.5 font-medium text-neutral-800 space-y-0.5">
+                    {isFoodOrder(o) && <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">Food</span>}
                     {o.items.length ? o.items.map((it) => <div key={it.productId}>{itemLabel(it)}</div>) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
