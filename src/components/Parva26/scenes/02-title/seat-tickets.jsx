@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 // On a phone the food coupon is a wide ticket with its price (`PhoneFace`);
 // a ticket can wait for the market instead (`hideOnPhone`).
 const TICKETS = [
-  { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price}`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
+  { id: 'bhojana', href: '#parva-sante', kn: 'ಭೂರಿ ಭೋಜನ', en: `Book food coupon · ₹${MEAL.price} (was ₹${MEAL.listPrice})`, label: 'Food coupon', tilt: -7, Face: LeafTicket, PhoneFace: BookTicket },
   { id: 'angadi', href: '#angadi', kn: 'ಪರ್ವ ಅಂಗಡಿ', en: 'Merch', label: 'Merch', tilt: 8, Face: PriceTag },
 ]
 
@@ -216,6 +216,7 @@ function BookTicket({ kn, en, lit }) {
       </span>
       <span aria-hidden className="my-2 border-r border-dashed border-[#f6efd6]/40" />
       <span className="flex w-[6.2rem] shrink-0 flex-col items-center justify-center pb-2 pt-2.5 text-center">
+        {MEAL.listPrice > MEAL.price && <s className="font-poster text-base leading-none text-[#f6efd6]/75">₹{MEAL.listPrice}</s>}
         <span className="font-poster text-[1.9rem] leading-none text-[#fff3b8] [text-shadow:0_1px_0_rgba(40,70,20,.7)]">₹{MEAL.price}</span>
       </span>
       <Sheen lit={lit} />

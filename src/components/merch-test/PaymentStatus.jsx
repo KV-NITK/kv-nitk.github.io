@@ -105,7 +105,10 @@ const PaymentStatus = () => {
             {payment.items.map((it) => (
               <div key={it.productId} className="flex justify-between">
                 <span>{itemLabel(it)}</span>
-                <span>{rupees(it.lineTotal)}</span>
+                <span>
+                  {it.listPrice > it.unitPrice && <s className="mr-1 text-xs text-neutral-400">{rupees(it.listPrice * it.quantity)}</s>}
+                  {rupees(it.lineTotal)}
+                </span>
               </div>
             ))}
             {discountParts(payment).map((part) => (

@@ -11,7 +11,7 @@ export const PERFORATED = {
 // perforated stub; it slides a little further out on hover. It pokes out of
 // the booking window (Scene 8), waits at the bottom of a phone's screen,
 // and comes back on the stage front at the end (Scene 12).
-export function Coupon({ price, href, subtitles, className, ...props }) {
+export function Coupon({ price, listPrice, href, subtitles, className, ...props }) {
   return (
     <a
       href={href}
@@ -34,7 +34,8 @@ export function Coupon({ price, href, subtitles, className, ...props }) {
         </span>
         <span className="flex flex-col justify-center px-4 py-2">
           <span className="font-kn-display text-2xl font-extrabold leading-none">
-            {subtitles ? 'Book · ' : ''}₹{price}
+            {subtitles ? 'Book · ' : ''}
+            {listPrice > price && <s className="mr-1.5 text-base font-bold text-theatre/60">₹{listPrice}</s>}₹{price}
           </span>
           <span lang="kn" className="mt-1 font-kn-body text-sm font-bold leading-none">
             ಬುಕ್ ಮಾಡಿ

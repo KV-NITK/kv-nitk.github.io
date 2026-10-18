@@ -63,7 +63,7 @@ export function StageFront({ reduced, subtitles }) {
           </span>
           <En className="block font-poster text-base tracking-[0.2em]">Watch again</En>
         </button>
-        <Coupon price={MEAL.price} href="#interval" subtitles={subtitles} className="rotate-[2deg]" />
+        <Coupon price={MEAL.price} listPrice={MEAL.listPrice} href="#interval" subtitles={subtitles} className="rotate-[2deg]" />
       </div>
     </div>
   )

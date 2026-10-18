@@ -11,12 +11,13 @@ import { cn } from '@/lib/utils'
 //   quantity    : number  – current pass count (controlled by parent)
 //   onChange    : fn      – called with the next quantity
 //   unitPrice   : number  – rupee price per pass (from catalog, not hardcoded)
+//   listPrice   : number? – the struck-through "was" price per pass, if any
 //   maxQuantity : number  – upper bound from catalog (default 10 per spec §4)
 //
 // Spec references: §5.1 BhooriBhojanaSection, §4 Business Domain Logic Matrix
 // Architectural invariant: NO direct cart or checkout state lives here.
 
-export function BhooriBhojanaSection({ quantity, onChange, unitPrice, maxQuantity }) {
+export function BhooriBhojanaSection({ quantity, onChange, unitPrice, listPrice, maxQuantity }) {
   const { subtitles } = usePrefs()
 
   const decrement = () => onChange(Math.max(0, quantity - 1))
@@ -97,7 +98,7 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, maxQuantit
               }}
             >
               {/* Quantity row */}
-              <div className="flex w-full items-center justify-between px-2 mb-4 mt-2">
+              <div className="mb-4 mt-2 flex w-full flex-wrap items-center justify-between gap-4 px-2">
 
                 {/* Stepper — bounds [0, maxQuantity]; + greys out at limit (spec T6) */}
                 <fieldset>
@@ -141,7 +142,24 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, maxQuantit
 
                 {/* Chalk-style price display */}
                 {unitPrice != null && (
-                  <div className="flex flex-col items-end" aria-label={`Total: ₹${totalDisplay}`}>
+                  <div className="ml-auto flex flex-col items-end" aria-label={`Total: ₹${totalDisplay}`}>
+                    {/* The offer: the "was" price chalked out above, a save tag beside it */}
+                    {listPrice > unitPrice && (
+                      <div className="mb-1 flex items-center gap-2">
+                        <span className="-rotate-3 whitespace-nowrap rounded-[3px] bg-arishina px-2 py-0.5 font-poster text-lg leading-tight tracking-wide text-theatre shadow-[0_2px_3px_rgba(0,0,0,.5)]">
+                          <En>Save </En>₹{listPrice - unitPrice}
+                          <span lang="kn" className="ml-1 font-kn-display text-xs font-bold">
+                            ಉಳಿತಾಯ
+                          </span>
+                        </span>
+                        <s
+                          className="text-3xl font-bold text-[#f4f1e6]/55 decoration-kumkuma decoration-[3px]"
+                          style={{ fontFamily: '"Chalkboard", "Chalkboard SE", "Comic Sans MS", "Akaya Kanadaka", cursive' }}
+                        >
+                          ₹{listPrice * Math.max(quantity, 1)}
+                        </s>
+                      </div>
+                    )}
                     <p
                       className="flex items-center text-[#f4f1e6]"
                       style={{ textShadow: '0 0 1px rgba(244,241,230,.9), 0 0 6px rgba(244,241,230,.25)' }}
@@ -154,7 +172,8 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, maxQuantit
                         {totalDisplay}
                       </span>
                     </p>
-                    <span className="mt-1 font-kn-body text-xs text-[#f6e3bc]/70">
+                    <span className="mt-1 font-kn-body text-sm text-[#f6e3bc]/80">
+                      {listPrice > unitPrice && <s className="mr-1.5">₹{listPrice}</s>}
                       {quantity > 0
                         ? `${quantity} × ₹${unitPrice}`
                         : `₹${unitPrice} per pass`}
@@ -162,20 +181,6 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, maxQuantit
                   </div>
                 )}
               </div>
-
-              {/* Date / venue reminder — mirrors spec §5.1 banner text */}
-              <p className="mb-2 font-kn-display text-lg text-[#f6e3bc]">
-                <span lang="kn" className="block">
-                  {/* Uses MEAL content so it tracks the authoritative date/venue */}
-                  ನವೆಂಬರ್ 1 · {MEAL.time.kn}
-                </span>
-                <span lang="kn" className="block text-base font-semibold leading-tight">
-                  {MEAL.venue.kn}
-                </span>
-                <En className="mt-0.5 block font-kn-body text-sm opacity-90">
-                  1 Nov, {MEAL.time.en} · {MEAL.venue.en}
-                </En>
-              </p>
 
             </div>
           </div>

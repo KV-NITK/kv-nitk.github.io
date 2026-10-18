@@ -243,7 +243,10 @@ const MyOrders = () => {
                     {order.items.map((it) => (
                       <li key={it.productId} className="flex items-baseline justify-between gap-3 rounded bg-[#e5d4b5] px-3 py-2">
                         <span className="font-bold">{itemLabel(it)}</span>
-                        <span className="font-bold">{rupees(it.lineTotal)}</span>
+                        <span className="font-bold">
+                          {it.listPrice > it.unitPrice && <s className="mr-1 text-xs font-normal text-red-700">{rupees(it.listPrice * it.quantity)}</s>}
+                          {rupees(it.lineTotal)}
+                        </span>
                       </li>
                     ))}
                   </ul>

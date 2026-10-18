@@ -247,7 +247,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
 
     const { data: products, error } = await supabase
         .from("payment_products")
-        .select("id, name, category, variant, unit_price, discount, max_quantity, active")
+        .select("id, name, category, variant, unit_price, list_price, discount, max_quantity, active")
         .in("id", [...quantities.keys(), GOODIE_PRODUCT_ID]);
 
     if (error) {
@@ -285,6 +285,8 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
             variant: product.variant ?? null,
             quantity,
             unitPrice: toRupees(unitPricePaise),
+            // The struck-through "was" price, kept on the receipt. Display only.
+            ...(toPaise(product.list_price) > unitPricePaise && { listPrice: Number(product.list_price) }),
             lineTotal: toRupees(linePaise),
         });
     }
@@ -400,7 +402,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
 export const listProducts = async () => {
     const { data, error } = await supabase
         .from("payment_products")
-        .select("id, name, category, group_key, fit, variant, unit_price, discount, max_quantity")
+        .select("id, name, category, group_key, fit, variant, unit_price, list_price, discount, max_quantity")
         .eq("active", true)
         .order("sort_order", { ascending: true })
         .order("group_key", { ascending: true })
@@ -419,6 +421,8 @@ export const listProducts = async () => {
         fit: p.fit,
         variant: p.variant,
         unitPrice: Number(p.unit_price),
+        // Shown struck through next to unitPrice; null when there is none
+        listPrice: Number(p.list_price) > Number(p.unit_price) ? Number(p.list_price) : null,
         discount: Number(p.discount),
         maxQuantity: p.max_quantity,
     }));

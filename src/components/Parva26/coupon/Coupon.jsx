@@ -78,6 +78,7 @@ export default function Coupon() {
   }, [user, product, qty])
 
   const total = quote ? quote.total : (product?.unitPrice ?? 0) * qty
+  const offer = product?.listPrice > product?.unitPrice
 
   const buy = async () => {
     if (qty < 1) {
@@ -144,7 +145,7 @@ export default function Coupon() {
 
           {product && (
             <>
-              <BhooriBhojanaSection quantity={qty} onChange={setQuantity} unitPrice={product.unitPrice} maxQuantity={product.maxQuantity} />
+              <BhooriBhojanaSection quantity={qty} onChange={setQuantity} unitPrice={product.unitPrice} listPrice={product.listPrice} maxQuantity={product.maxQuantity} />
 
               <div className="mt-6 flex flex-col items-center gap-4">
                 <div className="w-full max-w-md rounded-[8px] bg-[#f3ead5] p-5 font-kn-body text-[#4a2a12] shadow-2xl">
@@ -155,10 +156,21 @@ export default function Coupon() {
                   <div className="flex items-baseline justify-between rounded bg-[#e5d4b5] px-3 py-2">
                     <span>
                       <span className="font-bold">{product.name}</span>
-                      <span className="block text-sm opacity-80">{qty} × {rupees(product.unitPrice)}</span>
+                      <span className="block text-sm opacity-80">
+                        {qty} × {offer && <s className="mr-1 text-red-700">{rupees(product.listPrice)}</s>}
+                        <span className={offer ? 'font-bold text-emerald-800' : ''}>{rupees(product.unitPrice)}</span>
+                      </span>
                     </span>
-                    <span className="font-bold">{rupees(product.unitPrice * qty)}</span>
+                    <span className="font-bold">
+                      {offer && <s className="mr-1 text-xs font-normal text-red-700">{rupees(product.listPrice * qty)}</s>}
+                      <span className={offer ? 'text-emerald-800' : ''}>{rupees(product.unitPrice * qty)}</span>
+                    </span>
                   </div>
+                  {offer && (
+                    <p className="mt-2 text-sm font-bold text-emerald-800">
+                      You save {rupees((product.listPrice - product.unitPrice) * qty)}
+                    </p>
+                  )}
                   <p className="mt-2 text-sm">Each coupon gets its own QR code in My Orders, scanned once at the counter.</p>
                   <div className="mt-3 flex justify-between text-xl font-bold">
                     <span>Total</span>
