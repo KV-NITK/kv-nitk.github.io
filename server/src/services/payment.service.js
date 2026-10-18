@@ -183,7 +183,7 @@ export const createPayment = async ({
             id: paymentId,
             user_iris_id: userIrisId,
 
-            purpose,
+            purpose: quote.items.some((item) => item.category === "FOOD") ? "FOOD_COUPON" : purpose,
             reference_id: referenceId,
 
             amount,

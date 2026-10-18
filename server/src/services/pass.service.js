@@ -65,6 +65,9 @@ export const issuePassesForPayment = async (paymentId) => {
   }
 
   const rowsToInsert = [];
+  // Numbered across the whole order (not per line), so (payment_id, item_index)
+  // is unique and a second issuing of the same order cannot insert again
+  let itemIndex = 0;
 
   for (const item of rawItems) {
     const category = String(item.category || "").trim().toUpperCase();
@@ -76,7 +79,8 @@ export const issuePassesForPayment = async (paymentId) => {
     const itemName = item.name || (category === "FOOD" ? "Bhoori Bhojana" : "Merchandise");
     const variant = item.variant ? String(item.variant).trim() : null;
 
-    for (let index = 1; index <= quantity; index++) {
+    // One row, and so one QR code, per unit bought
+    for (let n = 0; n < quantity; n++) {
       rowsToInsert.push({
         id: crypto.randomUUID(),
         payment_id: payment.id,
@@ -84,7 +88,7 @@ export const issuePassesForPayment = async (paymentId) => {
         category,
         item_name: itemName,
         variant,
-        item_index: index,
+        item_index: ++itemIndex,
         status: "ISSUED",
         token: crypto.randomUUID(),
         created_at: new Date().toISOString(),
@@ -103,7 +107,9 @@ export const issuePassesForPayment = async (paymentId) => {
     .select();
 
   if (insertError) {
-    // If another concurrent execution already inserted, return the existing passes
+    // The webhook and the status check can issue at the same moment; the unique
+    // index (sql/002_food_coupons.sql) makes the second insert fail, so the
+    // passes the first one wrote are returned instead
     const { data: fallbackPasses } = await supabase
       .from("claimable_items")
       .select("*")

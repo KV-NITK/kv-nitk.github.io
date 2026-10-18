@@ -71,7 +71,7 @@ ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS variant TEXT;
 
 -- `fit` is the label shown with a design (regular fit, oversized); `sort_order`
 -- is the order rows are listed in (sizes XS to XXL); `discount` is rupees off
--- per unit, stored for early-bird offers and not applied to orders yet.
+-- per unit; only the goodie's is applied (it makes the goodie free).
 ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS fit TEXT;
 ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS discount NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (discount >= 0);
@@ -80,7 +80,7 @@ ALTER TABLE payment_products ADD COLUMN IF NOT EXISTS discount NUMERIC(10, 2) NO
 
 CREATE TABLE IF NOT EXISTS payment_coupons (
     code TEXT PRIMARY KEY CHECK (code = UPPER(code)),   -- always stored upper-case
-    discount_type TEXT NOT NULL CHECK (discount_type IN ('PERCENT', 'FLAT')),
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('PERCENT', 'FLAT', 'FLAT_PER_ITEM')),
     discount_value NUMERIC(10, 2) NOT NULL CHECK (discount_value > 0),
     max_discount NUMERIC(10, 2) CHECK (max_discount > 0),   -- cap for PERCENT coupons (NULL = no cap)
     min_order_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,

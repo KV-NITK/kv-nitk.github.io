@@ -18,7 +18,7 @@ export const getMyPassesController = async (req, res) => {
     console.error("getMyPassesController error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to fetch user passes",
+      message: "Failed to fetch your passes",
     });
   }
 };
@@ -57,7 +57,7 @@ export const scanPassController = async (req, res) => {
     console.error("scanPassController error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to process pass scan",
+      message: "Failed to process pass scan",
     });
   }
 };

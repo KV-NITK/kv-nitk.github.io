@@ -289,6 +289,14 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
+    // Food coupons have a page of their own and are paid for on their own:
+    // one order is either all food coupons or none.
+    const foodLines = lineItems.filter((line) => line.category === "FOOD").length;
+
+    if (foodLines > 0 && foodLines < lineItems.length) {
+        throw new PaymentError("Food coupons are booked on their own, not with merch");
+    }
+
     // The goodie comes with merchandise items. If its row is missing or switched
     // off, orders go through without it.
     const hasMerch = lineItems.some((line) => line.category === "MERCH");
