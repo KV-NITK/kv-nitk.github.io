@@ -56,3 +56,6 @@ export const getPayment = async (paymentId) =>
   (await request(`/payments/${encodeURIComponent(paymentId)}`)).payment;
 
 export const getMyPayments = async () => (await request("/payments")).payments;
+
+// One pass (QR code) per food coupon or shirt bought, for the logged-in user
+export const getMyPasses = async () => (await request("/passes/my-passes")).passes;
