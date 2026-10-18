@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { En, usePrefs } from '@p26/lib/prefs'
+import { En } from '@p26/lib/prefs'
 import { MEAL, MENU, eventDay } from '@p26/content'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { cn } from '@/lib/utils'
@@ -35,7 +35,6 @@ const PLACES = {
 export function FeastPoster({ className }) {
   const leafRef = useRef(null)
   const reduced = usePrefersReducedMotion()
-  const { subtitles } = usePrefs()
   const [served, setServed] = useState(false)
   const day = eventDay(MEAL.day)
 
@@ -83,10 +82,6 @@ export function FeastPoster({ className }) {
           >
             ಭೂರಿ ಭೋಜನ
           </span>
-          <span lang="kn" className="mt-2 block font-kn-display text-lg font-semibold leading-tight text-[#f6e3bc]">
-            ಬಾಳೆ ಎಲೆ ಊಟ
-          </span>
-          <span className={cn('block font-poster text-lg tracking-[0.14em] text-[#f6e3bc]/85', !subtitles && 'sr-only')}>A full meal on a banana leaf</span>
         </h3>
 
         <svg ref={leafRef} viewBox="0 0 400 220" className="relative -mx-2 mt-3 block w-[calc(100%+1rem)] overflow-visible" aria-hidden>

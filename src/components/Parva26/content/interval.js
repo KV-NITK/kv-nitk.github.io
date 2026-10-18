@@ -1,14 +1,14 @@
 // What the market's stalls sell (market.js): the Bhoori Bhojana meal coupon
 // and the Parva tee. Prices, stock and orders come from the server; these
 // are the words and pictures around them.
-// TODO(content): stand-ins from Parva 2025's food coupon (OSC, 12:00 PM)
-// moved to this year's last day; confirm the day, time and place. The menu
-// below is the real one.
+// The meal is on 31 October. TODO(content): the time and place are still
+// stand-ins from Parva 2025's food coupon (OSC, 12:00 PM); confirm them. The
+// menu below is the real one.
 // The landing page shows these prices without asking the server; the coupon
 // page and checkout use the database (unit_price, list_price), so keep them
 // the same.
 export const MEAL = {
-  day: '2026-11-01',
+  day: '2026-10-31',
   time: { kn: 'ಮಧ್ಯಾಹ್ನ 12:00', en: '12:00 PM' },
   venue: { kn: 'ಹಳೆ ಕ್ರೀಡಾ ಸಂಕೀರ್ಣ', en: 'Old Sports Complex (OSC)' },
   price: 249,

@@ -34,7 +34,7 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, listPrice,
           Bhoori Bhojana · Food Pass
         </span>
         <span lang="kn" className="block font-kn-display text-base font-extrabold leading-tight text-arishina">
-          ಭೂರಿ ಭೋಜನ · ಬಾಳೆ ಎಲೆ ಊಟ
+          ಭೂರಿ ಭೋಜನ
         </span>
       </h2>
 
