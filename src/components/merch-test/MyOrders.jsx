@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { PageShell } from "@p26/chrome/page-shell";
@@ -37,7 +37,20 @@ const StatusBadge = ({ status }) => {
 
 const pill = "rounded-full bg-[#f3ead5] px-4 py-2 font-bold text-[#4a2a12] shadow-md transition-transform hover:-translate-y-0.5";
 
-const passName = (pass) => `${pass.category === "FOOD" ? "Food coupon" : pass.item_name}${pass.variant ? ` (${pass.variant})` : ""} #${pass.item_index}`;
+// Merch is named by what it is to the buyer (Oversized, L), not by the product row name
+const merchLabel = (pass) => [pass.fit, pass.variant].filter(Boolean).join(", ") || pass.item_name;
+
+const passName = (pass) =>
+  pass.category === "FOOD"
+    ? `Food coupon${pass.variant ? ` (${pass.variant})` : ""} #${pass.item_index}`
+    : `${merchLabel(pass)} #${pass.item_index}`;
+
+// Placeholder for a locked coupon, seen when the leaf is stirred: a QR picture of
+// fixed text, never the coupon's token (the server does not send it while locked)
+const LOCKED_QR_TEXT = "PARVA-2026-QR-LOCKED";
+
+const formatUnlockDate = (iso) =>
+  new Date(iso).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "long", year: "numeric" });
 
 const passState = (pass) =>
   pass.status === "CLAIMED"
@@ -74,15 +87,354 @@ const QrIcon = ({ className }) => (
   </svg>
 );
 
+// The Bhoori Bhojana meal is on 31 Oct 2026 at 12:00 noon IST
+const MEAL_START = new Date("2026-10-31T12:00:00+05:30");
+
+const countdownParts = (ms) => {
+  const total = Math.max(0, Math.floor(ms / 1000));
+
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
+};
+
+const CountdownUnit = ({ value, kn, en }) => (
+  <div className="flex min-w-0 flex-1 flex-col items-center">
+    <span className="w-full rounded-[4px] border border-[#c2aa84] bg-white py-2 font-mono text-3xl font-black tabular-nums leading-none text-[#4a2a12] shadow-[0_2px_0_#c2aa84] sm:text-4xl">
+      {String(value).padStart(2, "0")}
+    </span>
+    <span lang="kn" className="mt-1.5 text-[11px] font-bold">{kn}</span>
+    <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#4a2a12]/70">{en}</span>
+  </div>
+);
+
+// Countdown to the Bhoori Bhojana meal, in the colours of the page: parchment,
+// brown ink, and the kumkum red and arishina yellow of the Kannada flag.
+const MealCountdown = () => {
+  const [left, setLeft] = useState(() => MEAL_START.getTime() - Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setLeft(MEAL_START.getTime() - Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const started = left <= 0;
+  const t = countdownParts(left);
+
+  return (
+    <div className="relative mt-4 overflow-hidden rounded-[6px] border-2 border-dashed border-[#8a5530] bg-[#e9dcb9] px-3 pb-3 pt-5 text-center">
+      {/* Kannada flag stripe: yellow over red */}
+      <div className="absolute inset-x-0 top-0 flex h-1.5 flex-col" aria-hidden>
+        <span className="h-1/2 bg-[#f7b928]" />
+        <span className="h-1/2 bg-[#a3231a]" />
+      </div>
+
+      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#a3231a]">Bhoori Bhojana · 31 October · 12 noon</p>
+      <p lang="kn" className="mt-1 font-poster text-2xl leading-tight">
+        {started ? "ಭೂರಿ ಭೋಜನ ಶುರುವಾಗಿದೆ!" : "ಭೂರಿ ಭೋಜನಕ್ಕೆ ಇನ್ನು"}
+      </p>
+      {!started && <p className="mt-0.5 text-xs font-bold text-[#4a2a12]/80">Time remaining for Bhoori Bhojana</p>}
+
+      {started ? (
+        <p className="mt-2 text-sm font-semibold">The feast has begun. Enjoy!</p>
+      ) : (
+        <>
+          <div className="mt-3 flex items-start gap-1" role="timer" aria-label={`${t.days} days ${t.hours} hours ${t.minutes} minutes to go`}>
+            <CountdownUnit value={t.days} kn="ದಿನ" en="days" />
+            <span className="pt-2 font-mono text-2xl font-black text-[#a3231a]">:</span>
+            <CountdownUnit value={t.hours} kn="ಗಂಟೆ" en="hours" />
+            <span className="pt-2 font-mono text-2xl font-black text-[#a3231a]">:</span>
+            <CountdownUnit value={t.minutes} kn="ನಿಮಿಷ" en="mins" />
+            <span className="pt-2 font-mono text-2xl font-black text-[#a3231a]">:</span>
+            <CountdownUnit value={t.seconds} kn="ಸೆಕೆಂಡ್" en="secs" />
+          </div>
+          <p className="mt-2 font-poster text-xl leading-tight text-[#a3231a]">
+            <span lang="kn">ಮಾತ್ರ!</span> <span className="text-base tracking-wide">· only!</span>
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ---------- the banana leaf that holds a food coupon's QR ----------
+
+// Each half is drawn with its midrib on the inner edge. The left half is drawn
+// mirrored point by point (not flipped with a transform: a flipped element breaks
+// the lighting filters in Chromium), so both halves share one light.
+const mirrorX = (flip) => (x) => (flip ? 100 - x : x);
+
+// A frayed outer edge, the same every render
+const frayedEdge = (m) => {
+  let d = `M${m(0)} 0 L${m(95)} 0`;
+  for (let y = 5; y <= 200; y += 5) {
+    d += ` L${m(96.4 + Math.sin(y * 1.7) * 1.5 + Math.sin(y * 0.31) * 0.9)} ${y}`;
+  }
+  return `${d} L${m(0)} 200 Z`;
+};
+
+// The leaf's ribbing: banana leaves are pleated along their veins, which run out
+// from the midrib and droop towards the edge. Every fifth ridge is higher.
+const PLEATS = Array.from({ length: 100 }, (_, i) => i * 2.3 - 34);
+const CREASES = [
+  [4, 38, 30, 52, 58, 30, 96, 58],
+  [6, 104, 34, 96, 62, 128, 96, 118],
+  [10, 160, 40, 150, 64, 178, 96, 170],
+];
+const TEARS = [24, 66, 109, 151, 184];
+
+const pleatPath = (m, y) => `M${m(0)} ${y} Q${m(50)} ${y + 9} ${m(100)} ${y + 31}`;
+const creasePath = (m, [x1, y1, c1x, c1y, c2x, c2y, x2, y2]) => `M${m(x1)} ${y1} C${m(c1x)} ${c1y} ${m(c2x)} ${c2y} ${m(x2)} ${y2}`;
+
+// The height map the lighting reads: ridges along the veins, a few cross creases.
+// Only its alpha matters, so the colour is irrelevant.
+const LeafHeights = ({ m }) => (
+  <>
+    {PLEATS.map((y, i) => (
+      <path
+        key={y}
+        d={pleatPath(m, y)}
+        fill="none"
+        stroke="#fff"
+        strokeWidth={i % 5 === 0 ? 1.3 : 0.6}
+        strokeOpacity={i % 5 === 0 ? 0.9 : 0.35 + ((i * 37) % 10) / 40}
+      />
+    ))}
+    {CREASES.map((c) => (
+      <path key={c.join()} d={creasePath(m, c)} fill="none" stroke="#fff" strokeWidth="3" strokeOpacity="0.55" strokeLinecap="round" />
+    ))}
+  </>
+);
+
+// Turns LeafHeights into a surface: blurred ridges plus low, stretched noise for the
+// wrinkles, as one height field
+const HeightChain = ({ seed }) => (
+  <>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="veins" />
+    <feTurbulence type="fractalNoise" baseFrequency="0.009 0.028" numOctaves="3" seed={seed} result="noise" />
+    <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.8 0 0 0 -0.4" result="wrinkles" />
+    <feComposite in="veins" in2="wrinkles" operator="arithmetic" k1="0" k2="0.42" k3="0.85" k4="0" result="height" />
+  </>
+);
+
+// One half of the leaf. The surface is lit: diffuse light gives the ribbing and
+// wrinkles their relief, a specular pass the waxy shine. `flap` adds the curve of a
+// folded-over half.
+const LeafHalf = ({ id, seed, flip, flap }) => {
+  const m = mirrorX(flip);
+  const region = { filterUnits: "userSpaceOnUse", x: 0, y: 0, width: 100, height: 200, colorInterpolationFilters: "sRGB" };
+  // Gradients run from the midrib outwards
+  const across = flip ? { x1: "1", x2: "0" } : { x1: "0", x2: "1" };
+
+  return (
+    <svg viewBox="0 0 100 200" preserveAspectRatio="none" className="size-full" aria-hidden>
+      <defs>
+        <clipPath id={`${id}-clip`}>
+          <path d={frayedEdge(m)} />
+        </clipPath>
+        <linearGradient id={`${id}-body`} {...across} y1="0" y2="0.15">
+          <stop offset="0" stopColor="#3a8c3a" />
+          <stop offset="0.3" stopColor="#56ad49" />
+          <stop offset="0.72" stopColor="#47a042" />
+          <stop offset="1" stopColor="#2f7d35" />
+        </linearGradient>
+        <linearGradient id={`${id}-rib`} {...across} y1="0" y2="0">
+          <stop offset="0" stopColor="#9fb15a" />
+          <stop offset="0.35" stopColor="#f1f5bf" />
+          <stop offset="0.7" stopColor="#b9c86c" />
+          <stop offset="1" stopColor="#6e8a3c" />
+        </linearGradient>
+        <linearGradient id={`${id}-ribshade`} {...across} y1="0" y2="0">
+          <stop offset="0" stopColor="#0d3314" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#0d3314" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`${id}-curve`} {...across} y1="0" y2="0">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.16" />
+          <stop offset="0.45" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="1" stopColor="#06210b" stopOpacity="0.42" />
+        </linearGradient>
+        <filter id={`${id}-relief`} {...region}>
+          <HeightChain seed={seed} />
+          <feDiffuseLighting in="height" surfaceScale="4" diffuseConstant="0.7" lightingColor="#ffffff">
+            <feDistantLight azimuth="230" elevation="52" />
+          </feDiffuseLighting>
+        </filter>
+        <filter id={`${id}-gloss`} {...region}>
+          <HeightChain seed={seed} />
+          <feSpecularLighting in="height" surfaceScale="4" specularConstant="0.75" specularExponent="18" lightingColor="#f4ffe0">
+            <feDistantLight azimuth="230" elevation="36" />
+          </feSpecularLighting>
+        </filter>
+        <filter id={`${id}-mottle`} {...region}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.05 0.018" numOctaves="2" seed={seed + 11} />
+          <feColorMatrix type="matrix" values="0 0 0 0 0.78  0 0 0 0 0.82  0 0 0 0 0.24  1 0 0 0 -0.42" />
+        </filter>
+      </defs>
+
+      <g clipPath={`url(#${id}-clip)`}>
+        <rect width="100" height="200" fill={`url(#${id}-body)`} />
+        {/* Patches of yellower green, as on a real leaf */}
+        <rect width="100" height="200" filter={`url(#${id}-mottle)`} opacity="0.45" />
+        {/* Relief and shine */}
+        <g filter={`url(#${id}-relief)`} style={{ mixBlendMode: "overlay" }}>
+          <LeafHeights m={m} />
+        </g>
+        <g filter={`url(#${id}-gloss)`} opacity="0.55" style={{ mixBlendMode: "screen" }}>
+          <LeafHeights m={m} />
+        </g>
+        {/* The finest veins, catching the light */}
+        {PLEATS.filter((_, i) => i % 3 === 0).map((y) => (
+          <path key={`v${y}`} d={pleatPath(m, y)} fill="none" stroke="#e4f7c4" strokeOpacity="0.16" strokeWidth="0.35" />
+        ))}
+        {/* Splits along the veins, from the edge in */}
+        {TEARS.map((y) => (
+          <g key={`t${y}`}>
+            <path d={`M${m(100)} ${y + 30} Q${m(80)} ${y + 21} ${m(64)} ${y + 14}`} fill="none" stroke="#0a2a10" strokeOpacity="0.6" strokeWidth="0.75" strokeLinecap="round" />
+            <path d={`M${m(100)} ${y + 31.2} Q${m(80)} ${y + 22.2} ${m(65)} ${y + 15.4}`} fill="none" stroke="#c8ec9c" strokeOpacity="0.35" strokeWidth="0.4" strokeLinecap="round" />
+          </g>
+        ))}
+        {flap && <rect width="100" height="200" fill={`url(#${id}-curve)`} />}
+        {/* Dried, yellowed edge */}
+        <path d={frayedEdge(m)} fill="none" stroke="#a89a45" strokeOpacity="0.6" strokeWidth="1.8" />
+        {/* Midrib: a rounded tube, and its shadow on the blade */}
+        <rect x={flip ? 87.4 : 3.6} width="9" height="200" fill={`url(#${id}-ribshade)`} />
+        <rect x={flip ? 96.2 : 0} width="3.8" height="200" fill={`url(#${id}-rib)`} />
+      </g>
+    </svg>
+  );
+};
+
+const flapStyle = (side, open) => ({
+  transformOrigin: side === "left" ? "0% 50%" : "100% 50%",
+  transform: `rotateY(${open ? (side === "left" ? -135 : 135) : 0}deg)`,
+  transition: "transform 1500ms cubic-bezier(0.22, 0.8, 0.24, 1)",
+  backfaceVisibility: "hidden",
+  WebkitBackfaceVisibility: "hidden",
+});
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// The coupon's QR lies on a banana leaf under two folded flaps. Locked, the flaps stay
+// shut under a brass seal and tapping lifts them for a peek at a placeholder QR.
+// Unlocked, they swing open once and the QR is served on the leaf.
+const LeafReveal = ({ locked, label, children }) => {
+  const [open, setOpen] = useState(false);
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+  const sealRef = useRef(null);
+
+  useEffect(() => {
+    if (locked) return undefined;
+    if (prefersReducedMotion()) {
+      setOpen(true);
+      return undefined;
+    }
+    const timer = setTimeout(() => setOpen(true), 500);
+    return () => clearTimeout(timer);
+  }, [locked]);
+
+  // The seal breathes while the coupon is locked
+  useEffect(() => {
+    if (!locked || prefersReducedMotion() || !sealRef.current?.animate) return undefined;
+    const breathing = sealRef.current.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.07)" }],
+      { duration: 1600, direction: "alternate", iterations: Infinity, easing: "ease-in-out" }
+    );
+    return () => breathing.cancel();
+  }, [locked]);
+
+  const stir = useCallback(() => {
+    if (!locked || prefersReducedMotion()) return;
+    for (const [ref, deg] of [[leftRef, -40], [rightRef, 40]]) {
+      ref.current?.animate?.(
+        [{ transform: "rotateY(0deg)" }, { transform: `rotateY(${deg}deg)`, offset: 0.35 }, { transform: `rotateY(${deg}deg)`, offset: 0.6 }, { transform: "rotateY(0deg)" }],
+        { duration: 1400, easing: "ease-in-out" }
+      );
+    }
+  }, [locked]);
+
+  // Opening the pass plays the peek once by itself; a tap plays it again
+  useEffect(() => {
+    if (!locked) return undefined;
+    const timer = setTimeout(stir, 500);
+    return () => clearTimeout(timer);
+  }, [locked, stir]);
+
+  return (
+    <div
+      className="relative mx-auto mt-4 aspect-square w-full max-w-[18rem] select-none [filter:drop-shadow(0_10px_14px_rgba(20,50,20,0.45))]"
+      style={{ perspective: "1000px" }}
+      onClick={stir}
+      role="img"
+      aria-label={label}
+    >
+      {/* The leaf the QR is served on, with sprinkled water */}
+      <div className="absolute inset-0 overflow-hidden rounded-[10px]">
+        <div className="absolute inset-0 flex">
+          <div className="h-full w-1/2"><LeafHalf id="bed-l" seed={3} flip /></div>
+          <div className="h-full w-1/2"><LeafHalf id="bed-r" seed={8} /></div>
+        </div>
+        <svg viewBox="0 0 100 100" className="absolute inset-0 size-full" aria-hidden>
+          <defs>
+            <radialGradient id="drop" cx="0.45" cy="0.4" r="0.6">
+              <stop offset="0" stopColor="#ffffff" stopOpacity="0.08" />
+              <stop offset="0.7" stopColor="#d8f5c8" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#0d3a14" stopOpacity="0.5" />
+            </radialGradient>
+          </defs>
+          {[[12, 14, 2.2], [86, 20, 1.8], [18, 84, 2], [90, 80, 2.4], [7, 50, 1.4], [94, 52, 1.5], [50, 5, 1.5], [46, 95.5, 1.7], [30, 4, 1]].map(([cx, cy, r]) => (
+            <g key={`${cx}-${cy}`}>
+              <ellipse cx={cx + r * 0.35} cy={cy + r * 0.45} rx={r} ry={r * 0.85} fill="#062a0c" fillOpacity="0.28" />
+              <ellipse cx={cx} cy={cy} rx={r} ry={r * 0.9} fill="url(#drop)" />
+              <ellipse cx={cx - r * 0.35} cy={cy - r * 0.35} rx={r * 0.32} ry={r * 0.22} fill="#ffffff" fillOpacity="0.9" />
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      {/* The QR, on a white cloth */}
+      <div className="absolute inset-[12%] rounded-[6px] bg-white p-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.35)]">{children}</div>
+
+      {/* The two folded flaps */}
+      <div ref={leftRef} className="absolute inset-y-0 left-0 w-1/2 overflow-hidden rounded-l-[10px]" style={flapStyle("left", open)}>
+        <LeafHalf id="flap-l" seed={5} flip flap />
+      </div>
+      <div ref={rightRef} className="absolute inset-y-0 right-0 w-1/2 overflow-hidden rounded-r-[10px]" style={flapStyle("right", open)}>
+        <LeafHalf id="flap-r" seed={13} flap />
+      </div>
+
+      {/* Brass seal, while locked */}
+      <div
+        ref={sealRef}
+        className={cn(
+          "absolute inset-0 m-auto flex size-[4.2rem] items-center justify-center rounded-full border-2 border-[#7a4f12] shadow-[0_3px_8px_rgba(0,0,0,0.55),inset_0_2px_3px_rgba(255,240,180,0.8)] transition-opacity duration-700",
+          locked ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        style={{ backgroundImage: "radial-gradient(circle at 32% 28%, #ffe58a, #f7b928 45%, #a8700f)" }}
+        aria-hidden
+      >
+        <svg viewBox="0 0 24 24" className="size-8 text-[#4a2a12]" fill="currentColor">
+          <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a2 2 0 0 1 1 3.7V19h-2v-1.3A2 2 0 0 1 12 14z" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
 // The QR code of one pass, made when it is opened, with the rules beside it.
 const PassQr = ({ pass, onClose }) => {
   const [src, setSrc] = useState("");
   const usable = pass.status === "ISSUED";
+  const locked = usable && Boolean(pass.locked);
 
   useEffect(() => {
     if (!usable) return;
-    QRCode.toDataURL(pass.token, { width: 640, margin: 2, errorCorrectionLevel: "M" }).then(setSrc).catch(() => setSrc(""));
-  }, [pass.token, usable]);
+    QRCode.toDataURL(locked ? LOCKED_QR_TEXT : pass.token, { width: 640, margin: 2, errorCorrectionLevel: "M" }).then(setSrc).catch(() => setSrc(""));
+  }, [pass.token, usable, locked]);
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -110,11 +462,31 @@ const PassQr = ({ pass, onClose }) => {
         <h3 className="font-poster text-2xl leading-none">{passName(pass)}</h3>
         <p className={cn("mt-1 text-sm font-bold", usable ? "text-emerald-800" : "text-red-700")}>{passState(pass)}</p>
 
-        {usable ? (
+        {locked ? (
           <>
-            <div className="mx-auto mt-4 aspect-square w-full max-w-[18rem] rounded-[6px] bg-white p-2">
-              {src && <img src={src} alt={`QR code for ${passName(pass)}`} className="size-full [image-rendering:pixelated]" />}
+            <LeafReveal locked label="Food coupon QR, locked">
+              {src && <img src={src} alt="" aria-hidden className="size-full [image-rendering:pixelated]" />}
+            </LeafReveal>
+            <MealCountdown />
+            <div role="note" className="mt-4 rounded border-2 border-[#c2aa84] bg-white/60 p-3 text-left text-sm">
+              <p className="text-base font-bold leading-snug">Your food coupon QR unlocks on {formatUnlockDate(pass.qr_unlock_at)}.</p>
+              <p className="mt-1">Your coupon is booked. Come back to this page on the day to show its QR code at the counter.</p>
+              <p lang="kn" className="mt-2 font-semibold">
+                ನಿಮ್ಮ ಊಟದ ಕೂಪನ್ ಬುಕ್ ಆಗಿದೆ. QR ಕೋಡ್ {formatUnlockDate(pass.qr_unlock_at)} ರಿಂದ ಲಭ್ಯವಾಗುತ್ತದೆ.
+              </p>
             </div>
+          </>
+        ) : usable ? (
+          <>
+            {pass.category === "FOOD" ? (
+              <LeafReveal locked={false} label={`QR code for ${passName(pass)}`}>
+                {src && <img src={src} alt={`QR code for ${passName(pass)}`} className="size-full [image-rendering:pixelated]" />}
+              </LeafReveal>
+            ) : (
+              <div className="mx-auto mt-4 aspect-square w-full max-w-[18rem] rounded-[6px] bg-white p-2">
+                {src && <img src={src} alt={`QR code for ${passName(pass)}`} className="size-full [image-rendering:pixelated]" />}
+              </div>
+            )}
             <div role="note" className="mt-4 rounded border-2 border-red-300 bg-red-50 p-3 text-left text-sm text-red-900">
               <p className="font-bold">Do not share this QR code with anyone.</p>
               <p className="mt-1">It can be scanned only once. Whoever shows it first gets the {pass.category === "FOOD" ? "meal" : "item"}, so show it only at the counter.</p>

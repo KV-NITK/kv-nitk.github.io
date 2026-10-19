@@ -3,6 +3,19 @@ import { MEAL, MENU } from '@p26/content'
 import { FeastPoster } from '@p26/ui/stalls/feast-poster'
 import { cn } from '@/lib/utils'
 
+// The dishes the plate is known for: drawn larger on the menu, still in serving order
+const STAR_DISHES = new Set(['jolada-rotti', 'ennegai', 'mudde', 'bassaru'])
+
+// Payasa is served right after the Mysore pak. Only this list is reordered; the shared
+// MENU (and the feast poster that uses it) stays as it is.
+const plateOrder = (menu) => {
+  const payasa = menu.find((item) => item.id === 'payasa')
+  const rest = menu.filter((item) => item.id !== 'payasa')
+  const at = rest.findIndex((item) => item.id === 'mysore-pak')
+
+  return payasa && at !== -1 ? [...rest.slice(0, at + 1), payasa, ...rest.slice(at + 1)] : menu
+}
+
 // ── BhooriBhojanaSection ──────────────────────────────────────────────────────
 //
 // Self-contained visual card for the Bhoori Bhojana (ಭೂರಿ ಭೋಜನ) food-pass.
@@ -68,19 +81,36 @@ export function BhooriBhojanaSection({ quantity, onChange, unitPrice, listPrice,
             >
               <p className="mb-3 text-center font-poster text-base tracking-[0.2em] text-[#f6e3bc]">
                 <En>MENU · </En>
-                <span lang="kn" className="font-kn-display text-sm">ಇಂದಿನ ತಟ್ಟೆ</span>
+                <span lang="kn" className="font-kn-display text-sm">ತಟ್ಟೆ</span>
               </p>
               <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2" aria-label="Today's menu">
-                {MENU.map((item) => (
-                  <li key={item.id} className="flex flex-col items-center text-center">
-                    <span lang="kn" className="font-kn-display text-sm font-bold text-arishina">
-                      {item.kn}
-                    </span>
-                    <span className="font-kn-body text-xs text-[#f6e3bc]/75">
-                      {item.en}
-                    </span>
-                  </li>
-                ))}
+                {plateOrder(MENU).map((item) => {
+                  const star = STAR_DISHES.has(item.id)
+
+                  return (
+                    <li
+                      key={item.id}
+                      className={
+                        star
+                          ? 'flex flex-col items-center rounded-[4px] border border-arishina/60 bg-arishina/10 px-3 py-1.5 text-center shadow-[0_0_14px_rgba(247,185,40,.25)]'
+                          : 'flex flex-col items-center text-center'
+                      }
+                    >
+                      <span
+                        lang="kn"
+                        className={cn(
+                          'font-kn-display font-bold text-arishina',
+                          star ? 'text-xl [text-shadow:0_0_10px_rgba(247,185,40,.55)]' : 'text-sm'
+                        )}
+                      >
+                        {item.kn}
+                      </span>
+                      <span className={cn('font-kn-body text-[#f6e3bc]/75', star ? 'text-sm font-semibold text-[#f6e3bc]' : 'text-xs')}>
+                        {item.en}
+                      </span>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           </div>

@@ -30,6 +30,7 @@ const {
   staffMeController,
   searchPassesController,
   revertPassController,
+  lockFoodPasses,
 } = await importSrc("controllers/pass.controller.js");
 
 describe("pass validators", () => {
@@ -433,5 +434,24 @@ describe("pass controllers", () => {
     assert.equal(res.statusCode, 403);
     assert.equal(res.body.success, false);
     assert.match(res.body.message, /admin/i);
+  });
+
+  it("lockFoodPasses withholds food tokens before the unlock time and releases them after", () => {
+    const passes = [
+      { id: "f", category: "FOOD", token: "secret-food", status: "ISSUED" },
+      { id: "m", category: "MERCH", token: "secret-merch", status: "ISSUED" },
+    ];
+
+    const before = lockFoodPasses(passes, new Date("2026-10-29T12:00:00+05:30"));
+    assert.equal(before[0].token, null);
+    assert.equal(before[0].locked, true);
+    assert.ok(before[0].qr_unlock_at);
+    assert.equal(before[1].token, "secret-merch");
+    assert.equal(before[1].locked, undefined);
+    assert.equal(passes[0].token, "secret-food", "input is not mutated");
+
+    const after = lockFoodPasses(passes, new Date("2026-10-30T00:00:00+05:30"));
+    assert.equal(after[0].token, "secret-food");
+    assert.equal(after[0].locked, undefined);
   });
 });

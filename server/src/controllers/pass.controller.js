@@ -5,9 +5,33 @@ import {
   revertPassSchema,
 } from "../validators/pass.validator.js";
 
+// Food coupon QR codes open on the event day (event is 31 Oct 2026). Until then the
+// token is withheld by the server, so it cannot be read from the response either.
+// Set FOOD_QR_UNLOCK_AT (an ISO time with offset) to open them earlier or later.
+const DEFAULT_FOOD_QR_UNLOCK_AT = "2026-10-30T00:00:00+05:30";
+
+export const getFoodQrUnlockAt = () => {
+  const configured = new Date(process.env.FOOD_QR_UNLOCK_AT || DEFAULT_FOOD_QR_UNLOCK_AT);
+
+  return Number.isNaN(configured.getTime()) ? new Date(DEFAULT_FOOD_QR_UNLOCK_AT) : configured;
+};
+
+export const lockFoodPasses = (passes, now = new Date()) => {
+  const unlockAt = getFoodQrUnlockAt();
+
+  if (now >= unlockAt) return passes;
+
+  return passes.map((pass) =>
+    pass.category === "FOOD"
+      ? { ...pass, token: null, locked: true, qr_unlock_at: unlockAt.toISOString() }
+      : pass
+  );
+};
+
 /**
  * GET /api/passes/my-passes
  * Returns claimable items (food coupons, merch) for the authenticated user.
+ * Food coupons come without their token until the unlock time.
  */
 export const getMyPassesController = async (req, res) => {
   try {
@@ -16,7 +40,7 @@ export const getMyPassesController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      passes,
+      passes: lockFoodPasses(passes),
     });
   } catch (error) {
     console.error("getMyPassesController error:", error);
