@@ -56,15 +56,18 @@ WHERE c.fit IS NULL AND c.product_id = pp.id AND pp.fit IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_claimable_items_user_upper ON claimable_items (UPPER(user_iris_id));
 
 -- 2. claim_event_pass ------------------------------------------------
--- The old two-argument version is dropped so a call can never reach it:
--- it would claim a pass without checking the scanner's mode.
-
-DROP FUNCTION IF EXISTS claim_event_pass(UUID, TEXT);
+-- The three-argument version below is new. The old two-argument version (001) is
+-- left in place on purpose, so the server that is live today keeps working between
+-- running this file and deploying the new code. Once the new code is live, drop it
+-- (it claims a pass without checking the scanner's mode; only the service role can
+-- call it):
+--   DROP FUNCTION IF EXISTS claim_event_pass(UUID, TEXT);
 
 CREATE OR REPLACE FUNCTION claim_event_pass(p_token UUID, p_staff_iris_id TEXT, p_category TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_staff_active BOOLEAN;
@@ -200,6 +203,7 @@ RETURNS JSONB
 LANGUAGE sql
 SECURITY DEFINER
 STABLE
+SET search_path = public
 AS $$
     SELECT COALESCE(jsonb_agg(row_to_json(r)::jsonb ORDER BY r.user_name, r.created_at DESC, r.item_index), '[]'::jsonb)
     FROM (
@@ -238,6 +242,7 @@ CREATE OR REPLACE FUNCTION revert_event_pass(p_id UUID, p_staff_iris_id TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_staff_active BOOLEAN;
