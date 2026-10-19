@@ -64,6 +64,25 @@ export const issuePassesForPayment = async (paymentId) => {
     return [];
   }
 
+  // T-shirt fit lives on the product, not in the order snapshot; staff see it on scan
+  const fitByProduct = new Map();
+  const productIds = [...new Set(rawItems.map((item) => item.productId).filter(Boolean))];
+
+  if (productIds.length > 0) {
+    const { data: products, error: productsError } = await supabase
+      .from("payment_products")
+      .select("id, fit")
+      .in("id", productIds);
+
+    if (productsError) {
+      console.error("Failed to look up product fit for pass issuance:", productsError);
+    }
+
+    for (const product of products || []) {
+      fitByProduct.set(product.id, product.fit || null);
+    }
+  }
+
   const rowsToInsert = [];
   // Numbered across the whole order (not per line), so (payment_id, item_index)
   // is unique and a second issuing of the same order cannot insert again
@@ -85,11 +104,14 @@ export const issuePassesForPayment = async (paymentId) => {
         id: crypto.randomUUID(),
         payment_id: payment.id,
         user_iris_id: payment.user_iris_id,
+        // Shown to staff when the pass is scanned
+        user_name: payment.customer_name || null,
         category,
         // Required by the table (NOT NULL); without it every insert fails
         product_id: String(item.productId || ""),
         item_name: itemName,
         variant,
+        fit: category === "MERCH" ? fitByProduct.get(String(item.productId || "")) ?? null : null,
         item_index: ++itemIndex,
         status: "ISSUED",
         token: crypto.randomUUID(),
@@ -190,9 +212,10 @@ export const getUserPasses = async (userIrisId) => {
 };
 
 /**
- * Scans / claims a pass token via atomic RPC.
+ * Scans / claims a pass token via atomic RPC. The RPC refuses (MISMATCH, never
+ * claims) a pass whose category is not the one the scanner is set to.
  */
-export const scanPass = async (token, staffIrisId) => {
+export const scanPass = async (token, staffIrisId, category) => {
   if (!token) {
     throw new Error("Pass token is required");
   }
@@ -206,11 +229,54 @@ export const scanPass = async (token, staffIrisId) => {
   const { data, error } = await supabase.rpc("claim_event_pass", {
     p_token: cleanToken,
     p_staff_iris_id: staffIrisId,
+    p_category: category,
   });
 
   if (error) {
     console.error("Error executing claim_event_pass RPC:", error);
     throw new Error("Failed to claim pass: " + error.message);
+  }
+
+  return data;
+};
+
+/**
+ * A student's passes of one category, by exact reg / roll number.
+ */
+export const searchPasses = async (query, category) => {
+  const { data, error } = await supabase.rpc("search_event_passes", {
+    p_query: query,
+    p_category: category,
+  });
+
+  if (error) {
+    console.error("Error executing search_event_passes RPC:", error);
+    throw new Error("Failed to search passes");
+  }
+
+  return data || [];
+};
+
+/**
+ * Puts a claimed pass back to ISSUED (e.g. the size is out of stock).
+ */
+export const revertPass = async (passId, staffIrisId) => {
+  if (!passId) {
+    throw new Error("Pass id is required");
+  }
+
+  if (!staffIrisId) {
+    throw new Error("Staff ID is required");
+  }
+
+  const { data, error } = await supabase.rpc("revert_event_pass", {
+    p_id: passId,
+    p_staff_iris_id: staffIrisId,
+  });
+
+  if (error) {
+    console.error("Error executing revert_event_pass RPC:", error);
+    throw new Error("Failed to revert pass: " + error.message);
   }
 
   return data;

@@ -15,9 +15,27 @@ export const merchSizeSchema = z
 
 export const merchColorSchema = z.enum(["Black", "White"]);
 
+export const passCategorySchema = z.enum(["FOOD", "MERCH"], {
+  errorMap: () => ({ message: "Category must be FOOD or MERCH" }),
+});
+
 export const scanPassSchema = z.object({
   token: z
     .string({ required_error: "Token is required" })
     .trim()
     .uuid("Invalid token format"),
+  category: passCategorySchema,
+});
+
+export const searchPassesSchema = z.object({
+  q: z
+    .string({ required_error: "Name or reg / roll number is required" })
+    .trim()
+    .min(3, "Enter at least 3 characters")
+    .max(40),
+  category: passCategorySchema,
+});
+
+export const revertPassSchema = z.object({
+  id: z.string({ required_error: "Pass id is required" }).trim().uuid("Invalid pass id"),
 });

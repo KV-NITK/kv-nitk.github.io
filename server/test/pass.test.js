@@ -27,6 +27,9 @@ const { requireStaff } = await importSrc("middleware/staff.middleware.js");
 const {
   getMyPassesController,
   scanPassController,
+  staffMeController,
+  searchPassesController,
+  revertPassController,
 } = await importSrc("controllers/pass.controller.js");
 
 describe("pass validators", () => {
@@ -60,7 +63,7 @@ describe("pass validators", () => {
 
   it("validates UUID token for scanner endpoint", () => {
     const validUuid = crypto.randomUUID();
-    const validResult = scanPassSchema.safeParse({ token: validUuid });
+    const validResult = scanPassSchema.safeParse({ token: validUuid, category: "FOOD" });
     assert.equal(validResult.success, true);
     assert.equal(validResult.data.token, validUuid);
 
@@ -69,6 +72,10 @@ describe("pass validators", () => {
 
     const missingResult = scanPassSchema.safeParse({});
     assert.equal(missingResult.success, false);
+
+    // The scanner's mode is required and limited to FOOD / MERCH
+    assert.equal(scanPassSchema.safeParse({ token: validUuid }).success, false);
+    assert.equal(scanPassSchema.safeParse({ token: validUuid, category: "ALL" }).success, false);
   });
 });
 
@@ -81,9 +88,11 @@ describe("pass service", () => {
 
   it("issues passes for SUCCESS payment with FOOD and MERCH items", async () => {
     const paymentId = crypto.randomUUID();
+    db.rows("payment_products").push({ id: "tshirt-black-m", fit: "Oversized" });
     db.rows("payments").push({
       id: paymentId,
       user_iris_id: "user-123",
+      customer_name: "Asha Rao",
       status: "SUCCESS",
       items: [
         { productId: "bhoori-bhojana", name: "Bhoori Bhojana Food Pass", category: "FOOD", quantity: 2 },
@@ -102,11 +111,14 @@ describe("pass service", () => {
     assert.equal(foodPasses[1].item_index, 2);
     assert.equal(foodPasses[0].variant, null);
     assert.equal(foodPasses[0].status, "ISSUED");
+    assert.equal(foodPasses[0].user_name, "Asha Rao");
 
     // 1 merch pass
     const merchPasses = passes.filter((p) => p.category === "MERCH");
     assert.equal(merchPasses.length, 1);
     assert.equal(merchPasses[0].variant, "M");
+    assert.equal(merchPasses[0].fit, "Oversized");
+    assert.equal(foodPasses[0].fit, null);
     // Numbered across the whole order, so (payment_id, item_index) is unique
     assert.equal(merchPasses[0].item_index, 3);
     assert.equal(new Set(passes.map((p) => p.item_index)).size, passes.length);
@@ -223,6 +235,7 @@ describe("pass service", () => {
     db.registerRpc("claim_event_pass", (args) => {
       assert.equal(args.p_token, testToken);
       assert.equal(args.p_staff_iris_id, testStaffId);
+      assert.equal(args.p_category, "MERCH");
       return {
         data: {
           result: "OK",
@@ -232,7 +245,7 @@ describe("pass service", () => {
       };
     });
 
-    const result = await scanPass(testToken, testStaffId);
+    const result = await scanPass(testToken, testStaffId, "MERCH");
     assert.equal(result.result, "OK");
     assert.equal(result.item.status, "CLAIMED");
   });
@@ -313,7 +326,7 @@ describe("pass controllers", () => {
   });
 
   it("scanPassController rejects invalid token format with 400", async () => {
-    const req = { user: { irisId: "staff-1" }, body: { token: "bad-token" } };
+    const req = { user: { irisId: "staff-1" }, body: { token: "bad-token", category: "FOOD" } };
     const res = fakeRes();
 
     await scanPassController(req, res);
@@ -328,12 +341,97 @@ describe("pass controllers", () => {
       error: null,
     }));
 
-    const req = { user: { irisId: "staff-1" }, body: { token: validToken } };
+    const req = { user: { irisId: "staff-1" }, body: { token: validToken, category: "FOOD" } };
     const res = fakeRes();
 
     await scanPassController(req, res);
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.success, true);
     assert.equal(res.body.result, "OK");
+  });
+
+  it("scanPassController rejects a missing scanner category with 400", async () => {
+    const req = { user: { irisId: "staff-1" }, body: { token: crypto.randomUUID() } };
+    const res = fakeRes();
+
+    await scanPassController(req, res);
+    assert.equal(res.statusCode, 400);
+  });
+
+  it("scanPassController passes MISMATCH through as unsuccessful", async () => {
+    db.registerRpc("claim_event_pass", () => ({
+      data: { result: "MISMATCH", message: "Mismatched Item", category: "MERCH" },
+      error: null,
+    }));
+
+    const req = { user: { irisId: "staff-1" }, body: { token: crypto.randomUUID(), category: "FOOD" } };
+    const res = fakeRes();
+
+    await scanPassController(req, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.success, false);
+    assert.equal(res.body.result, "MISMATCH");
+  });
+
+  it("staffMeController returns the staff record", () => {
+    const req = {
+      user: { name: "Fallback" },
+      staff: { iris_id: "s1", name: "Asha", role: "ADMIN" },
+    };
+    const res = fakeRes();
+
+    staffMeController(req, res);
+    assert.deepEqual(res.body.staff, { irisId: "s1", name: "Asha", role: "ADMIN" });
+  });
+
+  it("searchPassesController validates input and returns the passes", async () => {
+    const bad = fakeRes();
+    await searchPassesController({ query: { q: "ab", category: "FOOD" } }, bad);
+    assert.equal(bad.statusCode, 400);
+
+    db.registerRpc("search_event_passes", (args) => {
+      assert.equal(args.p_query, "211CS100");
+      assert.equal(args.p_category, "MERCH");
+      return { data: [{ id: "p1", status: "ISSUED" }], error: null };
+    });
+
+    const res = fakeRes();
+    await searchPassesController({ query: { q: " 211CS100 ", category: "MERCH" } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.passes.length, 1);
+  });
+
+  it("revertPassController reverts as the signed-in staff member", async () => {
+    const passId = crypto.randomUUID();
+    db.registerRpc("revert_event_pass", (args) => {
+      assert.equal(args.p_id, passId);
+      assert.equal(args.p_staff_iris_id, "staff-1");
+      return { data: { result: "REVERTED", item: { id: passId, status: "ISSUED" } }, error: null };
+    });
+
+    const admin = { irisId: "staff-1" };
+    const res = fakeRes();
+    await revertPassController({ user: admin, staff: { role: "ADMIN" }, body: { id: passId } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.success, true);
+
+    const bad = fakeRes();
+    await revertPassController({ user: admin, staff: { role: "ADMIN" }, body: { id: "nope" } }, bad);
+    assert.equal(bad.statusCode, 400);
+  });
+
+  it("revertPassController refuses a volunteer with 403 and reverts nothing", async () => {
+    db.registerRpc("revert_event_pass", () => {
+      throw new Error("a volunteer must never reach the RPC");
+    });
+
+    const res = fakeRes();
+    await revertPassController(
+      { user: { irisId: "vol-1" }, staff: { role: "VOLUNTEER" }, body: { id: crypto.randomUUID() } },
+      res
+    );
+    assert.equal(res.statusCode, 403);
+    assert.equal(res.body.success, false);
+    assert.match(res.body.message, /admin/i);
   });
 });

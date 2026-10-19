@@ -37,7 +37,7 @@ export const requireStaff = async (req, res, next) => {
 
     const { data: staff, error } = await supabase
       .from("event_staff")
-      .select("iris_id, role, active")
+      .select("iris_id, name, role, active")
       .eq("iris_id", userIrisId)
       .eq("active", true)
       .maybeSingle();

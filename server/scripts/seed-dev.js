@@ -9,6 +9,7 @@ import { createClient } from "@supabase/supabase-js";
 export const SEED_DATA = {
   staff: {
     iris_id: "DEV_USER_001",
+    name: "Dev Staff",
     role: "VOLUNTEER",
     active: true,
     created_at: new Date().toISOString(),
@@ -141,9 +142,9 @@ async function runSeed() {
   console.log("==========================================================");
   console.log(`
 -- 1. Insert Staff Member
-INSERT INTO event_staff (iris_id, role, active, created_at)
-VALUES ('DEV_USER_001', 'VOLUNTEER', true, NOW())
-ON CONFLICT (iris_id) DO UPDATE SET active = true, role = 'VOLUNTEER';
+INSERT INTO event_staff (iris_id, name, role, active, created_at)
+VALUES ('DEV_USER_001', 'Dev Staff', 'VOLUNTEER', true, NOW())
+ON CONFLICT (iris_id) DO UPDATE SET active = true, role = 'VOLUNTEER', name = 'Dev Staff';
 
 -- 2. Insert Successful Payment
 INSERT INTO payments (
