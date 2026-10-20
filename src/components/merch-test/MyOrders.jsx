@@ -111,6 +111,63 @@ const CountdownUnit = ({ value, kn, en }) => (
   </div>
 );
 
+// The ticking that plays while the countdown is on screen. The file is a looping clip
+// in public/; while it is missing nothing plays and no sound button is shown.
+const TICK_SRC = "/parva-26/audio/doomsday-tick.mp3";
+const MUTE_KEY = "parva_countdown_muted";
+
+const readMuted = () => {
+  try {
+    return localStorage.getItem(MUTE_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+// Plays TICK_SRC in a loop for as long as `active`. Opening a pass is a tap, so the
+// browser allows it to start; if it is refused anyway, the page just stays quiet.
+const useTickSound = (active, muted) => {
+  const audioRef = useRef(null);
+  const [available, setAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!active || typeof Audio === "undefined") return undefined;
+
+    const audio = new Audio(TICK_SRC);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.addEventListener("canplaythrough", () => setAvailable(true), { once: true });
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      audioRef.current = null;
+      setAvailable(false);
+    };
+  }, [active]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !available) return undefined;
+
+    const sync = () => {
+      if (muted || document.hidden) {
+        audio.pause();
+      } else {
+        audio.play().catch(() => {});
+      }
+    };
+
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, [available, muted]);
+
+  return available;
+};
+
 // Countdown to the Bhoori Bhojana meal, in the colours of the page: parchment,
 // brown ink, and the kumkum red and arishina yellow of the Kannada flag.
 const MealCountdown = () => {
@@ -124,6 +181,19 @@ const MealCountdown = () => {
   const started = left <= 0;
   const t = countdownParts(left);
 
+  const [muted, setMuted] = useState(readMuted);
+  const hasSound = useTickSound(!started, muted);
+
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    try {
+      localStorage.setItem(MUTE_KEY, next ? "1" : "0");
+    } catch {
+      // Private mode: the choice lasts until the pass is closed
+    }
+  };
+
   return (
     <div className="relative mt-4 overflow-hidden rounded-[6px] border-2 border-dashed border-[#8a5530] bg-[#e9dcb9] px-3 pb-3 pt-5 text-center">
       {/* Kannada flag stripe: yellow over red */}
@@ -133,9 +203,22 @@ const MealCountdown = () => {
       </div>
 
       <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#a3231a]">Bhoori Bhojana · 31 October · 12 noon</p>
-      <p lang="kn" className="mt-1 font-poster text-2xl leading-tight">
-        {started ? "ಭೂರಿ ಭೋಜನ ಶುರುವಾಗಿದೆ!" : "ಭೂರಿ ಭೋಜನಕ್ಕೆ ಇನ್ನು"}
-      </p>
+      {/* The heading stays centred; the sound button sits at the right end of the same line */}
+      <div className="relative mt-1">
+        <p lang="kn" className="px-10 font-poster text-2xl leading-tight">
+          {started ? "ಭೂರಿ ಭೋಜನ ಶುರುವಾಗಿದೆ!" : "ಭೂರಿ ಭೋಜನಕ್ಕೆ ಇನ್ನು"}
+        </p>
+        {hasSound && (
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? "Turn the countdown sound on" : "Turn the countdown sound off"}
+            className="absolute right-0 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#4a2a12]/45 bg-[#4a2a12]/30 text-base shadow-sm hover:bg-[#4a2a12]/45"
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+        )}
+      </div>
       {!started && <p className="mt-0.5 text-xs font-bold text-[#4a2a12]/80">Time remaining for Bhoori Bhojana</p>}
 
       {started ? (
