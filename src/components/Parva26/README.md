@@ -50,6 +50,15 @@ assets/         textures/, guests/, emoji/, making-of/
 - Content stand-ins are marked `TODO(content)`; things waiting for a server
   are marked `TODO(backend)`.
 
+## The games' server
+The flowers (Scene 9) and "Which film?" (Scene 11) are played against
+`/api/parva26` (`server/src/routes/parva26.routes.js`, no login). The film
+puzzles and their answers are in the database, not here: add or retire them
+in the `parva26_puzzles` table (`server/sql/004_parva26_games.sql` creates it
+with the first ten). Without the server the flowers still count on the page,
+and the booth shows "the projector is down". `?hoomale=9996` tries the
+flower milestones without any server.
+
 ## Checking a change
 ```
 npx vite build && npx vite preview --port 5198      # in one terminal

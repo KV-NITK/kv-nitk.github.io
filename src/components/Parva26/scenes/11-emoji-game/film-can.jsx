@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { En, usePrefs } from '@p26/lib/prefs'
-import { graphemes } from '@p26/lib/text'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
 
@@ -21,14 +20,15 @@ const TILTS = [-8, 5, -3]
 export const MAX_TRIES = 3
 export const MAX_HINTS = 2
 
-export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced, focusOnArrival, className }) {
+export function FilmCan({ puzzle, wrong, hints, phase, busy, onGuess, onHint, reduced, focusOnArrival, className }) {
   const { subtitles } = usePrefs()
   const [text, setText] = useState('')
   const [shake, setShake] = useState(0)
   const inputRef = useRef(null)
   const done = phase !== 'play'
-  const first = puzzle.answer
-  const firstKn = graphemes(first.kn)[0]
+  // From the server: the first letters after the second hint, the answer
+  // once the reel is over.
+  const { letter, answer } = puzzle
 
   // Once you're playing, each new can arrives ready to write on.
   useEffect(() => {
@@ -45,7 +45,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
 
   const submit = (e) => {
     e.preventDefault()
-    if (done || !text.trim()) return
+    if (done || busy || !text.trim()) return
     onGuess(text)
   }
 
@@ -94,15 +94,15 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
             Film name, in English or Kannada
           </label>
           {phase !== 'failed' && <Pencil />}
-          {hints > 1 && !done && (
+          {hints > 1 && letter && !done && (
             <span aria-hidden className="absolute left-5 top-0.5 font-kn-display text-xs font-semibold text-[#6b6b6b]">
-              {firstKn}… · {first.en[0]}…
+              {letter.kn}… · {letter.en}…
             </span>
           )}
-          {phase === 'failed' ? (
+          {phase === 'failed' && answer ? (
             <p className="flex-1 truncate font-kn-display text-base font-bold leading-tight text-kumkuma">
-              <span lang="kn">ಉತ್ತರ: {first.kn}</span>
-              <En className="block text-sm font-semibold">Answer: {first.en}</En>
+              <span lang="kn">ಉತ್ತರ: {answer.kn}</span>
+              <En className="block text-sm font-semibold">Answer: {answer.en}</En>
             </p>
           ) : (
             <input
@@ -135,7 +135,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
         <button
           type="button"
           onClick={onHint}
-          disabled={done || hints >= MAX_HINTS}
+          disabled={done || busy || hints >= MAX_HINTS}
           aria-label={hints === 0 ? 'Hint: show the year (costs 5 points)' : hints === 1 ? 'Hint: show the first letter (costs 5 points)' : 'No more hints'}
           className={cn(
             'group absolute -right-[4%] top-[20%] flex origin-top-left flex-col items-start transition-transform duration-300 enabled:hover:rotate-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
@@ -168,7 +168,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, onGuess, onHint, reduced,
 
       <button
         type="submit"
-        disabled={done || !text.trim()}
+        disabled={done || busy || !text.trim()}
         className="mt-4 min-h-11 -rotate-2 rounded-[3px] border-[2.5px] border-arishina px-4 font-kn-display text-lg font-bold text-arishina transition-opacity disabled:opacity-40 enabled:hover:bg-arishina/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina"
       >
         <span lang="kn">ಲೇಬಲ್ ಹಚ್ಚಿ</span>

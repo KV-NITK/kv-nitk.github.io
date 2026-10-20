@@ -23,6 +23,7 @@ import passRoutes from "./routes/pass.routes.js";
 import { listProductsController } from "./controllers/payment.controller.js";
 import adminRoutes from "./routes/admin.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+import parva26Routes from "./routes/parva26.routes.js";
 
 import { getAllowedOrigins } from "./config/urls.js";
 
@@ -84,6 +85,7 @@ app.get("/api/products", listProductsController);
 app.use("/api/passes", passRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/parva26", parva26Routes);
 
 // Serve frontend static build if present in container / root
 const clientBuildPath = path.join(__dirname, "../../build");

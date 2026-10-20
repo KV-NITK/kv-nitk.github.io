@@ -38,7 +38,7 @@ export function ReleaseDayScene() {
   const live = useOnScreen(stageRef)
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
-  const { shared, mine, add } = useHoomale()
+  const { shared, mine, add, ready } = useHoomale(live)
   const [flag, setFlag] = useState(null)
   const sections = Math.max(1, Math.min(10, Math.floor(shared / HOOMALE.milestone)))
   const strings = Math.min(STRINGS.length, 1 + Math.floor(shared / 2500))
@@ -79,10 +79,12 @@ export function ReleaseDayScene() {
   }, [])
 
   // Milestones reached while you're here: a flag on the banner, and at the
-  // goal, fireworks over the theatre.
-  const lastShared = useRef(shared)
+  // goal, fireworks over the theatre. The first count from the server is
+  // where you came in, not a milestone.
+  const lastShared = useRef(null)
   useEffect(() => {
-    const before = lastShared.current
+    if (!ready) return
+    const before = lastShared.current ?? shared
     lastShared.current = shared
     if (Math.floor(shared / HOOMALE.milestone) > Math.floor(before / HOOMALE.milestone)) {
       const reached = Math.floor(shared / HOOMALE.milestone) * HOOMALE.milestone
@@ -92,17 +94,17 @@ export function ReleaseDayScene() {
       return () => clearTimeout(id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shared])
+  }, [shared, ready])
 
   // Arriving after the goal: one burst when the street first comes into view.
   const burst = useRef(false)
   useEffect(() => {
-    if (live && done && !burst.current) {
+    if (live && ready && done && !burst.current) {
       burst.current = true
       celebrate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, done])
+  }, [live, ready, done])
 
   function celebrate() {
     if (reduced) return

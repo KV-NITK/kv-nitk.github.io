@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 
 // Minimal in-memory stand-in for the parts of supabase-js the payment code uses:
-// from(table).select/insert/update/delete + eq/neq/in/gt/order/limit + maybeSingle/single.
+// from(table).select/insert/update/delete + eq/neq/in/gt/not(col, "is", null)/order/limit +
+// maybeSingle/single, and select(cols, { count: "exact", head: true }).
 // Enforces the unique columns the real tables have (code 23505) and can inject
 // one-off errors with failNext().
 
@@ -30,7 +31,7 @@ export const createFakeDb = (seed = {}) => {
   };
 
   const from = (table) => {
-    const q = { op: "select", filters: [], order: null, limit: null, payload: null, returning: false, mode: "many" };
+    const q = { op: "select", filters: [], orders: [], limit: null, payload: null, returning: false, mode: "many", count: false };
 
     const matches = (row) =>
       q.filters.every(({ type, col, val }) => {
@@ -38,6 +39,7 @@ export const createFakeDb = (seed = {}) => {
         if (type === "neq") return row[col] !== val;
         if (type === "in") return val.includes(row[col]);
         if (type === "gt") return row[col] > val;
+        if (type === "notNull") return row[col] !== null && row[col] !== undefined;
         return true;
       });
 
@@ -84,9 +86,16 @@ export const createFakeDb = (seed = {}) => {
 
       let result = rows.filter(matches).map((r) => ({ ...r }));
 
-      if (q.order) {
-        const { col, ascending } = q.order;
-        result.sort((a, b) => (a[col] > b[col] ? 1 : a[col] < b[col] ? -1 : 0) * (ascending ? 1 : -1));
+      if (q.count) return { data: null, count: result.length, error: null };
+
+      if (q.orders.length) {
+        result.sort((a, b) => {
+          for (const { col, ascending } of q.orders) {
+            const c = (a[col] > b[col] ? 1 : a[col] < b[col] ? -1 : 0) * (ascending ? 1 : -1);
+            if (c) return c;
+          }
+          return 0;
+        });
       }
 
       if (q.limit !== null) result = result.slice(0, q.limit);
@@ -105,8 +114,9 @@ export const createFakeDb = (seed = {}) => {
     };
 
     const api = {
-      select: () => {
+      select: (cols, { count, head } = {}) => {
         if (q.op !== "select") q.returning = true;
+        if (count && head) q.count = true;
         return api;
       },
       insert: (payload) => {
@@ -127,7 +137,12 @@ export const createFakeDb = (seed = {}) => {
       neq: (col, val) => (q.filters.push({ type: "neq", col, val }), api),
       in: (col, val) => (q.filters.push({ type: "in", col, val }), api),
       gt: (col, val) => (q.filters.push({ type: "gt", col, val }), api),
-      order: (col, { ascending = true } = {}) => ((q.order = { col, ascending }), api),
+      not: (col, op, val) => {
+        if (op !== "is" || val !== null) throw new Error(`fake supabase: not(${op}, ${val}) is not supported`);
+        q.filters.push({ type: "notNull", col });
+        return api;
+      },
+      order: (col, { ascending = true } = {}) => (q.orders.push({ col, ascending }), api),
       limit: (n) => ((q.limit = n), api),
       maybeSingle: () => ((q.mode = "maybeSingle"), api),
       single: () => ((q.mode = "single"), api),
