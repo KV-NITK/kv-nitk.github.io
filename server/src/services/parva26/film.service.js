@@ -1,18 +1,21 @@
 import crypto from "crypto";
 import { supabase } from "../../config/supabase.js";
-import { isRight, firstLetters } from "./answers.js";
+import { isRight } from "./answers.js";
 import { cleanName } from "./names.js";
 
-// "Which film?" (Parva 2026, Scene 11). Each day there are five reels, the
-// same for everyone; each shows a film as three emoji. Three tries, two
-// hints. The answers stay here: the page sends a guess and hears right or
-// wrong, and learns the answer only when the reel is over. The server also
-// keeps the clock and the score, so a score on the chart was really played.
+// "Which film?" (Parva 2026, Scene 11). Each game is five reels drawn at
+// random from the pool, two easy, two medium and one hard, so players can't
+// pass each other the answers; each shows a film as three emoji. Three
+// tries, and two hints: the film's two clues. The answers stay here: the
+// page sends a guess and hears right or wrong, and learns the answer only
+// when the reel is over. The server also keeps the clock and the score, so a
+// score on the chart was really played.
 
 export const PER_DAY = 5;
 export const MAX_TRIES = 3;
 export const MAX_HINTS = 2;
 const CHART_SIZE = 10;
+const LEVELS_DEALT = ["easy", "easy", "medium", "medium", "hard"];
 
 const IST = 5.5 * 3600_000;
 const DAY = 86_400_000;
@@ -49,7 +52,7 @@ const loadPool = async () => {
 
   const { data, error } = await supabase
     .from("parva26_puzzles")
-    .select("id, sort, emoji, alt, answer_kn, answer_en, accept, year, active")
+    .select("id, sort, emoji, alt, answer_kn, answer_en, accept, year, level, clue1, clue2, active")
     .order("sort", { ascending: true });
 
   if (error) throw error;
@@ -59,11 +62,36 @@ const loadPool = async () => {
   return pool;
 };
 
-// Today's five: a window into the active pool that moves on each day.
-const reelsFor = (active, day) => {
+const pick = (list) => list[crypto.randomInt(list.length)];
+
+// A new game's five, in random order: two easy, two medium and one hard,
+// passing over films this visitor has had before while there are others.
+// When a level runs out, a film of another level fills in.
+const drawReels = (active, seen) => {
   if (!active.length) throw new FilmError("No reels today. Please come back later.", 503, "NO_PUZZLES");
-  const start = (day * PER_DAY) % active.length;
-  return Array.from({ length: Math.min(PER_DAY, active.length) }, (_, i) => active[(start + i) % active.length]);
+
+  const chosen = [];
+  for (const level of LEVELS_DEALT.slice(0, Math.min(PER_DAY, active.length))) {
+    const left = active.filter((p) => !chosen.includes(p));
+    const fresh = left.filter((p) => !seen.has(p.id));
+    chosen.push(pick([fresh.filter((p) => p.level === level), fresh, left].find((list) => list.length)));
+  }
+
+  for (let i = chosen.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(i + 1);
+    [chosen[i], chosen[j]] = [chosen[j], chosen[i]];
+  }
+  return chosen;
+};
+
+// The films in a visitor's earlier games (the page sends their ids)
+const seenFilms = async (playIds) => {
+  if (!playIds.length) return new Set();
+
+  const { data, error } = await supabase.from("parva26_plays").select("reel_ids").in("id", playIds);
+  if (error) throw error;
+
+  return new Set((data || []).flatMap((p) => p.reel_ids));
 };
 
 const answerOf = (p) => ({ kn: p.answer_kn, en: p.answer_en });
@@ -82,8 +110,10 @@ const toPublic = (play, puzzles) => {
     reelCount: reels.length,
     wrong: play.wrong,
     hints: play.hints,
-    reels: reels.map((p, i) => ({ id: reelId(i), emoji: p.emoji, alt: p.alt, year: p.year })),
-    letter: current && play.hints >= 2 ? firstLetters(current) : null,
+    // Only the reels reached so far, so the next ones can't be worked out
+    // before their clock starts
+    reels: reels.slice(0, play.reel + 1).map((p, i) => ({ id: reelId(i), emoji: p.emoji, alt: p.alt })),
+    clues: current ? [current.clue1, current.clue2].slice(0, play.hints) : [],
     results: play.results.map((r, i) => ({ ...r, id: reelId(i) })),
     total: play.score,
     finished: play.finished,
@@ -128,10 +158,21 @@ const savePlay = async (play, changes) => {
   return data;
 };
 
-export const startPlay = async () => {
-  const puzzles = await loadPool();
+// Wrong guesses are kept to find the spellings people use (see the SQL
+// file). Losing one doesn't matter, so the player never waits for it.
+const logGuess = (puzzleId, text) => {
+  supabase
+    .from("parva26_guesses")
+    .insert({ puzzle_id: puzzleId, guess: text })
+    .then(({ error }) => error && console.warn("Could not keep a guess:", error.message), () => {});
+};
+
+// previous: the ids of this visitor's earlier games, so this one can be
+// other films
+export const startPlay = async (previous = []) => {
+  const [puzzles, seen] = await Promise.all([loadPool(), seenFilms(previous)]);
   const day = dayNumber();
-  const reels = reelsFor(puzzles.filter((p) => p.active), day);
+  const reels = drawReels(puzzles.filter((p) => p.active), seen);
 
   const { data, error } = await supabase
     .from("parva26_plays")
@@ -170,6 +211,7 @@ export const guess = async (playId, text) => {
 
   if (!right && play.wrong + 1 < MAX_TRIES) {
     const saved = await savePlay(play, { wrong: play.wrong + 1 });
+    logGuess(puzzle.id, text);
     return { outcome: "wrong", play: toPublic(saved, puzzles) };
   }
 
@@ -198,6 +240,7 @@ export const guess = async (playId, text) => {
     finished,
     finished_at: finished ? new Date(now).toISOString() : null,
   });
+  if (!right) logGuess(puzzle.id, text);
 
   return { outcome: right ? "right" : "out", answer: answerOf(puzzle), play: toPublic(saved, puzzles) };
 };

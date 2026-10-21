@@ -37,7 +37,8 @@ export const getFlowers = async () => (await request("/flowers")).total;
 // { accepted, total }
 export const sendFlowers = (count, client) => send("POST", "/flowers", { count, client });
 
-export const startFilmGame = async () => (await send("POST", "/film/plays")).play;
+// previous: this browser's earlier game ids, so the new one deals other films
+export const startFilmGame = async (previous = []) => (await send("POST", "/film/plays", { previous })).play;
 
 export const getFilmGame = async (playId) =>
   (await request(`/film/plays/${encodeURIComponent(playId)}`)).play;

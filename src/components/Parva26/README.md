@@ -52,12 +52,21 @@ assets/         textures/, guests/, emoji/, making-of/
 
 ## The games' server
 The flowers (Scene 9) and "Which film?" (Scene 11) are played against
-`/api/parva26` (`server/src/routes/parva26.routes.js`, no login). The film
-puzzles and their answers are in the database, not here: add or retire them
-in the `parva26_puzzles` table (`server/sql/004_parva26_games.sql` creates it
-with the first ten). Without the server the flowers still count on the page,
-and the booth shows "the projector is down". `?hoomale=9996` tries the
-flower milestones without any server.
+`/api/parva26` (`server/src/routes/parva26.routes.js`, no login). The films
+and their answers are on the server, not here, in
+`server/content/parva26-films.json`. After changing that file, in `server/`:
+```
+npm run parva26:emoji             # downloads any new emoji's Twemoji image
+npm run parva26:films -- --check  # checks the list (also run by the tests)
+npm run parva26:films             # loads it into parva26_puzzles
+```
+The checks refuse a list with missing fields, duplicates, a clue that names
+its film, two films whose names would count for each other, an emoji with no
+image, or fewer than 50 films. Wrong guesses are kept in `parva26_guesses`;
+`server/sql/005_parva26_games.sql` has the query that lists the common ones,
+to add real spellings to a film's `accept`. Without the server the flowers
+still count on the page, and the booth shows "the projector is down".
+`?hoomale=9996` tries the flower milestones without any server.
 
 ## Checking a change
 ```

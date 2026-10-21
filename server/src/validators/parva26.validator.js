@@ -10,6 +10,16 @@ export const flowersSchema = z.object({
 
 export const playIdSchema = z.string().uuid("Invalid game id");
 
+// A new game, with the ids of this browser's earlier games so it can deal
+// other films. Ids that don't parse are just ignored.
+export const startSchema = z.object({
+  previous: z
+    .array(z.unknown())
+    .max(30)
+    .catch([])
+    .transform((ids) => ids.filter((id) => playIdSchema.safeParse(id).success)),
+});
+
 export const guessSchema = z.object({
   guess: z.string().trim().min(1, "Write a film name").max(60),
 });

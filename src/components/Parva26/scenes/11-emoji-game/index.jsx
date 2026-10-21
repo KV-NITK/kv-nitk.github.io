@@ -6,15 +6,15 @@ import { FilmFrame } from '@p26/film/film-frame'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { useOnScreen, PAUSED } from '@p26/lib/on-screen'
-import { useStoredState } from '@p26/lib/storage'
+import { useStoredState, load } from '@p26/lib/storage'
 import { startFilmGame, getFilmGame, guessFilm, filmHint, saveFilmName, getFilmChart } from '@/api/parva26'
 import { cn } from '@/lib/utils'
 
 // Scene 11, ಯಾವ ಸಿನಿಮಾ? · Which film? (allscenes.md). The projection booth:
-// the operator has mixed up today's reels. Each day there are five cans, the
-// same for everyone; each shows a film as three emoji, and you write its
-// name on the tape, in English or Kannada. Three tries, two hints, and the
-// projector's footage counter keeps time. Labelled cans go on the shelf;
+// the operator has mixed up today's reels. Each day you get five cans, drawn
+// for you; each shows a film as three emoji, and you write its name on the
+// tape, in English or Kannada. Three tries, two clues, and the projector's
+// footage counter keeps time. Labelled cans go on the shelf;
 // after the fifth, the day's log slides out with a Share button and a place
 // for your name on the operators' duty chart. No replays until midnight.
 //
@@ -27,6 +27,21 @@ const IST = 5.5 * 3600_000
 const DAY = 86_400_000
 const CHART_EVERY_MS = 60_000
 const dayNumber = (t) => Math.floor((t + IST) / DAY)
+const GAME_KEY = 'parva26:film:'
+
+// The games played in this browser on earlier days, so a new one can deal
+// other films.
+function earlierGames() {
+  try {
+    return Object.keys(localStorage)
+      .filter((key) => key.startsWith(GAME_KEY))
+      .map((key) => load(key, null))
+      .filter((id) => typeof id === 'string')
+      .slice(-30)
+  } catch {
+    return []
+  }
+}
 
 export function EmojiGameScene() {
   const reduced = usePrefersReducedMotion()
@@ -35,7 +50,7 @@ export function EmojiGameScene() {
   const [now, setNow] = useState(() => Date.now())
   const day = dayNumber(now)
   // Your game today; at midnight the key changes and a new day starts.
-  const [playId, setPlayId] = useStoredState(`parva26:film:${day}`, null)
+  const [playId, setPlayId] = useStoredState(`${GAME_KEY}${day}`, null)
   const [play, setPlay] = useState(null)
   const [trouble, setTrouble] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -55,7 +70,7 @@ export function EmojiGameScene() {
   const finished = !!play?.finished
   const total = play?.total ?? 0
   const solved = results.filter((r) => r.solved).length
-  const puzzle = play && !finished ? { ...play.reels[play.reel], letter: play.letter, answer: reveal?.answer ?? null } : null
+  const puzzle = play && !finished ? { ...play.reels[play.reel], clues: play.clues, answer: reveal?.answer ?? null } : null
   const wrong = reveal?.lost ? MAX_TRIES : (play?.wrong ?? 0)
 
   // Today's game: picked up where you left it, or a new one the first time
@@ -67,7 +82,7 @@ export function EmojiGameScene() {
       try {
         let game = null
         if (playId) game = await getFilmGame(playId).catch((e) => (e.status === 404 ? null : Promise.reject(e)))
-        if (!game) game = await startFilmGame()
+        if (!game) game = await startFilmGame(earlierGames())
         if (cancelled) return
         setPlayId(game.id)
         setPlay(game)
@@ -167,7 +182,7 @@ export function EmojiGameScene() {
     try {
       const next = await filmHint(play.id)
       setPlay(next)
-      setStatus(next.hints === 1 ? `Hint: it came out in ${puzzle.year}.` : `Hint: it starts with ${next.letter?.en}.`)
+      setStatus(`Clue ${next.hints}: ${next.clues[next.hints - 1]}`)
     } catch (e) {
       if (e.status === 409 || e.status === 404) await resync()
       else setStatus('The projector jammed. Please try again.')

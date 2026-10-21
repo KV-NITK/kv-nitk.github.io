@@ -7,12 +7,14 @@ import { cn } from '@/lib/utils'
 // film can with three emoji stickers on its lid for the clue, and a strip of
 // masking tape across the label to write the film's name on. Three boxes at
 // the end of the tape are the tries; a wrong guess punches a hole in one. A
-// paper tag tied to the can is the hint: the first pull stamps the year on
-// the rim, the second pencils the first letter on the tape.
+// paper tag tied to the can is the hint: each pull adds one of the film's
+// two clues to a slip under the can.
 
-// The emoji images by code point (the file name).
+// The emoji images by code point (the file name). Each stays its own file,
+// fetched only when a can shows it, rather than all of them being inlined
+// into the page's script.
 const emoji = Object.fromEntries(
-  Object.entries(import.meta.glob('@p26/assets/emoji/*.svg', { eager: true, query: '?url', import: 'default' })).map(([path, url]) => [path.split('/').pop().replace('.svg', ''), url])
+  Object.entries(import.meta.glob('@p26/assets/emoji/*.svg', { eager: true, query: '?url&no-inline', import: 'default' })).map(([path, url]) => [path.split('/').pop().replace('.svg', ''), url])
 )
 const emojiUrl = (code) => emoji[code]
 
@@ -26,9 +28,9 @@ export function FilmCan({ puzzle, wrong, hints, phase, busy, onGuess, onHint, re
   const [shake, setShake] = useState(0)
   const inputRef = useRef(null)
   const done = phase !== 'play'
-  // From the server: the first letters after the second hint, the answer
-  // once the reel is over.
-  const { letter, answer } = puzzle
+  // From the server: the clues asked for so far, and the answer once the
+  // reel is over.
+  const { clues = [], answer } = puzzle
 
   // Once you're playing, each new can arrives ready to write on.
   useEffect(() => {
@@ -81,24 +83,12 @@ export function FilmCan({ puzzle, wrong, hints, phase, busy, onGuess, onHint, re
           ))}
         </div>
 
-        {/* Hint 1: the year stamped into the rim */}
-        {hints > 0 && (
-          <span aria-hidden className="absolute bottom-[9%] left-1/2 -translate-x-1/2 font-poster text-lg tracking-[0.3em] text-[#3c4246] [text-shadow:0_1px_0_rgba(255,255,255,.6)]">
-            {puzzle.year}
-          </span>
-        )}
-
         {/* The masking tape: the answer field and the three tries */}
         <div className="absolute -inset-x-[7%] top-[55%] flex h-[19%] items-center gap-2 pl-5 pr-3" style={{ ...paper, backgroundColor: '#e9dcb4', clipPath: 'polygon(1% 8%, 3% 0, 97% 4%, 99% 0, 100% 92%, 97% 100%, 3% 96%, 0 100%)' }}>
           <label htmlFor="p26-reel-answer" className="sr-only">
             Film name, in English or Kannada
           </label>
           {phase !== 'failed' && <Pencil />}
-          {hints > 1 && letter && !done && (
-            <span aria-hidden className="absolute left-5 top-0.5 font-kn-display text-xs font-semibold text-[#6b6b6b]">
-              {letter.kn}… · {letter.en}…
-            </span>
-          )}
           {phase === 'failed' && answer ? (
             <p className="flex-1 truncate font-kn-display text-base font-bold leading-tight text-kumkuma">
               <span lang="kn">ಉತ್ತರ: {answer.kn}</span>
@@ -136,7 +126,7 @@ export function FilmCan({ puzzle, wrong, hints, phase, busy, onGuess, onHint, re
           type="button"
           onClick={onHint}
           disabled={done || busy || hints >= MAX_HINTS}
-          aria-label={hints === 0 ? 'Hint: show the year (costs 5 points)' : hints === 1 ? 'Hint: show the first letter (costs 5 points)' : 'No more hints'}
+          aria-label={hints === 0 ? 'Hint: show the first clue (costs 5 points)' : hints === 1 ? 'Hint: show the second clue (costs 5 points)' : 'No more hints'}
           className={cn(
             'group absolute -right-[4%] top-[20%] flex origin-top-left flex-col items-start transition-transform duration-300 enabled:hover:rotate-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arishina',
             hints > 0 && 'translate-y-2'
@@ -165,6 +155,20 @@ export function FilmCan({ puzzle, wrong, hints, phase, busy, onGuess, onHint, re
           </span>
         )}
       </div>
+
+      {/* The clues pulled so far, on a slip under the can */}
+      {clues.length > 0 && (
+        <ol className="mt-4 w-[min(76vw,19rem)] -rotate-1 space-y-1 bg-paper px-3 py-2 text-pen shadow-[0_4px_8px_rgba(0,0,0,.45)] lg:w-[21rem]" style={paper}>
+          {clues.map((clue, i) => (
+            <li key={i} className="font-typewriter text-sm leading-snug">
+              <span lang="kn" className="font-kn-display font-semibold">
+                ಸುಳಿವು {i + 1}
+              </span>
+              <En className="font-semibold"> · Clue {i + 1}</En>: <span lang="en">{clue}</span>
+            </li>
+          ))}
+        </ol>
+      )}
 
       <button
         type="submit"

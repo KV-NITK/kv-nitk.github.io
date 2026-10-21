@@ -1,29 +1,36 @@
 import { describe, it, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import express from "express";
 import { createFakeDb } from "./helpers/fakeSupabase.js";
 import { mockSupabase, importSrc } from "./helpers/mocks.js";
 
-const puzzle = (id, sort, answerEn, answerKn, extra = {}) => ({
+const puzzle = (id, sort, answerEn, answerKn, level, extra = {}) => ({
   id,
   sort,
   emoji: ["1f327", "1f430", "1f494"],
-  alt: `clue for ${id}`,
+  alt: `pictures for ${id}`,
   answer_kn: answerKn,
   answer_en: answerEn,
   accept: [],
   year: 2000 + sort,
+  level,
+  clue1: `First clue for ${id}.`,
+  clue2: `Second clue for ${id}.`,
   active: true,
   ...extra,
 });
 
 const PUZZLES = [
-  puzzle("mungaru-male", 1, "Mungaru Male", "ಮುಂಗಾರು ಮಳೆ", { accept: ["mungarumale"] }),
-  puzzle("kantara", 2, "Kantara", "ಕಾಂತಾರ"),
-  puzzle("lucia", 3, "Lucia", "ಲೂಸಿಯಾ"),
-  puzzle("kgf", 4, "K.G.F", "ಕೆ.ಜಿ.ಎಫ್"),
-  puzzle("rangitaranga", 5, "RangiTaranga", "ರಂಗಿತರಂಗ"),
-  puzzle("retired", 6, "Retired Film", "ನಿವೃತ್ತ", { active: false }),
+  puzzle("mungaru-male", 1, "Mungaru Male", "ಮುಂಗಾರು ಮಳೆ", "easy", { accept: ["mungarumale"] }),
+  puzzle("kantara", 2, "Kantara", "ಕಾಂತಾರ", "easy"),
+  puzzle("milana", 3, "Milana", "ಮಿಲನ", "easy"),
+  puzzle("lucia", 4, "Lucia", "ಲೂಸಿಯಾ", "medium"),
+  puzzle("kgf", 5, "K.G.F", "ಕೆ.ಜಿ.ಎಫ್", "medium"),
+  puzzle("tagaru", 6, "Tagaru", "ಟಗರು", "medium"),
+  puzzle("rangitaranga", 7, "RangiTaranga", "ರಂಗಿತರಂಗ", "hard"),
+  puzzle("jackie", 8, "Jackie", "ಜಾಕಿ", "hard"),
+  puzzle("retired", 9, "Retired Film", "ನಿವೃತ್ತ", "hard", { active: false }),
 ];
 
 const db = createFakeDb({
@@ -43,7 +50,8 @@ const { default: router } = await importSrc("routes/parva26.routes.js");
 const { flushFlowers, resetFlowers } = await importSrc("services/parva26/flowers.service.js");
 const { scoreFor, dayNumber } = await importSrc("services/parva26/film.service.js");
 const { cleanName, NameError } = await importSrc("services/parva26/names.js");
-const { isRight, firstLetters } = await importSrc("services/parva26/answers.js");
+const { isRight } = await importSrc("services/parva26/answers.js");
+const { checkFilms, twemojiCode } = await importSrc("services/parva26/films.js");
 
 describe("parva26 games", () => {
   let server;
@@ -127,26 +135,45 @@ describe("parva26 games", () => {
   });
 
   describe("which film", () => {
-    const start = async () => (await call("POST", "/film/plays")).body.play;
+    const start = async (body) => (await call("POST", "/film/plays", body)).body.play;
     // The page never learns which puzzle a reel is; the test reads it from the database
     const puzzleAt = (play, i) => PUZZLES.find((p) => p.id === dbPlay(play.id).reel_ids[i]);
     const answerFor = (play, i) => puzzleAt(play, i).answer_en;
     const guess = (play, text) => call("POST", `/film/plays/${play.id}/guess`, { guess: text });
     const dbPlay = (id) => db.rows("parva26_plays").find((p) => p.id === id);
 
-    it("starts a game of five active reels, without the answers", async () => {
+    it("deals five active films, two easy, two medium and one hard, and shows only the first", async () => {
       const play = await start();
-      assert.equal(play.reels.length, 5);
+      assert.equal(play.reelCount, 5);
       assert.equal(play.reel, 0);
-      assert.ok(!dbPlay(play.id).reel_ids.includes("retired"));
-      assert.deepEqual(play.reels.map((r) => r.id), ["r1", "r2", "r3", "r4", "r5"]);
+      assert.deepEqual(play.reels.map((r) => r.id), ["r1"]);
+      assert.deepEqual(play.clues, []);
+
+      const dealt = dbPlay(play.id).reel_ids.map((id) => PUZZLES.find((p) => p.id === id));
+      assert.equal(new Set(dealt).size, 5);
+      assert.ok(dealt.every((p) => p.active));
+      assert.deepEqual(dealt.map((p) => p.level).sort(), ["easy", "easy", "hard", "medium", "medium"]);
 
       const json = JSON.stringify(play);
       for (const p of PUZZLES) {
         assert.ok(!json.includes(p.answer_en), `answer ${p.answer_en} leaked`);
         assert.ok(!json.includes(p.answer_kn), `answer ${p.answer_kn} leaked`);
         assert.ok(!json.includes(`"${p.id}"`), `puzzle id ${p.id} leaked`);
+        assert.ok(!json.includes(p.clue1), `clue for ${p.id} leaked`);
       }
+    });
+
+    it("deals films from this visitor's earlier games last", async () => {
+      const first = await start();
+      const seen = dbPlay(first.id).reel_ids;
+      const fresh = PUZZLES.filter((p) => p.active && !seen.includes(p.id)).map((p) => p.id);
+
+      const second = await start({ previous: [first.id, "not-a-game"] });
+      const dealt = dbPlay(second.id).reel_ids;
+      assert.ok(fresh.every((id) => dealt.includes(id)), `${fresh} not all in ${dealt}`);
+
+      // Ids that don't parse are ignored, not refused
+      assert.equal((await call("POST", "/film/plays", { previous: "nonsense" })).status, 201);
     });
 
     it("forgives a small typo and scores the reel by the server's clock", async () => {
@@ -170,6 +197,8 @@ describe("parva26 games", () => {
       assert.equal(r.body.outcome, "wrong");
       assert.equal(r.body.answer, undefined);
       assert.equal(r.body.play.wrong, 1);
+      // Kept, to find the spellings people use
+      assert.ok(db.rows("parva26_guesses").some((g) => g.guess === "not a film at all" && g.puzzle_id === puzzleAt(play, 0).id));
 
       await guess(play, "still wrong");
       r = await guess(play, "wrong again");
@@ -183,16 +212,16 @@ describe("parva26 games", () => {
       );
     });
 
-    it("gives the year, then the first letter, then no more hints", async () => {
+    it("gives the first clue, then the second, then no more hints", async () => {
       const play = await start();
+      const film = puzzleAt(play, 0);
 
       let r = await call("POST", `/film/plays/${play.id}/hint`);
       assert.equal(r.body.play.hints, 1);
-      assert.equal(r.body.play.letter, null);
+      assert.deepEqual(r.body.play.clues, [film.clue1]);
 
       r = await call("POST", `/film/plays/${play.id}/hint`);
-      const answer = puzzleAt(play, 0);
-      assert.deepEqual(r.body.play.letter, firstLetters(answer));
+      assert.deepEqual(r.body.play.clues, [film.clue1, film.clue2]);
 
       r = await call("POST", `/film/plays/${play.id}/hint`);
       assert.equal(r.status, 400);
@@ -204,7 +233,7 @@ describe("parva26 games", () => {
       assert.equal((await call("PUT", `/film/plays/${play.id}/name`, { name: "Too soon" })).status, 409);
 
       let last;
-      for (let i = 0; i < play.reels.length; i++) last = (await guess(play, answerFor(play, i))).body;
+      for (let i = 0; i < play.reelCount; i++) last = (await guess(play, answerFor(play, i))).body;
       assert.equal(last.play.finished, true);
       assert.equal(last.play.reel, 5);
       assert.equal((await guess(play, "anything")).status, 409);
@@ -245,7 +274,7 @@ describe("parva26 games", () => {
 
     it("refuses a bad name", async () => {
       const play = await start();
-      for (let i = 0; i < play.reels.length; i++) await guess(play, answerFor(play, i));
+      for (let i = 0; i < play.reelCount; i++) await guess(play, answerFor(play, i));
 
       for (const name of ["", "   ", "<script>", "a".repeat(21), "Fuck you"]) {
         const r = await call("PUT", `/film/plays/${play.id}/name`, { name });
@@ -304,8 +333,25 @@ describe("parva26 answers and names", () => {
     assert.ok(!isRight("", kantara));
   });
 
-  it("gives the first Kannada letter as a whole syllable", () => {
-    assert.deepEqual(firstLetters(PUZZLES[0]), { kn: "ಮುಂ", en: "M" });
+  it("takes the usual spellings of a Kannada title in English and Kannada", () => {
+    const sapta = { answer_en: "Sapta Saagaradaache Ello", answer_kn: "ಸಪ್ತ ಸಾಗರದಾಚೆ ಎಲ್ಲೋ", accept: [] };
+    for (const guess of ["saptha saagaradaache ello", "sapta sagaradache ello", "Saptha Sagaradache Yello", "ಸಪ್ಥ ಸಾಗರದಾಚೆ ಎಲ್ಲೊ"]) {
+      assert.ok(isRight(guess, sapta), guess);
+    }
+    assert.ok(isRight("kaanthaara", kantara));
+    assert.ok(isRight("ಕಾಂಥಾರ", kantara));
+    assert.ok(isRight("ಮುಂಗಾರು ಮಲೆ", PUZZLES[0]));
+    assert.ok(isRight("mungaaru maley", PUZZLES[0]));
+  });
+
+  it("never takes a sequel, or another number, for the film", () => {
+    const kgf = { answer_en: "KGF: Chapter 1", answer_kn: "ಕೆ.ಜಿ.ಎಫ್: ಚಾಪ್ಟರ್ 1", accept: ["KGF"] };
+    assert.ok(isRight("kgf", kgf));
+    assert.ok(isRight("KGF chapter 1", kgf));
+    assert.ok(isRight("ಕೆಜಿಎಫ್ ಚಾಪ್ಟರ್ ೧", kgf));
+    assert.ok(!isRight("kgf 2", kgf));
+    assert.ok(!isRight("Kantara Chapter 1", kantara));
+    assert.ok(!isRight("Mungaru Male 2", PUZZLES[0]));
   });
 
   it("cleans names and refuses blocked words", () => {
@@ -313,5 +359,55 @@ describe("parva26 answers and names", () => {
     assert.equal(cleanName("ಶ್ವೇತಾ"), "ಶ್ವೇತಾ");
     assert.throws(() => cleanName("shit"), NameError);
     assert.throws(() => cleanName("a@b.com"), NameError);
+  });
+});
+
+describe("parva26 films file", () => {
+  const FILE = new URL("../content/parva26-films.json", import.meta.url);
+  const EMOJI_DIR = new URL("../../src/components/Parva26/assets/emoji/", import.meta.url);
+  const film = (movie, extra = {}) => ({
+    movie,
+    kannada: "ಸಿನಿಮಾ",
+    emojis: ["🌧️", "🐰", "💔"],
+    alt: "rain cloud, rabbit, broken heart",
+    clue1: "A first clue.",
+    clue2: "A second clue.",
+    year: 2006,
+    level: "easy",
+    ...extra,
+  });
+
+  it("is ready: every film checks out and has its emoji images", () => {
+    assert.deepEqual(checkFilms(JSON.parse(fs.readFileSync(FILE, "utf8")), { emojiDir: EMOJI_DIR }), []);
+  });
+
+  it("names Twemoji files the way Twemoji does", () => {
+    assert.equal(twemojiCode("⛏️"), "26cf");
+    assert.equal(twemojiCode("1️⃣"), "31-20e3");
+    assert.equal(twemojiCode("👨‍⚕️"), "1f468-200d-2695-fe0f");
+  });
+
+  it("finds duplicates, missing fields, giveaway clues, look-alike names and missing images", () => {
+    const problems = checkFilms(
+      [
+        film("Mungaru Male"),
+        film("Mungaru Male", { level: "hard" }),
+        film("Jackie", { clue2: "Puneeth Rajkumar plays Jackie." }),
+        film("Kantara"),
+        film("Kanthaara"),
+        film("Lucia", { kannada: "", emojis: ["🌧️", "🐰"] }),
+        film("Appu", { emojis: ["🦩", "🐰", "💔"], level: "tricky" }),
+      ],
+      { emojiDir: EMOJI_DIR }
+    ).join("\n");
+
+    assert.match(problems, /#2 Mungaru Male: the same film as #1/);
+    assert.match(problems, /#3 Jackie: "clue2" gives the answer away/);
+    assert.match(problems, /"Kanthaara" \(Kanthaara\) would also count as Kantara/);
+    assert.match(problems, /#6 Lucia: "kannada" is missing/);
+    assert.match(problems, /#6 Lucia: "emojis" must be three emoji/);
+    assert.match(problems, /#7 Appu: no image for 🦩/);
+    assert.match(problems, /#7 Appu: "level" must be easy, medium or hard/);
+    assert.match(problems, /at least 50 are needed/);
   });
 });

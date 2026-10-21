@@ -1,7 +1,7 @@
 import { getFlowers, addFlowers } from "../services/parva26/flowers.service.js";
 import { startPlay, getPlay, guess, hint, setName, getChart, FilmError } from "../services/parva26/film.service.js";
 import { createAllowance } from "../middleware/rateLimit.middleware.js";
-import { flowersSchema, playIdSchema, guessSchema, nameSchema } from "../validators/parva26.validator.js";
+import { flowersSchema, playIdSchema, startSchema, guessSchema, nameSchema } from "../validators/parva26.validator.js";
 
 // Each visitor may throw as many flowers a minute as the page allows (150);
 // each address a good many more, since a hostel shares one.
@@ -43,10 +43,13 @@ export const addFlowersController = async (req, res) => {
   }
 };
 
-// POST /api/parva26/film/plays
+// POST /api/parva26/film/plays { previous: [playId] }
 export const startPlayController = async (req, res) => {
+  const parsed = startSchema.safeParse(req.body ?? {});
+  const previous = parsed.success ? parsed.data.previous : [];
+
   try {
-    return res.status(201).json({ success: true, play: await startPlay() });
+    return res.status(201).json({ success: true, play: await startPlay(previous) });
   } catch (error) {
     return fail(res, error, "Could not start the game");
   }
