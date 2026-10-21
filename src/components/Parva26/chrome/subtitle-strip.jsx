@@ -96,7 +96,9 @@ export function SubtitleStrip() {
     return () => observer.disconnect()
   }, [target])
 
-  const hovering = Boolean(target) && (subtitles || target.hasAttribute('data-en-always'))
+  // A target that drops its data-en (the programme button as its card
+  // opens) takes its line away with it.
+  const hovering = Boolean(target) && Boolean(text) && (subtitles || target.hasAttribute('data-en-always'))
   const speaking = !hovering && Boolean(line) && subtitles
   // The last words stay on screen while the strip fades out.
   const current = hovering ? text : speaking ? line : ''

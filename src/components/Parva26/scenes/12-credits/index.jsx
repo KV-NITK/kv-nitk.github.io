@@ -121,8 +121,8 @@ export function CreditsScene() {
                 <p className={cn('mt-3 max-w-md font-kn-body text-lg leading-relaxed', GLOW)}>{SPONSORS.map((s) => s.name).join(' · ')}</p>
               </div>
 
-              {/* The roll pauses on this card */}
-              <div ref={thanksRef} className="flex min-h-[55svh] flex-col items-center justify-center">
+              {/* The roll pauses on this card; Skip credits lands here */}
+              <div ref={thanksRef} data-skip-to className="flex min-h-[55svh] flex-col items-center justify-center">
                 <p lang="kn" className={cn('font-kn-display text-3xl font-bold leading-snug sm:text-4xl', GLOW)}>
                   ಅಭಿಮಾನಿ ದೇವರುಗಳಿಗೆ ಧನ್ಯವಾದ
                 </p>

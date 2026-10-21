@@ -68,6 +68,8 @@ export function GuestsScene() {
   const stageRef = useRef(null)
   const wallRef = useRef(null)
   const railRef = useRef(null)
+  const pastRef = useRef(null)
+  const panRef = useRef(null)
   const [open, setOpen] = useState(null)
   const now = useNow()
   const reduced = usePrefersReducedMotion()
@@ -127,7 +129,7 @@ export function GuestsScene() {
           { rootMargin: '50% 0px' }
         )
         near.observe(stageRef.current)
-        gsap
+        panRef.current = gsap
           .timeline({
             scrollTrigger: {
               trigger: sectionRef.current,
@@ -145,12 +147,33 @@ export function GuestsScene() {
         return () => {
           near.disconnect()
           willChange([wall, rail], false)
+          panRef.current = null
         }
       })
       return () => mm.revert()
     },
     { scope: sectionRef, dependencies: [reduced] }
   )
+
+  // The programme's two guest links. Where the wall stacks, they just scroll
+  // there. While the camera pans, "This year's guests" goes to the start of
+  // the pan (the section is pinned, so a plain jump to it wouldn't move),
+  // and "Guests till now" to the point where the past guests' stretch of
+  // wall starts at the left.
+  useEffect(() => {
+    const onClick = (e) => {
+      const st = panRef.current?.scrollTrigger
+      const link = e.target.closest?.('a[href="#guests"], a[href="#past-guests"]')
+      if (!st || !link) return
+      e.preventDefault()
+      const distance = Math.max(1, wallRef.current.offsetWidth - stageRef.current.clientWidth)
+      const along = link.getAttribute('href') === '#guests' ? -0.1 : Math.min(1, pastRef.current.offsetLeft / distance)
+      // The timeline: a 0.1 hold, the 1-long pan, a 0.1 hold
+      window.scrollTo({ top: st.start + ((0.1 + along) / 1.2) * (st.end - st.start), behavior: 'instant' })
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
 
   const toggle = (id) => () => setOpen((current) => (current === id ? null : id))
 
@@ -187,7 +210,7 @@ export function GuestsScene() {
             <Pilaster />
 
             {/* Guests of past Parvas */}
-            <div className="relative flex flex-col items-center px-4 pb-14 pt-4 lg:justify-center lg:px-[7cqh] lg:pb-[13cqh] lg:pt-[13cqh]">
+            <div ref={pastRef} id="past-guests" className="relative flex scroll-mt-16 flex-col items-center px-4 pb-14 pt-4 lg:justify-center lg:px-[7cqh] lg:pb-[13cqh] lg:pt-[13cqh]">
               <BrassPlate as="h3" kn="ಇದುವರೆಗಿನ ಅತಿಥಿಗಳು" en="Guests till now" subtitles={subtitles} />
               <ul className="mt-2 grid w-full max-w-md grid-cols-2 justify-items-center gap-x-3 gap-y-8 [&>li:last-child:nth-child(odd)]:col-span-2 lg:mt-[1cqh] lg:flex lg:w-auto lg:max-w-none lg:gap-[3.6cqh]">
                 {PAST_GUESTS.map((guest) => (
