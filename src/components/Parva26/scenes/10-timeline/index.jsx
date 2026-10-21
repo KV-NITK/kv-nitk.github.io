@@ -7,6 +7,7 @@ import { FilmFrame } from '@p26/film/film-frame'
 import { gsap, useGSAP } from '@p26/lib/gsap'
 import { brass } from '@p26/styles/materials'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
+import { useMediaQuery } from '@p26/lib/use-media-query'
 import { willChange } from '@p26/lib/layers'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,8 @@ import { cn } from '@/lib/utils'
 // with one frame under the loupe; that frame plays large above, with its
 // story as burned-in subtitles. Each frame is a title card lettered in its
 // era's style; a splice of clear tape marks each new era.
+// On a phone the section doesn't hold: the strip is swiped (or stepped with
+// the buttons) frame by frame instead, so the page scrolls straight past.
 
 const N = TIMELINE.length
 // Blank leader before and after the films, so the strip runs to the reels.
@@ -32,6 +35,9 @@ export function TimelineScene() {
   const [index, setIndex] = useState(0)
   const indexRef = useRef(0)
   const reduced = usePrefersReducedMotion()
+  const desktop = useMediaQuery('(min-width: 1024px)')
+  // Stepped by hand (buttons, swipe, tap) rather than pulled by the scroll
+  const stepped = reduced || !desktop
   const { subtitles } = usePrefs()
 
   // Distance between two frames on the strip, in pixels.
@@ -42,11 +48,15 @@ export function TimelineScene() {
 
   // Place the strip at a position in frames (0 … N-1) and turn the reels by
   // the same length of film.
-  const place = (at) => {
+  const placeStrip = (at) => {
     const x = -at * pitch()
     gsap.set(stripRef.current, { x })
     const r = (window.innerWidth >= 1024 ? REEL.lg : REEL.sm) / 2
     for (const reel of reelsRef.current) reel && gsap.set(reel, { rotation: (x / r) * (180 / Math.PI) })
+  }
+  // ...and show the frame nearest the loupe.
+  const place = (at) => {
+    placeStrip(at)
     const i = Math.round(at)
     if (i !== indexRef.current) {
       indexRef.current = i
@@ -57,7 +67,7 @@ export function TimelineScene() {
   // Scrolling pulls the film; it settles with one frame under the loupe.
   useGSAP(
     () => {
-      if (reduced) return
+      if (stepped) return
       const proxy = { at: 0 }
       const moving = [stripRef.current, ...reelsRef.current]
       const tl = gsap.timeline({
@@ -79,29 +89,40 @@ export function TimelineScene() {
       triggerRef.current = tl.scrollTrigger
       return () => (triggerRef.current = null)
     },
-    { scope: sectionRef, dependencies: [reduced] }
+    { scope: sectionRef, dependencies: [stepped] }
   )
 
-  // With reduced motion the buttons step the strip; nothing scrubs.
+  // Stepped, the strip runs to the chosen frame (or jumps, with reduced
+  // motion); nothing scrubs.
+  const shownRef = useRef(0)
   useEffect(() => {
-    if (!reduced) return
-    place(index)
-    const onResize = () => place(indexRef.current)
+    if (!stepped) return
+    indexRef.current = index
+    const proxy = { at: shownRef.current }
+    const tween = reduced
+      ? null
+      : gsap.to(proxy, { at: index, duration: 0.45, ease: 'power2.out', onUpdate: () => placeStrip((shownRef.current = proxy.at)) })
+    if (reduced) placeStrip((shownRef.current = index))
+    const onResize = () => placeStrip(shownRef.current)
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    return () => {
+      tween?.kill()
+      window.removeEventListener('resize', onResize)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced, index])
+  }, [stepped, reduced, index])
 
   const goTo = (i) => {
     const to = Math.max(0, Math.min(N - 1, i))
     const st = triggerRef.current
-    if (!st) return setIndex(to)
+    if (stepped || !st) return setIndex(to)
     window.scrollTo({ top: st.start + (to / (N - 1)) * (st.end - st.start), behavior: 'smooth' })
   }
 
   // On a laptop the strip can be pulled by hand too: dragging scrolls the
   // page by the matching amount.
   const onStripDown = (e) => {
+    if (stepped) return onSwipeStart(e)
     const st = triggerRef.current
     if (!st || e.pointerType !== 'mouse') return
     const el = e.currentTarget
@@ -118,6 +139,30 @@ export function TimelineScene() {
       el.removeEventListener('pointercancel', end)
     }
     el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', end)
+    el.addEventListener('pointercancel', end)
+  }
+
+  // Stepped, a sideways swipe on the strip moves one frame (the strip lets
+  // up-and-down swipes through to the page).
+  const onSwipeStart = (e) => {
+    const el = e.currentTarget
+    const x0 = e.clientX
+    const y0 = e.clientY
+    const end = (ev) => {
+      el.removeEventListener('pointerup', end)
+      el.removeEventListener('pointercancel', end)
+      const dx = ev.clientX - x0
+      if (ev.type !== 'pointerup' || Math.abs(dx) < 36 || Math.abs(dx) < Math.abs(ev.clientY - y0)) return
+      goTo(indexRef.current - Math.sign(dx))
+      // The swipe isn't also a tap on the frame it ended over
+      const swallow = (c) => {
+        c.stopPropagation()
+        c.preventDefault()
+      }
+      el.addEventListener('click', swallow, { capture: true, once: true })
+      setTimeout(() => el.removeEventListener('click', swallow, { capture: true }), 350)
+    }
     el.addEventListener('pointerup', end)
     el.addEventListener('pointercancel', end)
   }

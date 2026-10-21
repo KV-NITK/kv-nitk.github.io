@@ -20,8 +20,8 @@ import doorQuilt from '@p26/assets/textures/door-quilt.webp'
 // padded swing doors at the back of the hall and goes through them, out
 // into the Parva Market: the forecourt game, in a box in the page, with the
 // stalls as plain buttons under it for anyone who'd rather not walk.
-// The move is scrubbed by the scroll (the section holds for 1.4 screens);
-// the Book links in the top bar and the seat tickets skip straight past it.
+// The move plays on its own as the section arrives (it holds for half a
+// screen); the Book links in the top bar and the seat tickets skip past it.
 
 // Links that mean "take me to the market", and addresses that land there.
 const BOOK_LINKS = 'a[href="#interval"], a[href="#angadi"], a[href="#parva-sante"]'
@@ -44,19 +44,6 @@ export function IntervalScene() {
         return
       }
       const { overlay, screen, card, dim, house, doors, left, right } = move.current
-      // Open once the scroll is past nearly all of the move. Read from the
-      // scroll position itself, on every scroll and re-measure: a page that
-      // arrives already scrolled past (coming back from a stall) doesn't
-      // always get a progress update from the trigger.
-      let opened = null
-      const opening = () => {
-        const st = tl.scrollTrigger
-        if (!st) return
-        const now = window.scrollY >= st.start + (st.end - st.start) * 0.95
-        if (now === opened) return
-        opened = now
-        setOpen(now)
-      }
       // The doors, card and light layers are screen-sized, so they get their
       // own layers while the move plays and give them up after.
       const promote = (on) => {
@@ -64,28 +51,34 @@ export function IntervalScene() {
         willChange([dim, house], on && 'opacity')
       }
 
+      // The move plays on its own once the section reaches the top, while
+      // the section holds for half a screen; it costs no scrolling. Leaving
+      // past the hold finishes it at once, and going back above the section
+      // resets it for next time.
       const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=140%',
-          pin: true,
-          scrub: 0.5,
-          invalidateOnRefresh: true,
-          onToggle: (self) => promote(self.isActive),
+        paused: true,
+        onStart: () => promote(true),
+        onComplete: () => {
+          promote(false)
+          setOpen(true)
         },
       })
-      triggerRef.current = tl.scrollTrigger
-      window.addEventListener('scroll', opening, { passive: true })
-      ScrollTrigger.addEventListener('refresh', opening)
-      opening()
+      const finish = () => {
+        tl.progress(1)
+        promote(false)
+        setOpen(true)
+      }
+      const reset = () => {
+        tl.pause(0)
+        setOpen(false)
+      }
 
       tl.to({}, { duration: 0.1 })
         // The worn reel jumps once
         .to(card, { yPercent: -2.5, duration: 0.015, ease: 'none' }, 0.12)
         .to(card, { yPercent: 0, duration: 0.015, ease: 'none' }, 0.135)
-        // The bell only for someone scrolling through, not for a page flying past
-        .call(() => performance.now() > jumpingRef.current && Math.abs(tl.scrollTrigger?.getVelocity() ?? 0) < 2500 && sayLine('[Interval bell rings]', 3500), null, 0.16)
+        // The bell only for someone watching, not for a Book-link jump
+        .call(() => performance.now() > jumpingRef.current && sayLine('[Interval bell rings]', 3500), null, 0.16)
         // House lights up, the screen dims
         .to(house, { opacity: 1, duration: 0.22, ease: 'power1.inOut' }, 0.18)
         .to(dim, { opacity: 0.55, duration: 0.22, ease: 'power1.inOut' }, 0.18)
@@ -99,11 +92,29 @@ export function IntervalScene() {
         .to(doors, { scale: 1.2, duration: 0.26, ease: 'power1.in' }, 0.7)
         .set(overlay, { autoAlpha: 0 }, 0.97)
         .to({}, { duration: 0.03 }, 0.97)
+      tl.duration(2.6)
+
+      const st = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: 'top top',
+        end: '+=50%',
+        pin: true,
+        invalidateOnRefresh: true,
+        onEnter: () => tl.play(),
+        onLeave: finish,
+        onLeaveBack: reset,
+      })
+      triggerRef.current = st
+
+      // A page that arrives already scrolled past (coming back from a
+      // stall) starts with the doors open.
+      const arrived = () => window.scrollY >= st.end && finish()
+      ScrollTrigger.addEventListener('refresh', arrived)
+      arrived()
 
       return () => {
         promote(false)
-        window.removeEventListener('scroll', opening)
-        ScrollTrigger.removeEventListener('refresh', opening)
+        ScrollTrigger.removeEventListener('refresh', arrived)
         triggerRef.current = null
       }
     },

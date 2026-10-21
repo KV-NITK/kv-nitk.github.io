@@ -138,7 +138,7 @@ export function GandhadaGudiScene() {
       const proxy = { p: 0 }
       gsap
         .timeline({
-          scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=200%', pin: true, scrub: 0.6 },
+          scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=110%', pin: true, scrub: 0.6 },
         })
         .to(proxy, {
           p: 1,

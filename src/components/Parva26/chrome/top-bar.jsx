@@ -7,6 +7,7 @@ import { brass, sandalRings, speakerCloth } from '@p26/styles/materials'
 import { paper } from '@p26/styles/textures'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
 import { cn } from '@/lib/utils'
+import { ProgrammeButton, ProgrammeRow } from '@p26/chrome/programme'
 
 // The objects that stay on screen through the whole show (spec §2): a carved
 // sandalwood logo, a brass subtitles plate, a speaker grille and a ticket stub
@@ -16,13 +17,16 @@ import { cn } from '@/lib/utils'
 //
 // `home` sends the logo to another page (the market's back to the theatre);
 // without it the logo scrolls to the top. `ticket={false}` leaves the booking
-// stub off a page that has no counter to go to.
+// stub off a page that has no counter to go to. The programme (links to the
+// show's main parts) is only on the landing page, the one without `home`.
 export function TopBar({ home, ticket = true }) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
       <div aria-hidden className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/60 to-transparent" />
       <div className="relative mx-auto flex max-w-6xl items-center gap-2.5 px-3 pt-2.5 sm:gap-3.5 sm:px-5 sm:pt-3">
         <LogoDisc home={home} />
+        {!home && <ProgrammeButton />}
+        {!home && <ProgrammeRow />}
         <div className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
           <SubtitlesPlate />
           <SpeakerGrille />

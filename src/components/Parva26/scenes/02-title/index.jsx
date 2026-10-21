@@ -361,7 +361,7 @@ function useCameraPush({ sectionRef, roomRef, maskRef, seatsRef }) {
 
         gsap
           .timeline({
-            scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=80%', pin: true, scrub: 0.5, invalidateOnRefresh: true },
+            scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: '+=60%', pin: true, scrub: 0.5, invalidateOnRefresh: true },
             onUpdate: moving,
           })
           .to(

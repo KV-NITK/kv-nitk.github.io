@@ -21,8 +21,9 @@ export default function Parva26() {
       <main>
         <TitleScene />
         <CertificateScene />
-        <GandhadaGudiScene />
+        {/* The events come early, before the story of the name */}
         <FilmFrame><NowShowingScene /></FilmFrame>
+        <GandhadaGudiScene />
         <GuestsScene />
         <IntervalScene />
         <ReleaseDayScene />

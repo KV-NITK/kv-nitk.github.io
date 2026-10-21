@@ -32,7 +32,7 @@ export function CreditsScene() {
   const { subtitles } = usePrefs()
 
   // The inset stays beside the roll on a laptop; the curtain closes over
-  // the ending as you scroll through it.
+  // the ending when you reach it.
   useGSAP(
     () => {
       if (reduced) return
@@ -40,21 +40,26 @@ export function CreditsScene() {
       mm.add('(min-width: 1024px)', () => {
         ScrollTrigger.create({ trigger: listRef.current, start: 'top 22%', end: 'bottom 75%', pin: insetRef.current, pinSpacing: false })
       })
+      // The curtain closes on its own once the ending reaches the top (the
+      // ending holds for a third of a screen), and opens again if you scroll
+      // back up past it.
       const [left, right] = curtainsRef.current
       gsap
         .timeline({
           scrollTrigger: {
             trigger: endRef.current,
             start: 'top top',
-            end: '+=90%',
+            end: '+=35%',
             pin: true,
-            scrub: 0.6,
-            onToggle: (self) => willChange([left, right], self.isActive && 'transform'),
+            toggleActions: 'play none none reverse',
+            onToggle: (self) => self.isActive && willChange([left, right], 'transform'),
           },
+          onComplete: () => willChange([left, right], false),
+          onReverseComplete: () => willChange([left, right], false),
         })
-        .to({}, { duration: 0.35 })
-        .fromTo(left, { xPercent: -101 }, { xPercent: 0, ease: 'power1.inOut', duration: 1 })
-        .fromTo(right, { xPercent: 101 }, { xPercent: 0, ease: 'power1.inOut', duration: 1 }, '<')
+        .to({}, { duration: 0.2 })
+        .fromTo(left, { xPercent: -101 }, { xPercent: 0, ease: 'power1.inOut', duration: 1.4 })
+        .fromTo(right, { xPercent: 101 }, { xPercent: 0, ease: 'power1.inOut', duration: 1.4 }, '<')
       return () => mm.revert()
     },
     { dependencies: [reduced] }
