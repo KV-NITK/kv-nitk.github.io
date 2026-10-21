@@ -18,7 +18,8 @@ scenes/         one folder per scene, numbered as in the spec
   11-emoji-game/  the projection booth game
   12-credits/     the roll, making-of inset, ಶುಭಂ and the curtain
 chrome/         on every screen: page shell (fonts, prefs, theatre
-                background), top bar, film reel, subtitle strip, cursor
+                background), top bar and its programme, film reel, Skip
+                scene button, subtitle strip, cursor
 film/           the on-screen look: film layer, film frame, ink filter
 ui/             pieces used by more than one scene (coupon, flourish, bulbs,
                 the ಪರ್ವ lettering); stalls/ is what the merch page draws:
