@@ -15,7 +15,6 @@ const FILM_JOBS = [
   { team: 'Media Head', kn: 'ಛಾಯಾಗ್ರಹಣ', en: 'Cinematography' },
   { team: 'Technical Head', kn: 'ವಿಶೇಷ ಪರಿಣಾಮಗಳು', en: 'Special effects' },
   { team: 'Creative & Cultural Head', kn: 'ಕಲಾ ನಿರ್ದೇಶನ', en: 'Art direction' },
-  { team: 'Publicity Head', kn: 'ಪ್ರಚಾರ', en: 'Publicity' },
   { team: 'Literary Head', kn: 'ಸಂಭಾಷಣೆ ಮತ್ತು ಸಾಹಿತ್ಯ', en: 'Dialogue and lyrics' },
   { team: 'PG Coordinator', kn: 'ಸಹಾಯಕ ನಿರ್ದೇಶಕರು', en: 'Assistant directors' },
 ]
@@ -23,14 +22,15 @@ const FILM_JOBS = [
 // Core team members whose entries are commented out in teamData.js until
 // their photos arrive; the credits need only their names.
 const TEAM_WITHOUT_PHOTOS = [
-  { name: 'Puneeth', role: 'Chief Executive' },
+  { name: 'Puneeth B', role: 'Chief Executive' },
   { name: 'Mohan Kumar M.E.', role: 'Management Head' },
   { name: 'Naveen S. Avari', role: 'Operations Head' },
-  { name: 'Harsha K.', role: 'Operations Head' },
-  { name: 'Nandeesh Nayak M.', role: 'Publicity Head' },
-  { name: 'Yogeesh', role: 'Publicity Head' },
+  { name: 'Harsh K', role: 'Operations Head' },
+  { name: 'Nandeesh Nayak M.', role: 'Marketing Head' },
+  { name: 'M Yogeesh', role: 'Marketing Head' },
   { name: 'Sumukh', role: 'PG Coordinator' },
   { name: 'Abhiram', role: 'PG Coordinator' },
+  { name: 'Deekshith', role: 'PG Coordinator' },
 ]
 
 const everyone = [...teamMembers, ...TEAM_WITHOUT_PHOTOS.filter((p) => !teamMembers.some((m) => m.name === p.name))]

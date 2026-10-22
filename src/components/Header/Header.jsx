@@ -13,7 +13,7 @@ const Header = () => {
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full shadow-md">
+    <header className="sticky top-0 z-50 w-full shadow-md" style={{ position: 'sticky', top: 0 }}>
       {/* --- Top Utility Bar --- */}
       <div className="flex items-center justify-between bg-black px-4 py-2 text-xs text-white sm:px-6">
         <div className="flex items-center gap-2 font-serif tracking-widest text-[#FFDA1D] uppercase">
@@ -68,22 +68,45 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 font-serif text-sm font-bold text-black">
-            <Link
-              to="/"
-              className={`transition-colors hover:text-[#8b261b] ${
-                location.pathname === '/' ? 'text-[#8b261b] underline decoration-2 underline-offset-8' : ''
-              }`}
-            >
-              Home
-            </Link>
-
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6 font-serif text-sm font-bold text-black">
             <HashLink
               smooth
               to="/#about"
               className="transition-colors hover:text-[#8b261b]"
             >
-              About Us
+              About
+            </HashLink>
+
+            <HashLink
+              smooth
+              to="/#what-we-do"
+              className="transition-colors hover:text-[#8b261b]"
+            >
+              Activities
+            </HashLink>
+
+            <HashLink
+              smooth
+              to="/#speakers"
+              className="transition-colors hover:text-[#8b261b]"
+            >
+              Speakers
+            </HashLink>
+
+            <HashLink
+              smooth
+              to="/#gallery"
+              className="transition-colors hover:text-[#8b261b]"
+            >
+              Gallery
+            </HashLink>
+
+            <HashLink
+              smooth
+              to="/#team"
+              className="transition-colors hover:text-[#8b261b]"
+            >
+              Team
             </HashLink>
 
             <Link
@@ -92,8 +115,6 @@ const Header = () => {
             >
               Parva 2026
             </Link>
-
-
           </nav>
 
           {/* Mobile Hamburger Button */}
@@ -110,12 +131,12 @@ const Header = () => {
 
         {/* Mobile Menu Dropdown */}
         {isOpen && (
-          <div className="md:hidden mt-3 border-t border-black/15 pt-3 pb-4 space-y-2 animate-in slide-in-from-top duration-200">
+          <div className="md:hidden mt-3 border-t border-black/15 pt-3 pb-4 space-y-1.5 animate-in slide-in-from-top duration-200">
             <Link
               to="/"
               onClick={closeMenu}
-              className={`block rounded-md px-4 py-2.5 font-serif text-base font-bold text-black transition-colors hover:bg-black/10 ${
-                location.pathname === '/' ? 'bg-black/10 text-[#8b261b]' : ''
+              className={`block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10 ${
+                location.pathname === '/' && !location.hash ? 'bg-black/10 text-[#8b261b]' : ''
               }`}
             >
               Home
@@ -125,20 +146,56 @@ const Header = () => {
               smooth
               to="/#about"
               onClick={closeMenu}
-              className="block rounded-md px-4 py-2.5 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
+              className="block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
             >
-              About Us
+              About
             </HashLink>
 
-            <Link
-              to="/parva-26"
+            <HashLink
+              smooth
+              to="/#what-we-do"
               onClick={closeMenu}
-              className="block rounded-md bg-black px-4 py-3 font-serif text-base font-extrabold tracking-wider text-[#FFDA1D] uppercase transition-colors hover:bg-black/90"
+              className="block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
             >
-              Parva 2026 · {EVENT.dateEn}
-            </Link>
+              Activities
+            </HashLink>
 
+            <HashLink
+              smooth
+              to="/#speakers"
+              onClick={closeMenu}
+              className="block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
+            >
+              Speakers & Guests
+            </HashLink>
 
+            <HashLink
+              smooth
+              to="/#gallery"
+              onClick={closeMenu}
+              className="block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
+            >
+              Gallery
+            </HashLink>
+
+            <HashLink
+              smooth
+              to="/#team"
+              onClick={closeMenu}
+              className="block rounded-md px-4 py-2 font-serif text-base font-bold text-black transition-colors hover:bg-black/10"
+            >
+              Team
+            </HashLink>
+
+            <div className="pt-2">
+              <Link
+                to="/parva-26"
+                onClick={closeMenu}
+                className="block text-center rounded-md bg-black px-4 py-3 font-serif text-base font-extrabold tracking-wider text-[#FFDA1D] uppercase transition-colors hover:bg-black/90 shadow-md"
+              >
+                Parva 2026 · {EVENT.dateEn}
+              </Link>
+            </div>
           </div>
         )}
       </div>

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parva Posters</title>
+<!--
+  One template for every Parva website-launch poster.
+  ?lang=en|kn   which language leads (big); the other sits under it, small
+  ?look=simple|full|reveal
+-->
+<style>
+  @font-face { font-family: 'Baloo Tamma 2'; src: url('../../node_modules/@fontsource-variable/baloo-tamma-2/files/baloo-tamma-2-kannada-wght-normal.woff2'); font-weight: 400 800; }
+  @font-face { font-family: 'Anek Latin'; src: url('../../node_modules/@fontsource-variable/anek-kannada/files/anek-kannada-latin-wght-normal.woff2'); font-weight: 100 800; }
+  @font-face { font-family: 'Bebas Neue'; src: url('../../node_modules/@fontsource/bebas-neue/files/bebas-neue-latin-400-normal.woff2'); }
+
+  :root {
+    --theatre: #140c08; --heartwood: #6b3f22; --sandal: #c8955f; --gandha: #f1dfc0;
+    --arishina: #f2c12e; --kumkuma: #c8102e; --brass: #b8862b; --print: #3b2a1a; --projector: #fff4dc;
+    --faded: rgba(59,42,26,.65);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; background: var(--theatre); }
+  .kn { font-family: 'Baloo Tamma 2', sans-serif; }
+  .en { font-family: 'Bebas Neue', sans-serif; letter-spacing: .14em; font-weight: 400; }
+  [hidden] { display: none !important; }
+
+  .poster {
+    position: relative; width: 1080px; height: 1920px; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 30%, #2a1810 0%, var(--theatre) 70%);
+  }
+
+  /* Marquee bulbs round the edge */
+  .bulbs { position: absolute; z-index: 6; inset: 28px; border: 4px solid var(--brass); border-radius: 14px; pointer-events: none; }
+  .bulbs::before {
+    content: ''; position: absolute; inset: -16px;
+    --b: radial-gradient(circle, #fffbea 0 5px, #ffd98a 8px, rgba(255,196,96,.45) 12px, transparent 17px);
+    background: var(--b) 0 0 / 54px 54px repeat-x, var(--b) 0 100% / 54px 54px repeat-x,
+                var(--b) 0 27px / 54px 54px repeat-y, var(--b) 100% 27px / 54px 54px repeat-y;
+  }
+
+  /* ---------- Simple and full: the pasted paper poster ---------- */
+  .sheet {
+    position: absolute; inset: 72px; border-radius: 6px;
+    background: url('../../src/components/Parva26/assets/textures/paper-mottle.webp') repeat, var(--gandha);
+    background-size: 300px; background-blend-mode: multiply;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 120px rgba(107,63,34,.35);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 70px 60px 60px; color: var(--print);
+  }
+  .sheet > * { position: relative; z-index: 2; }
+  .logo { width: 190px; height: 190px; border-radius: 50%; object-fit: cover; }
+
+  .presents { margin-top: 26px; }
+  .presents .en.lead { font-size: 64px; color: var(--heartwood); line-height: 1; }
+  .presents .kn.lead { font-size: 52px; font-weight: 700; color: var(--heartwood); line-height: 1.1; }
+  .presents .en.sub  { font-size: 32px; color: var(--faded); }
+  .presents .kn.sub  { font-size: 34px; font-weight: 600; color: var(--faded); margin-top: 4px; }
+
+  .title { margin-top: 30px; }
+  .extruded { color: var(--arishina); text-shadow: var(--extrusion); }
+  .title .en.lead { font-size: 310px; letter-spacing: .04em; line-height: .9; }
+  .title .kn.lead { font-size: 300px; font-weight: 800; line-height: .95; }
+  .title .kn.sub  { font-size: 64px; font-weight: 800; color: var(--heartwood); line-height: 1; margin-top: 4px; }
+  .title .en.sub  { font-size: 56px; letter-spacing: .3em; color: var(--heartwood); line-height: 1; }
+  .site { margin-top: 12px; }
+  .site .en.lead { font-size: 60px; letter-spacing: .16em; color: var(--kumkuma); line-height: 1; }
+  .site .kn.lead { font-size: 54px; font-weight: 800; color: var(--kumkuma); line-height: 1.1; }
+  .site .kn.sub  { font-size: 30px; font-weight: 700; color: var(--faded); margin-top: 2px; }
+  .site .en.sub  { font-size: 28px; letter-spacing: .15em; color: var(--faded); }
+
+  .banner {
+    margin-top: 40px; width: calc(100% + 120px); padding: 26px 0 22px;
+    background: var(--kumkuma); box-shadow: 0 8px 18px rgba(0,0,0,.3);
+  }
+  .banner .en.lead { font-size: 124px; color: var(--gandha); letter-spacing: .08em; line-height: 1; }
+  .banner .kn.lead { font-size: 104px; font-weight: 800; color: var(--gandha); line-height: 1; }
+  .banner .kn.sub  { font-size: 42px; font-weight: 700; color: var(--arishina); line-height: 1.1; }
+  .banner .en.sub  { font-size: 40px; color: var(--arishina); margin-top: 8px; }
+
+  .venue { margin-top: 44px; }
+  .venue .en.lead { font-size: 50px; letter-spacing: .03em; white-space: nowrap; color: var(--heartwood); line-height: 1.05; }
+  .venue .kn.lead { font-size: 54px; font-weight: 700; color: var(--heartwood); line-height: 1.15; }
+  .venue .kn.sub  { font-size: 36px; font-weight: 600; color: var(--faded); margin-top: 6px; }
+  .venue .en.sub  { font-size: 32px; color: var(--faded); margin-top: 6px; }
+
+  /* Ticket with the link; the stub is torn off at the dashed line */
+  .ticket { margin-top: 54px; display: flex; width: 860px; height: 210px; filter: drop-shadow(0 10px 16px rgba(0,0,0,.3)); }
+  .ticket > div {
+    background: var(--arishina); color: var(--theatre);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    -webkit-mask: radial-gradient(circle 22px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+                  radial-gradient(circle 22px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  }
+  .ticket .main { flex: 1; border-right: 4px dashed var(--theatre); border-radius: 12px 0 0 12px; }
+  .ticket .stub { width: 215px; border-radius: 0 12px 12px 0; }
+  .ticket .admit .en.lead, .ticket .admit .en.sub { font-size: 30px; letter-spacing: .2em; }
+  .ticket .admit .kn.lead { font-size: 34px; font-weight: 700; line-height: 1.1; }
+  .ticket .admit .sub { display: none; }
+  /* The link reads as a link: lowercase, normal width, light on a dark strip */
+  .ticket .url {
+    margin-top: 12px; padding: 8px 18px 4px; border-radius: 8px;
+    background: var(--theatre); color: var(--projector);
+    font-family: 'Anek Latin', sans-serif; font-size: 35px; font-weight: 600; letter-spacing: .01em; white-space: nowrap;
+  }
+  .ticket .url b { color: var(--arishina); font-weight: 800; }
+  .ticket .stub .en.lead { font-size: 52px; letter-spacing: .08em; line-height: .95; }
+  .ticket .stub .kn.lead { font-size: 40px; font-weight: 800; line-height: 1.05; }
+  .ticket .stub .kn.sub  { font-size: 26px; font-weight: 700; margin-top: 6px; }
+  .ticket .stub .en.sub  { font-size: 28px; letter-spacing: .15em; margin-top: 6px; }
+
+  .footer { padding-top: 38px; }
+  .footer .en.lead { font-size: 64px; letter-spacing: .1em; color: var(--kumkuma); line-height: 1; }
+  .footer .kn.lead { font-size: 54px; font-weight: 800; color: var(--kumkuma); line-height: 1.1; }
+  .footer .kn.sub  { font-size: 34px; font-weight: 600; color: var(--faded); margin-top: 2px; }
+  .footer .en.sub  { font-size: 30px; color: var(--faded); margin-top: 4px; }
+  .org { margin-top: 22px; font-size: 28px; letter-spacing: .2em; color: var(--heartwood); }
+
+  /* ---------- Full: garland, film strips, rays, stamp, tag ---------- */
+  .rays {
+    position: absolute !important; z-index: 0 !important; left: 50%; top: 610px; width: 1500px; height: 1500px;
+    transform: translate(-50%, -50%);
+    background: repeating-conic-gradient(from 0deg, rgba(200,149,95,.22) 0 6deg, transparent 6deg 12deg);
+    -webkit-mask: radial-gradient(circle, #000 0 20%, transparent 62%);
+  }
+  .garland { position: absolute !important; z-index: 3 !important; left: -20px; top: -24px; width: calc(100% + 40px); height: 260px; overflow: visible; }
+  .strip {
+    position: absolute !important; z-index: 1 !important; width: 760px; height: 150px; opacity: .92;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 14px, #f1dfc0 14px 30px, transparent 30px 44px) 0 14px / 100% 18px no-repeat,
+      repeating-linear-gradient(90deg, transparent 0 14px, #f1dfc0 14px 30px, transparent 30px 44px) 0 calc(100% - 14px) / 100% 18px no-repeat,
+      repeating-linear-gradient(90deg, #5b4030 0 150px, #1a120d 150px 158px) 0 44px / 100% 62px no-repeat,
+      #0d0907;
+    box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  }
+  .strip.tr { right: -330px; top: 330px; transform: rotate(-58deg); }
+  .strip.bl { left: -470px; bottom: 330px; transform: rotate(-58deg); }
+  .stamp {
+    position: absolute !important; z-index: 4 !important; left: 22px; width: 160px; height: 160px;
+    border-radius: 50%; border: 7px double var(--kumkuma); color: var(--kumkuma);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transform: rotate(-14deg); background: rgba(241,223,192,.6);
+  }
+  .stamp .u { font-family: 'Bebas Neue', sans-serif; font-size: 88px; line-height: .85; }
+  .stamp .kn { font-size: 30px; font-weight: 800; line-height: 1; }
+  .stamp .en { font-size: 18px; letter-spacing: .15em; }
+  .tag {
+    position: absolute !important; z-index: 4 !important; right: 26px; padding: 16px 22px 12px;
+    background: var(--theatre); color: var(--arishina); transform: rotate(8deg);
+    font-size: 30px; letter-spacing: .14em; line-height: 1.1; box-shadow: 0 8px 14px rgba(0,0,0,.35);
+  }
+  /* The Kannada title is shorter, so everything below it sits higher */
+  html[lang=kn] .strip.bl { left: -600px; bottom: 170px; }
+  .tag::before { content: ''; position: absolute; left: 50%; top: -10px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--brass); }
+
+  /* ---------- Reveal: dark hall, curtains open on the theme ---------- */
+  .hall {
+    position: absolute; inset: 44px; overflow: hidden; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--gandha);
+    padding: 132px 0 46px;
+  }
+  .hall > :not(.curtain):not(.valance):not(.beam) { position: relative; z-index: 3; }
+  .valance {
+    position: absolute; z-index: 4; left: 0; right: 0; top: 0; height: 120px;
+    background: repeating-linear-gradient(90deg, #7d0a1c 0 18px, #b30e29 18px 40px, #7d0a1c 40px 60px);
+    -webkit-mask: radial-gradient(circle 46px at 46px 74px, #000 98%, transparent) 0 0 / 92px 120px repeat-x,
+                  linear-gradient(#000, #000) 0 0 / 100% 74px no-repeat;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,.5));
+  }
+  .valance-fringe {
+    position: absolute; z-index: 5; left: 0; right: 0; top: 0; height: 132px; pointer-events: none;
+    background: radial-gradient(circle 8px at 46px 124px, var(--brass) 95%, transparent) 0 0 / 92px 132px repeat-x;
+  }
+  .curtain {
+    position: absolute; z-index: 2; top: 0; bottom: 0; width: 230px;
+    background: repeating-linear-gradient(90deg, #6a0817 0 14px, #c8102e 30px, #8d0b20 44px, #6a0817 56px);
+    box-shadow: inset -20px 0 40px rgba(0,0,0,.5);
+  }
+  .curtain.l { left: 0; clip-path: polygon(0 0, 100% 0, 34% 58%, 52% 100%, 0 100%); }
+  .curtain.r { right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 48% 100%, 66% 58%); transform: scaleX(1); }
+  .curtain::after {
+    content: ''; position: absolute; top: 57%; width: 80px; height: 26px; border-radius: 13px;
+    background: linear-gradient(var(--arishina), var(--brass));
+  }
+  .curtain.l::after { left: 40px; transform: rotate(-20deg); }
+  .curtain.r::after { right: 40px; transform: rotate(20deg); }
+  .beam {
+    position: absolute; z-index: 1; left: 50%; top: 0; width: 1100px; height: 1150px; transform: translateX(-50%);
+    background: linear-gradient(rgba(255,244,220,.22), rgba(255,244,220,.04));
+    clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  }
+  .hall .logo { width: 100px; height: 100px; }
+  .hall .presents { margin-top: 14px; }
+  .hall .presents .en.lead { font-size: 46px; color: var(--gandha); }
+  .hall .presents .kn.lead { font-size: 42px; color: var(--gandha); }
+  .hall .presents .en.sub, .hall .presents .kn.sub { font-size: 28px; color: rgba(241,223,192,.6); }
+  .hall .parva { margin-top: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 96px; letter-spacing: .12em; color: var(--arishina); line-height: 1; }
+  .hall .parva .kn { font-size: 76px; font-weight: 800; letter-spacing: 0; }
+
+  .launch {
+    margin-top: 14px; padding: 10px 30px 6px; background: var(--kumkuma); border-radius: 6px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.4);
+  }
+  .launch .en.lead { font-size: 44px; letter-spacing: .14em; color: var(--gandha); line-height: 1; }
+  .launch .kn.lead { font-size: 38px; font-weight: 800; color: var(--gandha); line-height: 1.15; }
+  .launch .kn.sub  { font-size: 26px; font-weight: 700; color: var(--arishina); line-height: 1.2; }
+  .launch .en.sub  { font-size: 24px; letter-spacing: .14em; color: var(--arishina); }
+  .screen {
+    margin-top: 24px; width: 820px; padding: 32px 40px 30px; color: var(--print);
+    background: url('../../src/components/Parva26/assets/textures/paper-mottle.webp') repeat, var(--projector);
+    background-size: 300px; background-blend-mode: multiply;
+    border: 6px solid var(--brass); border-radius: 4px;
+    box-shadow: 0 0 90px rgba(255,244,220,.35), inset 0 0 80px rgba(200,149,95,.35);
+  }
+  .theme-is .en.lead { font-size: 50px; letter-spacing: .3em; color: var(--kumkuma); line-height: 1; }
+  .theme-is .kn.lead { font-size: 50px; font-weight: 800; color: var(--kumkuma); line-height: 1.1; }
+  .theme-is .kn.sub  { font-size: 30px; font-weight: 700; color: var(--faded); }
+  .theme-is .en.sub  { font-size: 28px; letter-spacing: .25em; color: var(--faded); }
+  .theme { margin-top: 18px; }
+  .theme .en.lead { font-size: 170px; letter-spacing: .03em; line-height: .86; }
+  .theme .kn.lead { font-size: 136px; font-weight: 800; line-height: 1.05; }
+  .theme .kn.sub  { font-size: 64px; font-weight: 800; color: var(--heartwood); line-height: 1.1; margin-top: 10px; }
+  .theme .en.sub  { font-size: 56px; letter-spacing: .2em; color: var(--heartwood); line-height: 1; margin-top: 6px; }
+  .meaning { margin-top: 14px; }
+  .meaning .en.lead { font-size: 40px; letter-spacing: .08em; color: var(--heartwood); }
+  .meaning .kn.lead { font-size: 40px; font-weight: 700; color: var(--heartwood); line-height: 1.2; }
+  .meaning .kn.sub  { font-size: 30px; font-weight: 600; color: var(--faded); }
+  .meaning .en.sub  { font-size: 26px; letter-spacing: .1em; color: var(--faded); }
+
+  /* Three frames on a strip: forest, craft, cinema */
+  .frames {
+    margin: 26px -40px 0; padding: 30px 26px; display: flex; gap: 14px; background: #0d0907;
+    --h: repeating-linear-gradient(90deg, transparent 0 12px, #f1dfc0 12px 26px, transparent 26px 38px);
+    background: var(--h) 0 8px / 100% 14px no-repeat, var(--h) 0 calc(100% - 8px) / 100% 14px no-repeat, #0d0907;
+  }
+  .frame {
+    flex: 1; height: 180px; border-radius: 4px; padding-top: 14px;
+    background: linear-gradient(#5b4030, #3a281c); color: var(--gandha);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .frame svg { width: 96px; height: 96px; }
+  .frame .en.lead { font-size: 44px; letter-spacing: .14em; line-height: 1; margin-top: 4px; }
+  .frame .kn.lead { font-size: 44px; font-weight: 800; line-height: 1.1; }
+  .frame .kn.sub  { font-size: 26px; font-weight: 700; color: var(--arishina); line-height: 1.1; }
+  .frame .en.sub  { font-size: 24px; letter-spacing: .15em; color: var(--arishina); }
+
+  .hall .ticket { margin-top: 40px; }
+  .hall .org { margin-bottom: 8px; }
+  .hall .org { margin-top: auto; color: rgba(241,223,192,.75); }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="bulbs"></div>
+
+  <!-- Simple and full -->
+  <div class="sheet" id="sheet">
+    <div class="rays full-only"></div>
+    <div class="strip tr full-only"></div>
+    <div class="strip bl full-only"></div>
+    <svg class="garland full-only" id="garland"></svg>
+    <div class="stamp full-only"><span class="u">U</span><span class="kn">ಎಲ್ಲರಿಗೂ</span><span class="en">For all</span></div>
+    <div class="tag en full-only">Housefull<br>loading…</div>
+
+    <img class="logo" src="../../src/images/new%20kv%20logo.png" alt="Kannada Vedike">
+    <div class="presents" data-k="presents"></div>
+    <div class="title" data-k="title"></div>
+    <div class="site" data-k="site"></div>
+    <div class="banner" data-k="showing"></div>
+    <div class="venue" data-k="venue"></div>
+    <div class="ticket">
+      <div class="main"><div class="admit" data-k="admit"></div><p class="url">kannadavedike.nitk.ac.in/<b>parva-26</b></p></div>
+      <div class="stub" data-k="first"></div>
+    </div>
+    <div class="footer" data-k="bring"></div>
+    <p class="en org">Kannada Vedike · NITK Surathkal</p>
+  </div>
+
+  <!-- Theme reveal -->
+  <div class="hall" id="hall">
+    <div class="beam"></div>
+    <div class="curtain l"></div>
+    <div class="curtain r"></div>
+    <div class="valance"></div>
+    <div class="valance-fringe"></div>
+
+    <img class="logo" src="../../src/images/new%20kv%20logo.png" alt="Kannada Vedike">
+    <div class="presents" data-k="presents"></div>
+    <p class="parva" id="parva"></p>
+    <div class="launch" data-k="launch"></div>
+
+    <div class="screen">
+      <div class="theme-is" data-k="themeIs"></div>
+      <div class="theme" data-k="theme"></div>
+      <div class="meaning" data-k="meaning"></div>
+      <div class="frames">
+        <div class="frame" data-k="forest" data-icon="forest"></div>
+        <div class="frame" data-k="craft" data-icon="craft"></div>
+        <div class="frame" data-k="cinema" data-icon="cinema"></div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="main"><div class="admit" data-k="live"></div><p class="url">kannadavedike.nitk.ac.in/<b>parva-26</b></p></div>
+      <div class="stub" data-k="doors"></div>
+    </div>
+    <p class="en org">Kannada Vedike · NITK Surathkal</p>
+  </div>
+</div>
+
+<script>
+  const TEXT = {
+    presents: { en: 'Kannada Vedike presents', kn: 'ಕನ್ನಡ ವೇದಿಕೆ ಅರ್ಪಿಸುವ' },
+    title:    { en: 'Parva', kn: 'ಪರ್ವ' },
+    site:     { en: 'The official website · 2026', kn: 'ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ · 2026' },
+    showing:  { en: 'Now live!', kn: 'ಇಂದೇ ತೆರೆಗೆ!' },
+    launch:   { en: 'Website launch & theme reveal', kn: 'ವೆಬ್‌ಸೈಟ್ ಬಿಡುಗಡೆ ಮತ್ತು ಥೀಮ್ ಅನಾವರಣ' },
+    venue:    { en: 'At Sri Gandhada Gudi Chitramandira', kn: 'ಶ್ರೀ ಗಂಧದ ಗುಡಿ ಚಿತ್ರಮಂದಿರದಲ್ಲಿ' },
+    admit:    { en: 'Admit all · Visit the website', kn: 'ವೆಬ್‌ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ' },
+    first:    { en: 'First<br>show', kn: 'ಮೊದಲ<br>ಪ್ರದರ್ಶನ' },
+    bring:    { en: 'Bring everyone along', kn: 'ಕುಟುಂಬ ಸಮೇತ ಬನ್ನಿ' },
+    themeIs:  { en: 'The theme is', kn: 'ಈ ವರ್ಷದ ಥೀಮ್' },
+    theme:    { en: 'Gandhada<br>Gudi', kn: 'ಗಂಧದ<br>ಗುಡಿ' },
+    meaning:  { en: 'A festival for the land of sandalwood', kn: 'ಗಂಧದ ಗುಡಿಯ ಹಬ್ಬ' },
+    forest:   { en: 'Forest', kn: 'ಕಾಡು' },
+    craft:    { en: 'Craft', kn: 'ಕಲೆ' },
+    cinema:   { en: 'Cinema', kn: 'ಸಿನಿಮಾ' },
+    live:     { en: 'Website now live · Step inside', kn: 'ವೆಬ್‌ಸೈಟ್ ಈಗ ತೆರೆದಿದೆ' },
+    doors:    { en: 'Doors<br>open', kn: 'ಬಾಗಿಲು<br>ತೆರೆದಿದೆ' },
+  }
+  // The sub line drops the line breaks the lead uses
+  const flat = (s) => s.replace('<br>', ' ')
+
+  const ICONS = {
+    forest: '<svg viewBox="0 0 96 96" fill="none" stroke="#f2c12e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M48 88V52M48 66l-12-10M48 60l12-12"/><circle cx="48" cy="30" r="20"/><circle cx="28" cy="44" r="14"/><circle cx="68" cy="44" r="14"/><path d="M16 88h64"/></svg>',
+    craft: '<svg viewBox="0 0 96 96" fill="none" stroke="#f2c12e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 46h64v36H16z"/><path d="M12 46l8-14h56l8 14"/><path d="M48 54l9 10-9 10-9-10z"/><path d="M26 58l5 6-5 6-5-6zM70 58l5 6-5 6-5-6z"/><path d="M36 39h24"/></svg>',
+    cinema: '<svg viewBox="0 0 96 96" fill="none" stroke="#f2c12e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="42" width="68" height="42" rx="3"/><path d="M14 42l64-18-4-12-64 18z"/><path d="M26 27l8 10M42 22l8 10M58 18l8 10"/></svg>',
+  }
+
+  const q = new URLSearchParams(location.search)
+  const lead = q.get('lang') === 'kn' ? 'kn' : 'en'
+  const sub = lead === 'en' ? 'kn' : 'en'
+  const look = ['simple', 'full', 'reveal'].includes(q.get('look')) ? q.get('look') : 'simple'
+  document.documentElement.lang = lead
+
+  document.getElementById('sheet').hidden = look === 'reveal'
+  document.getElementById('hall').hidden = look !== 'reveal'
+  if (look !== 'full') document.querySelectorAll('.full-only').forEach((el) => (el.hidden = true))
+
+  for (const slot of document.querySelectorAll('[data-k]')) {
+    const t = TEXT[slot.dataset.k]
+    const big = slot.dataset.k === 'title' || slot.dataset.k === 'theme'
+    const icon = slot.dataset.icon ? ICONS[slot.dataset.icon] : ''
+    slot.innerHTML = `${icon}<p class="${lead} lead${big ? ' extruded' : ''}">${t[lead]}</p><p class="${sub} sub">${flat(t[sub])}</p>`
+  }
+  // The title's sub line is the other script's name, and the venue line in the
+  // reveal reads PARVA 2026 in the lead script
+  document.getElementById('parva').innerHTML = lead === 'en' ? 'Parva 2026' : '<span class="kn">ಪರ್ವ</span> 2026'
+
+  // Same depth as ui/lettering.js EXTRUSION
+  const shades = ['#7a3710', '#6a2e0c', '#5a270a', '#4b2008', '#3e1a06', '#331505']
+  const steps = 12, step = 0.0072
+  const layers = Array.from({ length: steps }, (_, i) => {
+    const d = ((i + 1) * step).toFixed(4)
+    return `${d}em ${d}em 0 ${shades[Math.floor((i / steps) * shades.length)]}`
+  })
+  const depth = (steps * step).toFixed(3)
+  layers.push(`${depth}em ${depth}em 0.12em rgba(0,0,0,.55)`)
+  document.documentElement.style.setProperty('--extrusion', layers.join(', '))
+
+  // Marigold garland: two swags across the top, a strand hanging at each end
+  if (look === 'full') {
+    // The stamp and the tag sit on the empty ends of the red banner
+    const bannerTop = document.querySelector('#sheet .banner').offsetTop
+    document.querySelector('.stamp').style.top = `${bannerTop + (lead === 'kn' ? 64 : 22)}px`
+    document.querySelector('.tag').style.top = `${bannerTop + 112}px`
+    const svg = document.getElementById('garland'), NS = 'http://www.w3.org/2000/svg'
+    const W = svg.getBoundingClientRect().width
+    const add = (tag, attrs) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); svg.appendChild(el); return el }
+    const flower = (x, y, i) => {
+      const big = i % 3 !== 1
+      if (i % 4 === 0) add('ellipse', { cx: x + 14, cy: y + 4, rx: 14, ry: 6, fill: '#2f6b2a', transform: `rotate(${(i * 47) % 360} ${x} ${y})` })
+      add('circle', { cx: x, cy: y, r: big ? 21 : 17, fill: big ? '#f08a12' : '#f6c21c', stroke: big ? '#c25e08' : '#d79a0c', 'stroke-width': 3 })
+      add('circle', { cx: x - 4, cy: y - 5, r: big ? 8 : 6, fill: 'rgba(255,240,180,.55)' })
+    }
+    const swag = (x0, x1, dip) => {
+      const n = Math.round((x1 - x0) / 30)
+      for (let i = 0; i <= n; i++) {
+        const t = i / n
+        flower(x0 + (x1 - x0) * t, 30 + dip * 4 * t * (1 - t), i)
+      }
+    }
+    swag(0, W / 2, 150)
+    swag(W / 2, W, 150)
+    for (const x of [8, W - 8]) for (let i = 0; i < 6; i++) flower(x, 60 + i * 30, i + 1)
+    add('circle', { cx: W / 2, cy: 30, r: 26, fill: '#c8102e', stroke: '#8a0a1e', 'stroke-width': 3 })
+  }
+</script>
+</body>
+</html>

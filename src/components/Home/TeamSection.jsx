@@ -1,7 +1,7 @@
 import React from 'react';
 import { teamMembers } from '../../data/teamData';
 
-function LinkedinIcon({ className = 'w-4 h-4' }) {
+function LinkedinIcon({ className = 'w-3.5 h-3.5' }) {
   return (
     <svg
       className={className}
@@ -16,67 +16,81 @@ function LinkedinIcon({ className = 'w-4 h-4' }) {
 
 export const TeamSection = () => {
   return (
-    <div id="team" className="relative py-16 md:py-24 px-4 overflow-hidden bg-gradient-to-b from-[#ffffff] via-[#fffbf0] to-[#ffffff]">
+    <section
+      id="team"
+      className="relative py-14 md:py-20 px-4 overflow-hidden bg-gradient-to-b from-white via-[#fffbf0] to-white"
+    >
       {/* Decorative background glows */}
-      <div className="hidden md:block absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-[#FFDA1D]/15 to-transparent rounded-full blur-3xl -z-10" />
-      <div className="hidden md:block absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tl from-[#f21d2f]/10 to-transparent rounded-full blur-3xl -z-10" />
+      <div className="hidden md:block absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-[#FFDA1D]/20 to-transparent rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="hidden md:block absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tl from-[#c8102e]/10 to-transparent rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#f21d2f] via-[#FFDA1D] to-[#f21d2f] bg-clip-text text-transparent">
-            Our Team
+        <div className="text-center mb-10 md:mb-14 max-w-2xl mx-auto">
+          <p className="mb-2 text-xs font-semibold tracking-[0.25em] uppercase text-[#c8102e]">
+            Our Team · ೨೦೨೬–೨೭
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#1a1410] mb-3">
+            The people behind Kannada Vedike
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#FFDA1D] to-[#f21d2f] mx-auto rounded-full"></div>
-          <p className="mt-4 max-w-xl mx-auto text-sm sm:text-base font-medium text-gray-600">
-            Meet the team behind Kannada Vedike NITK dedicated to celebrating Karnataka&apos;s language, culture, and heritage.
+          <div className="w-20 h-1 bg-gradient-to-r from-[#FFDA1D] to-[#c8102e] mx-auto rounded-full"></div>
+          <p className="mt-3 text-sm sm:text-base leading-relaxed text-[#5b5147]">
+            Meet the 2026–27 core team dedicated to celebrating Karnataka&apos;s language, culture, and heritage.
           </p>
         </div>
 
-        {/* Team Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        {/* Team Grid: 4 in a row on md+ screens, 2 in a row on mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 max-w-5xl mx-auto">
           {teamMembers.map((member) => (
             <div
               key={member.id}
-              className="group rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col"
+              className="group rounded-2xl overflow-hidden bg-white border border-[#e8dfd1] shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col"
             >
-              {/* Clean Image Container (No dark gradient overlay) */}
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50">
+              {/* Image Container (Aspect Square for compact, cleaner display) */}
+              <div className="relative aspect-square w-full overflow-hidden bg-[#f5efe4]">
                 <img
                   src={member.img}
                   alt={member.name}
                   loading="lazy"
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
-              {/* Name, Position & LinkedIn Details */}
-              <div className="p-4 bg-white text-center flex-1 flex flex-col justify-center border-t border-gray-100">
-                <div className="flex items-center justify-center gap-1.5">
-                  <h3 className="text-base sm:text-lg font-extrabold text-gray-900 group-hover:text-[#f21d2f] transition-colors">
-                    {member.name}
-                  </h3>
-                  {member.linkedin && (
-                    <a
-                      href={member.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`Connect with ${member.name} on LinkedIn`}
-                      className="text-[#0a66c2] hover:text-[#004182] transition-colors p-0.5 shrink-0"
-                    >
-                      <LinkedinIcon className="w-4 h-4 inline-block transform hover:scale-110 transition-transform" />
-                    </a>
-                  )}
+              {/* Name, Team Tag & Position */}
+              <div className="p-3 sm:p-3.5 bg-white text-center flex-1 flex flex-col justify-between items-center border-t border-[#e8dfd1]/70">
+                {member.teamKn && (
+                  <span className="noto-serif-kannada-600 text-[11px] font-semibold text-[#8b261b] bg-[#8b261b]/10 px-2.5 py-0.5 rounded-full mb-1.5 tracking-wide">
+                    {member.teamKn}
+                  </span>
+                )}
+
+                <div className="w-full">
+                  <div className="flex items-center justify-center gap-1">
+                    <h3 className="text-sm sm:text-base font-bold text-[#1a1410] group-hover:text-[#c8102e] transition-colors truncate">
+                      {member.name}
+                    </h3>
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Connect with ${member.name} on LinkedIn`}
+                        className="text-[#0a66c2] hover:text-[#004182] transition-colors p-0.5 shrink-0"
+                      >
+                        <LinkedinIcon className="w-3.5 h-3.5 inline-block transform hover:scale-110 transition-transform" />
+                      </a>
+                    )}
+                  </div>
+                  <p className="text-[10px] sm:text-xs font-semibold tracking-wide text-[#c8102e] uppercase mt-0.5">
+                    {member.role}
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm font-semibold tracking-wide text-[#f21d2f] uppercase mt-1">
-                  {member.role}
-                </p>
               </div>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
