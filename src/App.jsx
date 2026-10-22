@@ -56,7 +56,7 @@ function AppRoutes() {
         <Route path="/social" element={<Social />} />
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
-        <Route path="/rcb" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
+        <Route path="/parva-26" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
         <Route path="/parva-26/market" element={<Navigate to="/rcb#parva-sante" replace />} />
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
         <Route path="/parva-26/coupon" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Coupon /></Suspense>} />
