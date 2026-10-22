@@ -6,6 +6,7 @@ import aboutImg2 from '../../images/aboutImg2.jpg';
 import Metadata from '../MetaData/MetaData.jsx';
 import { DiamondBand } from '../HH2026/ornaments';
 import { TeamSection } from './TeamSection.jsx';
+import { EVENT } from '../Parva26/content/event';
 
 const Home = () => {
 
@@ -42,42 +43,41 @@ const Home = () => {
         </div>
       </div>
 
-      {/* --- Hudugata Hudakata (hh-2026) Banner --- */}
+      {/* --- Parva 2026 Banner --- */}
       <Link
-        to="/hh-2026"
-        className="hh2026-page block relative w-full overflow-hidden bg-background group"
+        to="/parva-26"
+        className="block relative w-full overflow-hidden bg-[#0b0705] group"
       >
-        <DiamondBand />
-        <div className="relative bg-parchment px-4 py-10 md:px-8 md:py-14">
-          <div className="relative mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
+        <div
+          className="absolute inset-0 opacity-60 transition-opacity duration-300 group-hover:opacity-80"
+          style={{ background: 'radial-gradient(ellipse at 70% 50%, rgba(212,175,55,0.25) 0%, transparent 60%)' }}
+        />
+        <div className="relative border-y-2 border-[#d4af37]/40 px-4 py-10 md:px-8 md:py-14">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
             <div className="flex-1 text-center md:text-left">
-              <p className="mb-3 font-serif text-xs tracking-[0.3em] text-primary uppercase md:text-sm">
-                Kannada Vedike Presents · 30 Aug 2026
+              <p className="mb-3 font-serif text-xs tracking-[0.3em] text-[#d4af37] uppercase md:text-sm">
+                Kannada Vedike Presents · {EVENT.dateEn}
               </p>
-              <h2 className="mb-3 font-serif text-4xl font-black tracking-tight text-carved md:text-6xl">
-                Hudugata Hudakata
+              <h2 className="mb-1 font-serif text-5xl font-black tracking-tight text-[#FFDA1D] md:text-7xl">
+                ಪರ್ವ
               </h2>
-              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                A campus-wide treasure hunt inspired by Avane Srimannarayana.
-                Crack the clues, chase the trail, claim the gold — squads of
-                3 to 4 (min 1 Kannadiga & min 1 Non-Kannadiga), entry free.
+              <p className="mb-4 font-serif text-lg font-bold tracking-[0.4em] text-[#f7eed6] md:text-2xl">
+                PARVA 2026
+              </p>
+              <p className="max-w-xl text-sm leading-relaxed text-[#f7eed6]/80 md:text-base">
+                Three days of Kannada films, music, drama, quizzes and food
+                across campus. See the programme, play the games, and get
+                your merch and food coupons.
               </p>
             </div>
-            <div className="flex shrink-0 items-center justify-center md:justify-end">
-              <div className="transform rounded-full border border-primary/40 bg-primary/15 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/25 md:p-6">
-                <svg
-                  className="h-6 w-6 text-primary md:h-8 md:w-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </div>
+            <div className="flex shrink-0 flex-col items-center gap-3">
+              <span className="rounded-md bg-[#FFDA1D] px-6 py-3 font-serif text-sm font-extrabold tracking-wider text-black uppercase shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:bg-[#d4af37]">
+                Enter the show →
+              </span>
+              <span className="font-serif text-xs text-[#f7eed6]/60">{EVENT.dateKn}</span>
             </div>
           </div>
         </div>
-        <DiamondBand />
       </Link>
 
       {/* --- Parva 2025 Banner ---
@@ -249,6 +249,44 @@ const Home = () => {
               </div>
               <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-all duration-300"></div>
             </div>
+          </Link>
+
+          {/* --- Hudugata Hudakata (hh-2026) Banner --- */}
+          <Link
+            to="/hh-2026"
+            className="hh2026-page mt-8 block relative w-full overflow-hidden bg-background group rounded-2xl shadow-2xl"
+          >
+            <DiamondBand />
+            <div className="relative bg-parchment px-4 py-10 md:px-8 md:py-14">
+              <div className="relative mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row md:gap-8">
+                <div className="flex-1 text-center md:text-left">
+                  <p className="mb-3 font-serif text-xs tracking-[0.3em] text-primary uppercase md:text-sm">
+                    Kannada Vedike Presents · 30 Aug 2026
+                  </p>
+                  <h2 className="mb-3 font-serif text-4xl font-black tracking-tight text-carved md:text-6xl">
+                    Hudugata Hudakata
+                  </h2>
+                  <p className="max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                    A campus-wide treasure hunt inspired by Avane Srimannarayana.
+                    Crack the clues, chase the trail, claim the gold — squads of
+                    3 to 4 (min 1 Kannadiga & min 1 Non-Kannadiga), entry free.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center justify-center md:justify-end">
+                  <div className="transform rounded-full border border-primary/40 bg-primary/15 p-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/25 md:p-6">
+                    <svg
+                      className="h-6 w-6 text-primary md:h-8 md:w-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <DiamondBand />
           </Link>
         </div>
       </div>

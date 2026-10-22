@@ -3,6 +3,7 @@ import logo from '../../images/logo.jpg';
 import { Link, useLocation } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { Menu, X, Instagram } from 'lucide-react';
+import { EVENT } from '../Parva26/content/event';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +20,16 @@ const Header = () => {
           <span className="inline-block h-2 w-2 rounded-full bg-[#f21d2f] animate-pulse" />
           ಕನ್ನಡ ವೇದಿಕೆ NITK
         </div>
-        <div className="ml-auto">
+        <Link
+          to="/parva-26"
+          className="hidden sm:inline-flex items-center gap-2 font-serif tracking-wide text-[#f7eed6] transition-colors hover:text-[#FFDA1D]"
+        >
+          <span className="font-bold text-[#FFDA1D]">ಪರ್ವ 2026</span>
+          <span className="text-white/60">·</span>
+          {EVENT.dateEn}
+          <span className="font-bold underline underline-offset-4">Explore →</span>
+        </Link>
+        <div className="ml-auto sm:ml-0">
           <a
             href="https://www.instagram.com/kannadavedike_nitk/"
             rel="noreferrer"
@@ -77,31 +87,13 @@ const Header = () => {
             </HashLink>
 
             <Link
-              to="/parva"
-              className={`transition-colors hover:text-[#8b261b] ${
-                location.pathname === '/parva' ? 'text-[#8b261b] underline decoration-2 underline-offset-8' : ''
-              }`}
+              to="/parva-26"
+              className="rounded-md bg-black px-3.5 py-1.5 text-xs font-extrabold tracking-wider text-[#FFDA1D] uppercase transition-all hover:bg-[#8b261b] hover:text-[#f7eed6] hover:shadow-md"
             >
-              Parva
+              Parva 2026
             </Link>
 
-            <Link
-              to="/hh-2026"
-              className={`rounded-md bg-[#8b261b] px-3.5 py-1.5 text-xs font-extrabold tracking-wider text-[#f7eed6] uppercase transition-all hover:bg-[#6e1e15] hover:shadow-md ${
-                location.pathname === '/hh-2026' ? 'ring-2 ring-black/40' : ''
-              }`}
-            >
-              Hudugata Hudakata
-            </Link>
 
-            <Link
-              to="/team-registration"
-              className={`rounded-md border border-black/30 bg-black/10 px-3.5 py-1.5 text-xs font-extrabold tracking-wider text-black uppercase transition-all hover:bg-black hover:text-[#FFDA1D] ${
-                location.pathname === '/team-registration' ? 'bg-black text-[#FFDA1D]' : ''
-              }`}
-            >
-              Register Squad
-            </Link>
           </nav>
 
           {/* Mobile Hamburger Button */}
@@ -139,30 +131,14 @@ const Header = () => {
             </HashLink>
 
             <Link
-              to="/parva"
+              to="/parva-26"
               onClick={closeMenu}
-              className={`block rounded-md px-4 py-2.5 font-serif text-base font-bold text-black transition-colors hover:bg-black/10 ${
-                location.pathname === '/parva' ? 'bg-black/10 text-[#8b261b]' : ''
-              }`}
+              className="block rounded-md bg-black px-4 py-3 font-serif text-base font-extrabold tracking-wider text-[#FFDA1D] uppercase transition-colors hover:bg-black/90"
             >
-              Parva 2025
+              Parva 2026 · {EVENT.dateEn}
             </Link>
 
-            <Link
-              to="/hh-2026"
-              onClick={closeMenu}
-              className="block rounded-md bg-[#8b261b] px-4 py-3 font-serif text-base font-extrabold tracking-wider text-[#f7eed6] uppercase transition-colors hover:bg-[#6e1e15]"
-            >
-              Hudugata Hudakata 2026
-            </Link>
 
-            <Link
-              to="/team-registration"
-              onClick={closeMenu}
-              className="block rounded-md border-2 border-black/30 bg-black px-4 py-3 font-serif text-base font-extrabold tracking-wider text-[#FFDA1D] uppercase transition-colors hover:bg-black/90"
-            >
-              Register Squad
-            </Link>
           </div>
         )}
       </div>
