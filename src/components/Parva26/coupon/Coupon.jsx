@@ -130,7 +130,7 @@ export default function Coupon() {
   }, [user, product])
 
   return (
-    <PageShell title="ಭೂರಿ ಭೋಜನ · Food Coupon" topBar={{ home: '/rcb#parva-sante', ticket: false }}>
+    <PageShell title="ಭೂರಿ ಭೋಜನ · Food Coupon" topBar={{ home: '/parva-26#parva-sante', ticket: false }}>
       <main className="min-h-screen p-4 pb-20 pt-24" style={{ backgroundColor: '#3f2a18' }}>
         <div className="mx-auto w-full max-w-[80rem]">
           <div className="mb-6 flex flex-wrap items-center justify-end gap-4">

@@ -41,7 +41,7 @@ export const MENU = [
 export const TEE = {
   name: { kn: 'ಪರ್ವ ಟೀ ಶರ್ಟ್', en: 'Parva T-shirt' },
   variants: [
-    { id: 'orange', kn: 'ಕಿತ್ತಳೆ', en: 'Orange (Regular Fit)', body: '#f0803c', print: '#000000', ink: '#ffffff', photos: { front: '/parva-26/orange_regular_frontview.png', back: '/parva-26/orange_regular_backview.png' } },
-    { id: 'purple', kn: 'ನೇರಳೆ', en: 'Purple (Oversized)', body: '#6a0dad', print: '#000000', ink: '#ffffff', photos: { front: '/parva-26/purple_oversized_frontview.png', back: '/parva-26/purple_oversized_backview.png' } },
+    { id: 'orange', kn: 'ಕಿತ್ತಳೆ', en: 'Orange (Regular Fit)', body: '#f0803c', print: '#000000', ink: '#ffffff', photos: { front: '/parva26/orange_regular_frontview.png', back: '/parva26/orange_regular_backview.png' } },
+    { id: 'purple', kn: 'ನೇರಳೆ', en: 'Purple (Oversized)', body: '#6a0dad', print: '#000000', ink: '#ffffff', photos: { front: '/parva26/purple_oversized_frontview.png', back: '/parva26/purple_oversized_backview.png' } },
   ],
 }

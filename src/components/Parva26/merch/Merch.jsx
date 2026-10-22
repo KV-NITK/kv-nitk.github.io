@@ -13,7 +13,7 @@ export default function Merch() {
   }, [])
 
   return (
-    <PageShell title="ಪರ್ವ ಅಂಗಡಿ · Parva Angadi" topBar={{ home: '/rcb#parva-sante', ticket: false }}>
+    <PageShell title="ಪರ್ವ ಅಂಗಡಿ · Parva Angadi" topBar={{ home: '/parva-26#parva-sante', ticket: false }}>
       <main>
         <MerchShop />
       </main>

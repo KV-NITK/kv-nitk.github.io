@@ -113,7 +113,7 @@ const CountdownUnit = ({ value, kn, en }) => (
 
 // The ticking that plays while the countdown is on screen. The file is a looping clip
 // in public/; while it is missing nothing plays and no sound button is shown.
-const TICK_SRC = "/parva-26/audio/doomsday-tick.mp3";
+const TICK_SRC = "/parva26/audio/doomsday-tick.mp3";
 const MUTE_KEY = "parva_countdown_muted";
 
 const readMuted = () => {
@@ -677,7 +677,7 @@ const MyOrders = () => {
   const shown = orders?.filter((o) => filter === "all" || (filter === "food") === isFoodOrder(o));
 
   return (
-    <PageShell title="ನನ್ನ ಆರ್ಡರ್‌ಗಳು · My Orders" topBar={{ home: "/rcb#parva-sante", ticket: false }}>
+    <PageShell title="ನನ್ನ ಆರ್ಡರ್‌ಗಳು · My Orders" topBar={{ home: "/parva-26#parva-sante", ticket: false }}>
       <main className="flex min-h-screen justify-center p-4 pb-20 pt-24" style={BRICK}>
         <div className="w-full max-w-2xl">
           <div className="flex flex-wrap items-center justify-end gap-3">

@@ -343,7 +343,7 @@ function LogSheet({ results, total, solved, perDay, now, day, name, setName, sav
   const saved = !!savedName && savedName === name.trim().replace(/\s+/g, ' ')
 
   const share = async () => {
-    const text = `ಯಾವ ಸಿನಿಮಾ? ${results.map((r) => (r.solved ? '🎞️' : '⬛')).join('')} ${solved}/${perDay} · ${total}\n${window.location.origin}/rcb#emoji-game`
+    const text = `ಯಾವ ಸಿನಿಮಾ? ${results.map((r) => (r.solved ? '🎞️' : '⬛')).join('')} ${solved}/${perDay} · ${total}\n${window.location.origin}/parva-26#emoji-game`
     try {
       if (navigator.share) await navigator.share({ text })
       else {

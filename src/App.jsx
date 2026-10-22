@@ -31,8 +31,11 @@ import NotFound from './components/NotFound/NotFound';
 
 // Loaded on its own, so these don't pull in the rest of the site's code
 // and the rest of the site doesn't pull in their fonts and effects.
-// The Parva 2026 landing page is served at /rcb; /parva-26 itself is a 404.
-// The Parva Market lives in its interval, so its old address leads there.
+// Parva 2026's static files live in public/parva26, not public/parva-26:
+// nginx's `try_files $uri $uri/` answers a real folder with 403, so a folder
+// named after the route would shadow the page.
+// The page was first served at /rcb, and the Parva Market lives in its
+// interval, so both old addresses lead there.
 const Parva26 = lazy(() => import('./components/Parva26/Parva26'));
 const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
 const Parva26Coupon = lazy(() => import('./components/Parva26/coupon/Coupon'));
@@ -40,7 +43,7 @@ const ParvaScanner = lazy(() => import('./components/Parva26/scan/Scanner'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/rcb', '/analytics', '/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/parva-26/coupon', '/parva-26/scan', '/merch-test', '/payment/status', '/my-orders', '/admin'];
+const STANDALONE_ROUTES = ['/parva-26', '/analytics', '/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/parva-26/coupon', '/parva-26/scan', '/merch-test', '/payment/status', '/my-orders', '/admin'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -57,7 +60,8 @@ function AppRoutes() {
         <Route path="/parva" element={<Parva25 />} />
         <Route path="/parva-23" element={<Parva />} />
         <Route path="/parva-26" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26 /></Suspense>} />
-        <Route path="/parva-26/market" element={<Navigate to="/rcb#parva-sante" replace />} />
+        <Route path="/rcb" element={<Navigate to={{ pathname: '/parva-26', hash: location.hash }} replace />} />
+        <Route path="/parva-26/market" element={<Navigate to="/parva-26#parva-sante" replace />} />
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
         <Route path="/parva-26/coupon" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Coupon /></Suspense>} />
         <Route path="/parva-26/scan" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><ParvaScanner /></Suspense>} />

@@ -187,7 +187,7 @@ function MerchDesignCard({ design, art, picks, setPicks, showMissing, attempts }
             >
               ✕
             </button>
-            <img src="/parva-26/tshirt_size_chart.jpeg" alt="Size Chart" className="h-auto w-full object-contain rounded" />
+            <img src="/parva26/tshirt_size_chart.jpeg" alt="Size Chart" className="h-auto w-full object-contain rounded" />
           </div>
         </div>
       )}
