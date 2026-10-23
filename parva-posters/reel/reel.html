@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Parva 2026 reel</title>
+<!--
+  Frame-by-frame page for the 20 s Parva 2026 theme-reveal reel (see PLAN.md).
+  Served by `npm run dev`; render.mjs opens it and calls window.renderAt(t).
+  ?safe=1 draws the Instagram safe area on the canvas, for checking only.
+-->
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: #000; overflow: hidden; }
+  canvas { display: block; width: 1080px; height: 1920px; }
+</style>
+</head>
+<body>
+<canvas id="out" width="1080" height="1920"></canvas>
+<script type="module" src="./reel.js"></script>
+</body>
+</html>

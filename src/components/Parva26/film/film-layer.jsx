@@ -42,7 +42,7 @@ export function useFilmTick(callback) {
   }, [])
 }
 
-function makeGrainTiles() {
+export function makeGrainTiles() {
   return Array.from({ length: GRAIN_FRAMES }, () => {
     const tile = document.createElement('canvas')
     tile.width = tile.height = GRAIN_TILE
@@ -57,7 +57,7 @@ function makeGrainTiles() {
   })
 }
 
-function makeVignette(w, h) {
+export function makeVignette(w, h) {
   const v = document.createElement('canvas')
   v.width = w
   v.height = h
@@ -76,7 +76,7 @@ function makeVignette(w, h) {
 
 // Per-screen damage: specks change every tick; a hair stays caught in the gate
 // for a while; a scratch runs down the frame and drifts sideways.
-function advanceScreen(state = { hair: null, scratch: null, flicker: 0.02, target: 0.02 }) {
+export function advanceScreen(state = { hair: null, scratch: null, flicker: 0.02, target: 0.02 }) {
   if (Math.random() < 0.3) state.target = rand(0.01, 0.05)
   state.flicker += (state.target - state.flicker) * 0.5
 
@@ -101,7 +101,7 @@ function advanceScreen(state = { hair: null, scratch: null, flicker: 0.02, targe
   return state
 }
 
-function drawScreen(ctx, rect, state) {
+export function drawScreen(ctx, rect, state) {
   const x = rect.left * SCALE
   const y = rect.top * SCALE
   const w = rect.width * SCALE
