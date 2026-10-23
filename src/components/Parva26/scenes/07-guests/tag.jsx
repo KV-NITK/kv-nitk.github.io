@@ -1,13 +1,15 @@
 import { En } from '@p26/lib/prefs'
+import { UNVEILING } from '@p26/content'
 import { paper } from '@p26/styles/textures'
 import { cn } from '@/lib/utils'
 import { timeLeft } from '@p26/scenes/07-guests/reveal-time'
 
-// The paper tag on the cord: the unveiling date, and for the next guest a
-// countdown stamp. Tapping the frame turns it over to the PR team's hint.
+// The paper tag on the cord: the unveiling date, and for the guests due next
+// a countdown stamp. Tapping the frame turns it over to say where they'll be
+// unveiled.
 export function Tag({ guest, day, next, now, hinted, subtitles }) {
   const left = next ? timeLeft(guest.revealDate, now) : null
-  const teaser = guest.teaser ?? { kn: 'ಕಾದು ನೋಡಿ', en: 'Wait and see' }
+  const { hint } = UNVEILING
   const face =
     'col-start-1 row-start-1 flex flex-col items-center rounded-[2px] bg-paper px-2 pb-2 pt-4 text-center text-pen shadow-[0_0.3rem_0.5rem_rgba(40,8,8,.45)] backface-hidden'
   const shape = { ...paper, clipPath: 'polygon(16% 0, 84% 0, 100% 14%, 100% 100%, 0 100%, 0 14%)' }
@@ -36,9 +38,9 @@ export function Tag({ guest, day, next, now, hinted, subtitles }) {
         <div className={cn(face, 'justify-center rotate-y-180')} style={shape}>
           <Eyelet />
           <span lang="kn" className="font-kn-display text-[0.95rem] font-semibold leading-snug">
-            {teaser.kn}
+            {hint.kn}
           </span>
-          <En className="mt-1 text-[0.85rem] leading-snug text-pen/80">{teaser.en}</En>
+          <En className="mt-1 text-[0.85rem] leading-snug text-pen/80">{hint.en}</En>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePrefs } from '@p26/lib/prefs'
-import { eventDay } from '@p26/content'
+import { UNVEILING, eventDay } from '@p26/content'
 import { gsap } from '@p26/lib/gsap'
 import { reliefLayers } from '@p26/styles/carving'
 import { usePrefersReducedMotion } from '@p26/lib/use-reduced-motion'
@@ -35,8 +35,8 @@ function markSeen(id) {
 }
 
 // `guest` is either this year's (covered until it has a name) or a past
-// guest (`past`: always revealed, no velvet). `open` shows the teaser on a
-// covered frame, or the info card on a revealed one.
+// guest (`past`: always revealed, no velvet). `open` turns a covered
+// frame's tag over, or shows the info card on a revealed one.
 export function GuestFrame({ guest, past = false, next = false, now, open, onToggle, className }) {
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
@@ -124,7 +124,7 @@ export function GuestFrame({ guest, past = false, next = false, now, open, onTog
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {open && stage === 'covered' ? (guest.teaser?.en ?? 'Wait and see.') : ''}
+        {open && stage === 'covered' ? `${UNVEILING.hint.en}.` : ''}
       </p>
       {open && stage === 'revealed' && guest.card && <InfoCard card={guest.card} subtitles={subtitles} />}
     </div>

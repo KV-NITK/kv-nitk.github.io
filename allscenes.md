@@ -275,10 +275,10 @@ About 2 seconds in total. On later visits that guest simply shows as revealed. *
 
 ### Tapping
 - **Revealed frame:** it comes forward a little, and a small paper card appears tucked into the corner of the frame with one line about the guest and their session ("ಬೆಳಿಗ್ಗೆ 11:00 · 11:00 AM, Main Hall"), plus a link to their event.
-- **Covered frame:** the veil gives a small shake ("not yet!") and the tag flips to show a **teaser hint**, if the PR team has written one (for example: "A voice you've heard in 200 songs"). **Why:** a covered frame that does nothing when tapped feels broken, and teasers give the PR team something to post each week.
+- **Covered frame:** the veil gives a small shake ("not yet!") and the tag flips to say the guests are **unveiled at the flashmob** on 29 October. There are no teasers. **Why:** a covered frame that does nothing when tapped feels broken.
 
 ### Security (from the spec)
-The server sends a guest's name and photo **only after their reveal date**. Before that, only the date and the teaser hint are sent. **Why:** if names sit anywhere in the page's code, your CTF players will find them early.
+The server sends a guest's name and photo **only after their reveal date**. Before that, only the date is sent. All three of this year's guests are revealed together at the flashmob on 29 October, so their names go in only after it. **Why:** if names sit anywhere in the page's code, your CTF players will find them early.
 
 ### Motion (idle)
 The velvet sways very slightly, the next guest's cord trembles, and dust drifts in the picture-lamp light.

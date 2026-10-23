@@ -13,19 +13,24 @@ import harshaPhoto from '@p26/assets/guests/shree-harsha.webp'
 import bhavanaPhoto from '@p26/assets/guests/bhavvana-rao.webp'
 
 // Scene 7: ವಿಶೇಷ ಪಾತ್ರದಲ್ಲಿ · Special Appearance, the lobby's wall of honour.
-// This year's guests stay under a veil until their reveal date. The server
-// will send a guest's name, photo and session only after that date (spec §3
-// Scene 7); before it, only the date, the role if it's no secret, and the
-// PR team's teaser. So nothing here names anyone.
-// TODO(backend): fetch these (step 16). TODO(content): real dates, roles and
-// teasers; Kannada to be proofread. `place` is the frame's spot on the wall,
-// left to right, with the Chief Guest in the middle.
+// This year's three guests stay under a veil until the flashmob on 29
+// October, where all three are unveiled together. A guest's name, photo and
+// session go into the page only after the flashmob (spec §3 Scene 7);
+// before it, only the date and the role if it's no secret. So nothing here
+// names anyone, and there are no teasers: tapping a veil only says where
+// the unveiling happens.
+// TODO(backend): fetch these (step 16). TODO(content): Kannada to be
+// proofread. `place` is the frame's spot on the wall, left to right, with
+// the Chief Guest in the middle.
+export const UNVEILING = {
+  date: '2026-10-29',
+  hint: { kn: 'ಫ್ಲ್ಯಾಶ್‌ಮಾಬ್‌ನಲ್ಲಿ ಅನಾವರಣ', en: 'Unveiled at the flashmob' },
+}
+
 export const GUESTS = [
-  { id: 'g1', place: 0, revealDate: '2026-10-01', role: null, teaser: { kn: '200 ಹಾಡುಗಳಲ್ಲಿ ನೀವು ಕೇಳಿದ ಧ್ವನಿ', en: 'A voice you’ve heard in 200 songs' } },
-  { id: 'g2', place: 1, revealDate: '2026-10-08', role: null, teaser: { kn: 'ಇವರ ಕತೆಗಳು ಪಠ್ಯಪುಸ್ತಕದಲ್ಲಿವೆ', en: 'You read their stories in school' } },
-  { id: 'chief', place: 2, chief: true, revealDate: '2026-10-22', role: { kn: 'ಮುಖ್ಯ ಅತಿಥಿ', en: 'Chief Guest' }, teaser: { kn: 'ಗಂಧದ ಗುಡಿಯಿಂದಲೇ ಬರುವವರು', en: 'Straight from Sandalwood' } },
-  { id: 'g3', place: 3, revealDate: '2026-10-15', role: null, teaser: null },
-  { id: 'g4', place: 4, revealDate: '2026-10-25', role: { kn: 'ಗೌರವ ಅತಿಥಿ', en: 'Guest of Honour' }, teaser: { kn: 'ಒಂದು ಸುಳಿವು: ರಂಗಭೂಮಿ', en: 'One clue: the stage' } },
+  { id: 'g1', place: 0, revealDate: UNVEILING.date, role: null },
+  { id: 'chief', place: 1, chief: true, revealDate: UNVEILING.date, role: { kn: 'ಮುಖ್ಯ ಅತಿಥಿ', en: 'Chief Guest' } },
+  { id: 'g2', place: 2, revealDate: UNVEILING.date, role: null },
 ]
 
 // Guests of past Parvas, framed on the same wall with their lamps lit, in

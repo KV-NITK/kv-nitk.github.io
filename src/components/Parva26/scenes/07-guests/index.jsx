@@ -41,7 +41,7 @@ const WOOD =
   'repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 11px), linear-gradient(180deg, #7a4829, #5a3219 60%, #3e2110)'
 
 // Before the backend exists (build step 16), `?unveil` shows what an
-// unveiling looks like: the next guest due is "revealed" with stand-in
+// unveiling looks like: the guests due next are "revealed" with stand-in
 // details. Nothing real is in here.
 const PREVIEW = {
   name: { kn: 'ಅತಿಥಿಯ ಹೆಸರು', en: 'Guest’s name' },
@@ -75,15 +75,17 @@ export function GuestsScene() {
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
 
-  // The next covered guest due gets the countdown and the trembling cord.
-  const nextId = useMemo(
-    () =>
-      GUESTS.filter((g) => !g.name && revealTime(g.revealDate) > now).sort((a, b) => revealTime(a.revealDate) - revealTime(b.revealDate))[0]?.id,
+  // The covered guests due next (all three, at the flashmob) get the
+  // countdown and the trembling cord.
+  const nextAt = useMemo(
+    () => Math.min(...GUESTS.filter((g) => !g.name).map((g) => revealTime(g.revealDate)).filter((t) => t > now)),
     [now]
   )
   const guests = useMemo(() => {
     const preview = new URLSearchParams(window.location.search).has('unveil')
-    return [...GUESTS].sort((a, b) => a.place - b.place).map((g) => (preview && g.id === nextId && !g.name ? { ...g, ...PREVIEW } : g))
+    return [...GUESTS]
+      .sort((a, b) => a.place - b.place)
+      .map((g) => (preview && !g.name && revealTime(g.revealDate) === nextAt ? { ...g, ...PREVIEW } : g))
     // The preview guest is chosen once; it shouldn't jump as the clock ticks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -196,7 +198,7 @@ export function GuestsScene() {
                   <li key={guest.id} data-guest={guest.id} className={cn(guest.chief && 'col-span-2 max-lg:order-first')}>
                     <GuestFrame
                       guest={guest}
-                      next={guest.id === nextId}
+                      next={revealTime(guest.revealDate) === nextAt}
                       now={now}
                       open={open === guest.id}
                       onToggle={toggle(guest.id)}
