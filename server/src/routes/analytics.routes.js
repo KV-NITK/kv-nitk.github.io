@@ -26,6 +26,7 @@ const TARGET_ROUTES = [
   "/",
   "/events",
   "/social",
+  "/parva-26",
   "/parva-26/merch",
   "/parva-26/coupon",
   "/parva-26/market",

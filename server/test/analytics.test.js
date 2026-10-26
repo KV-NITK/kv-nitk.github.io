@@ -52,6 +52,11 @@ describe("analytics", () => {
     assert.equal(summary.totalUniqueIps, 1);
   });
 
+  it("tracks the Parva 2026 landing page from the start", async () => {
+    const { stats: rows } = await (await stats("open-sesame")).json();
+    assert.ok(rows.some((r) => r.route === "/parva-26"));
+  });
+
   it("does not store the address itself", async () => {
     const body = JSON.stringify(await (await stats("open-sesame")).json());
     assert.ok(!body.includes("127.0.0.1"));
