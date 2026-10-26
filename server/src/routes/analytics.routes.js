@@ -12,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // or the counts start again from zero with every new container.
 const DATA_DIR = process.env.ANALYTICS_DATA_DIR || path.join(__dirname, "../../data");
 const DATA_FILE = path.join(DATA_DIR, "analytics.json");
+const DAILY_FILE = path.join(DATA_DIR, "analytics-daily.json");
 
 const SAVE_EVERY_MS = 10 * 1000;
 const MAX_ROUTES = 200;
@@ -113,8 +114,75 @@ const saveNow = () => {
   }
 };
 
+// Visits per route for each finished day, filled at local midnight.
+// lastTotals holds the route totals as they were at the previous midnight.
+const daily = { days: {}, lastTotals: null };
+
+const totalsNow = () => Object.fromEntries([...routes].map(([route, entry]) => [route, entry.totalVisits]));
+
+const dayKey = (date) => {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const loadDaily = () => {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DAILY_FILE, "utf-8"));
+    daily.days = parsed.days || {};
+    daily.lastTotals = parsed.lastTotals || null;
+  } catch (err) {
+    if (err.code !== "ENOENT") console.warn("Could not load daily analytics:", err.message);
+  }
+
+  // First start: the first midnight counts from here, not from the first visit ever
+  daily.lastTotals ||= totalsNow();
+};
+
+const saveDaily = async () => {
+  try {
+    await fs.promises.mkdir(DATA_DIR, { recursive: true });
+    const tmp = `${DAILY_FILE}.tmp`;
+    await fs.promises.writeFile(tmp, JSON.stringify(daily));
+    await fs.promises.rename(tmp, DAILY_FILE);
+  } catch (err) {
+    console.warn("Could not save daily analytics:", err.message);
+  }
+};
+
+// Gives the day that ended just before `midnight` the visits since the last close
+export const closeDay = async (midnight = new Date()) => {
+  const key = dayKey(new Date(midnight.getTime() - 1));
+  const now = totalsNow();
+  const day = daily.days[key] || {};
+
+  for (const [route, total] of Object.entries(now)) {
+    const visits = total - (daily.lastTotals[route] || 0);
+    if (visits > 0) day[route] = (day[route] || 0) + visits;
+  }
+
+  daily.days[key] = day;
+  daily.lastTotals = now;
+  await saveDaily();
+};
+
+const nextMidnight = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+};
+
+const scheduleDailyClose = () => {
+  const midnight = nextMidnight();
+
+  setTimeout(async () => {
+    await closeDay(midnight);
+    scheduleDailyClose();
+  }, midnight - new Date()).unref();
+};
+
 load();
 TARGET_ROUTES.forEach((r) => routes.has(r) || routes.set(r, emptyRoute()));
+loadDaily();
+scheduleDailyClose();
 
 setInterval(save, SAVE_EVERY_MS).unref();
 
@@ -206,5 +274,8 @@ router.get("/stats", requireAdminPasscode, (req, res) => {
     stats,
   });
 });
+
+// GET /api/analytics/daily - needs the admin password. Visits per route for each finished day.
+router.get("/daily", requireAdminPasscode, (req, res) => res.json({ success: true, days: daily.days }));
 
 export default router;

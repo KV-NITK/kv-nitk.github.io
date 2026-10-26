@@ -9,7 +9,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), "analytics-"));
 process.env.ANALYTICS_DATA_DIR = dir;
 process.env.ADMIN_PASSCODE = "open-sesame";
 
-const { default: router } = await import("../src/routes/analytics.routes.js");
+const { default: router, closeDay } = await import("../src/routes/analytics.routes.js");
 
 describe("analytics", () => {
   let server;
@@ -55,6 +55,17 @@ describe("analytics", () => {
   it("tracks the Parva 2026 landing page from the start", async () => {
     const { stats: rows } = await (await stats("open-sesame")).json();
     assert.ok(rows.some((r) => r.route === "/parva-26"));
+  });
+
+  it("gives a finished day its visits when midnight closes it", async () => {
+    const daily = (pass) => fetch(`${base}/daily`, { headers: pass ? { "x-admin-passcode": pass } : {} });
+    assert.equal((await daily()).status, 401);
+
+    assert.equal((await track("/events")).status, 204);
+    await closeDay(new Date(2026, 9, 27)); // the midnight that ends 26 Oct
+
+    const { days } = await (await daily("open-sesame")).json();
+    assert.ok(days["2026-10-26"]["/events"] >= 1);
   });
 
   it("does not store the address itself", async () => {
