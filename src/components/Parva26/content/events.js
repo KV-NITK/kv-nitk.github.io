@@ -1,19 +1,24 @@
+// One Google Form registers for all three literary events (30 Oct)
+const LITERARY_FORM = 'https://forms.gle/5zEjfXj5fFVKBoRp8'
+
 // Scene 6: ಇಂದೇ ನೋಡಿ · Now Showing.
 // TODO(content): stand-ins taken from Parva 2025's events and moved onto this
 // year's days; replace with the real list (titles, day, time, venue, one
 // line, register link). `type` picks the poster's picture and genre stamp;
 // `headline` puts the poster on the board (the rest are under "All shows");
-// `photo` swaps the drawn picture for a real image (singers and guests only).
+// `photo` swaps the drawn picture for a real image (singers and guests only);
+// `lineKn`, where there is one, is the line in Kannada, shown while the
+// subtitles are off (`line` is the English subtitle).
 export const EVENTS = [
   { id: 'rasasanje', type: 'music', headline: true, kn: 'ಸಂಗೀತ ರಸಸಂಜೆ', en: 'Sangeetha Rasasanje', day: '2026-11-01', time: '6:00 PM', venue: 'SAC', line: 'An evening of Kannada songs, sung live.', registerLink: '#', photo: null },
   { id: 'dj', type: 'dj', headline: true, kn: 'ಡಿಜೆ ರಾತ್ರಿ', en: 'DJ Night', day: '2026-11-01', time: '8:30 PM', venue: 'SAC', line: 'Kannada hits, remixed, to close Parva.', registerLink: '#', photo: null },
-  { id: 'quiz', type: 'quiz', headline: true, kn: 'ಕ್ವಿಜ್', en: 'Quiz', day: '2026-10-30', time: '6:00 PM', venue: 'MB Seminar Hall', line: 'Karnataka’s films, food, places and people, in six rounds.', registerLink: '#', photo: null },
-  { id: 'kavigoshti', type: 'literature', headline: true, kn: 'ಕವಿಗೋಷ್ಠಿ', en: 'Poets’ meet', day: '2026-10-30', time: '11:00 AM', venue: 'SJA', line: 'Read your Kannada poem aloud, or come and listen.', registerLink: '#', photo: null },
+  { id: 'jnaana-yaana', type: 'quiz', headline: true, kn: 'ಜ್ಞಾನ ಯಾನ', en: 'Jnaana Yaana', day: '2026-10-30', time: '7–9 PM', venue: 'LHC A Seminar Hall', lineKn: 'ಸಾಮಾನ್ಯ ಜ್ಞಾನ, ಕನ್ನಡ ಭಾಷೆ, ಸಾಹಿತ್ಯ, ಸಂಸ್ಕೃತಿಯ ತಂಡ ರಸಪ್ರಶ್ನೆ. ತಂಡಕ್ಕೆ 3–4 ಜನ.', line: 'A team quiz on general knowledge, Kannada, literature and culture. Teams of 3–4.', registerLink: LITERARY_FORM, photo: null },
+  { id: 'nudi-chatura', type: 'literature', headline: true, kn: 'ನುಡಿ ಚತುರ', en: 'Nudi Chatura', day: '2026-10-30', time: '6–7 PM', venue: 'LHC A Seminar Hall', lineKn: 'ಅರ್ಧ ಕೊಟ್ಟ ಗಾದೆ ಮಾತು, ಒಗಟುಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ. ತಂಡಕ್ಕೆ 2 ಜನ.', line: 'Write the missing half of Kannada proverbs and riddles. Teams of 2.', registerLink: LITERARY_FORM, photo: null },
   // { id: 'natak', type: 'drama', headline: true, kn: 'ಪ್ರಾಧ್ಯಾಪಕರ ನಾಟಕ', en: 'Professors’ play', day: '2026-11-01', time: '3:00 PM', venue: 'SJA', line: 'Our professors take the stage.', registerLink: '#', photo: null },
   { id: 'charades', type: 'comedy', headline: true, kn: 'ಮೂಕಾಭಿನಯ', en: 'Dumb Charades', day: '2026-10-30', time: '2:00 PM', venue: 'MB Seminar Hall', line: 'Act out film titles without a word. Teams of three.', registerLink: '#', photo: null },
   { id: 'film', type: 'film', headline: false, kn: 'ಚಿತ್ರ ಪ್ರದರ್ಶನ', en: 'Film screening', day: '2026-10-29', time: '6:00 PM', venue: 'SJA', line: 'A Kannada film on the big screen to open Parva.', registerLink: '#', photo: null },
   { id: 'flashmob', type: 'dance', headline: false, kn: 'ಫ್ಲ್ಯಾಶ್ ಮಾಬ್', en: 'Flashmob', day: '2026-10-29', time: '5:00 PM', venue: 'BB Court', line: 'A surprise dance in the middle of campus. Join in.', registerLink: '#', photo: null },
-  { id: 'antakshari', type: 'music', headline: false, kn: 'ಅಂತ್ಯಾಕ್ಷರಿ', en: 'Antakshari', day: '2026-10-30', time: '4:00 PM', venue: 'MB Seminar Hall', line: 'Sing the next song from the last letter. Kannada songs only.', registerLink: '#', photo: null },
+  { id: 'antyakshari', type: 'music', headline: true, kn: 'ಅಂತ್ಯಾಕ್ಷರಿ', en: 'Antyakshari', day: '2026-10-30', time: '9–11 PM', venue: 'LHC A Seminar Hall', lineKn: 'ಚಿತ್ರ, ಮೂಕ ಧ್ವನಿ ತುಣುಕು ನೋಡಿ ಕನ್ನಡ ಹಾಡು ಗುರುತಿಸಿ. ತಂಡಕ್ಕೆ 4 ಜನ; ಕನ್ನಡೇತರರಿದ್ದರೆ +1 ಅಂಕ.', line: 'Guess Kannada songs from pictures and muted clips. Teams of 4; +1 for a non-Kannadiga.', registerLink: LITERARY_FORM, photo: null },
   { id: 'sobagu', type: 'culture', headline: false, kn: 'ಸೊಬಗು', en: 'Sobagu', day: '2026-10-30', time: '5:00 PM', venue: 'Pavilion', line: 'An evening of Karnataka’s traditions.', registerLink: '#', photo: null },
 ]
 
