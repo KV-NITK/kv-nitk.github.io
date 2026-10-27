@@ -234,11 +234,21 @@ function Poster({ event, tilt, open, lifted, live, reduced, subtitles, onToggle 
             <p className="font-kn-display text-[max(1rem,8cqw)] font-semibold leading-tight">
               <span lang="kn" className="whitespace-nowrap">{day.kn}</span> · <span className="whitespace-nowrap">{event.time}</span>
             </p>
-            <p className="font-kn-display text-[max(1rem,8cqw)] font-semibold leading-tight">{event.venue}</p>
-            <p className={cn('mt-1 text-[max(0.8rem,6.4cqw)] leading-snug text-[#1d2a4d]/85', !subtitles && 'sr-only')}>{event.line}</p>
+            <p className="font-kn-display text-[max(0.85rem,8cqw)] font-semibold leading-tight">{event.venue}</p>
+            {/* The one line: in Kannada (lineKn) while subtitles are off, the
+                English subtitle while they are on */}
+            {event.lineKn && !subtitles ? (
+              <p lang="kn" className="mt-1 font-kn-body text-[max(0.8rem,6.4cqw)] leading-snug text-[#1d2a4d]/85">
+                {event.lineKn}
+              </p>
+            ) : (
+              <p className={cn('mt-1 text-[max(0.8rem,6.4cqw)] leading-snug text-[#1d2a4d]/85', !subtitles && 'sr-only')}>{event.line}</p>
+            )}
           </div>
           <a
             href={event.registerLink}
+            // A form on another site opens in a new tab, so the show stays where it was
+            {...(/^https?:/.test(event.registerLink) ? { target: '_blank', rel: 'noreferrer' } : {})}
             className="relative mt-2 grid min-h-11 -rotate-2 place-items-center rounded-[3px] border-[2.5px] border-kumkuma px-2 text-center font-poster text-[max(1rem,9cqw)] leading-none tracking-wider text-kumkuma [filter:url(#p26-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kumkuma"
           >
             <span>
