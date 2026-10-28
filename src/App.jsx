@@ -28,6 +28,7 @@ import FeedbackResponses from './components/feedback-responses/FeedbackResponses
 import AnalyticsDashboard from "./components/Analytics/AnalyticsDashboard";
 import { UmamiTracker } from "./components/Analytics/UmamiTracker";
 import NotFound from './components/NotFound/NotFound';
+import { EVENTS } from './components/Parva26/regform/events';
 
 // Loaded on its own, so these don't pull in the rest of the site's code
 // and the rest of the site doesn't pull in their fonts and effects.
@@ -40,10 +41,12 @@ const Parva26 = lazy(() => import('./components/Parva26/Parva26'));
 const Parva26Merch = lazy(() => import('./components/Parva26/merch/Merch'));
 const Parva26Coupon = lazy(() => import('./components/Parva26/coupon/Coupon'));
 const ParvaScanner = lazy(() => import('./components/Parva26/scan/Scanner'));
+const Parva26RegForm = lazy(() => import('./components/Parva26/regform/RegForm'));
+const Parva26EventRegistration = lazy(() => import('./components/Parva26/regform/EventRegistration'));
 
 // Standalone microsite routes render their own header/footer instead of the
 // main site's chrome.
-const STANDALONE_ROUTES = ['/parva-26', '/analytics', '/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/parva-26/coupon', '/parva-26/scan', '/merch-test', '/payment/status', '/my-orders', '/admin'];
+const STANDALONE_ROUTES = ['/parva-26', '/analytics', '/hh-2026', '/hh-2026/play', '/hh-2026/dashboard', '/hh-2026/leaderboard', '/team-registration', '/list-of-members', '/hh-2026/qr-scanner', '/feedback', '/feedback-responses', '/feedback/responses', '/parva-26/market', '/parva-26/merch', '/parva-26/coupon', '/parva-26/scan', '/parva-26/regform', '/merch-test', '/payment/status', '/my-orders', '/admin'];
 
 function AppRoutes() {
   const location = useLocation();
@@ -65,6 +68,10 @@ function AppRoutes() {
         <Route path="/parva-26/merch" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Merch /></Suspense>} />
         <Route path="/parva-26/coupon" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26Coupon /></Suspense>} />
         <Route path="/parva-26/scan" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><ParvaScanner /></Suspense>} />
+        <Route path="/parva-26/regform" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26RegForm /></Suspense>} />
+        <Route path="/parva-26/regform/quiz" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26EventRegistration event={EVENTS.quiz} /></Suspense>} />
+        <Route path="/parva-26/regform/proverbsandriddles" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26EventRegistration event={EVENTS.proverbsandriddles} /></Suspense>} />
+        <Route path="/parva-26/regform/filmsongchallenge" element={<Suspense fallback={<div className="min-h-screen bg-[#0b0705]" />}><Parva26EventRegistration event={EVENTS.filmsongchallenge} /></Suspense>} />
         <Route path="/Merch" element={<Merch />} />
         <Route path="/merch-test" element={<MerchTest />} />
         <Route path="/payment/status" element={<PaymentStatus />} />
