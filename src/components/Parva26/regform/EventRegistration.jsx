@@ -35,6 +35,7 @@ export default function EventRegistration({ event }) {
     // No .select(): anon may insert but not read, so don't ask for the row back.
     const { error } = await supabase.from(event.table).insert(toPayload(event, values))
     if (error) {
+      console.error('Supabase insert error:', error)
       const { field, message } = friendlyError(error)
       if (field) setErrors({ [field]: message })
       else setFormError(message)

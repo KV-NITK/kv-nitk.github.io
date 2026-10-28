@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { En, usePrefs } from '@p26/lib/prefs'
+import { Link } from 'react-router-dom'
+import RegisterIcon from '@/icons/register.svg'
 import { EVENTS, GENRES, eventDay } from '@p26/content'
 import { Bulbs } from '@p26/ui/bulbs'
 import { PosterMotif, POSTER_STYLES } from '@p26/scenes/06-now-showing/poster-art'
@@ -132,6 +134,11 @@ export function NowShowingScene() {
                 </li>
               ))}
             </ul>
+          <div className="mt-6 flex justify-center">
+            <Link to="/parva-26/regform" className="clip-torn flex items-center gap-2 border border-primary bg-primary px-6 py-3 font-serif text-sm font-bold tracking-[0.2em] text-primary-foreground uppercase transition-colors hover:bg-primary/85">
+              <img src={RegisterIcon} className="w-5 h-5" alt="" aria-hidden="true" /> Register now
+            </Link>
+          </div>
 
             {/* Bulb light from above, the cool street lamp from the left */}
             <div
