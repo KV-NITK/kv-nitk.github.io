@@ -47,7 +47,26 @@ const spareClass = (spare) => (spare != null && spare < 0 ? "bg-red-50 font-semi
 
 const COLS = ["Size", "Stock", "Given", "Left", "To collect", "Spare"];
 
-const FitTable = ({ fit, rows, editing, draft, setDraft }) => {
+// Phone keyboards cover the bottom of the screen without shrinking the panel, so
+// a tapped stock box is scrolled to the middle once the keyboard is up, and the
+// keyboard's Enter key moves on to the next box.
+const STOCK_INPUT = "input[data-stock-input]";
+
+const centreAfterKeyboard = (e) => {
+  const input = e.currentTarget;
+  setTimeout(() => input.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+};
+
+const nextOnEnter = (e) => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const inputs = [...document.querySelectorAll(STOCK_INPUT)];
+  const next = inputs[inputs.indexOf(e.currentTarget) + 1];
+  if (next) next.focus();
+  else e.currentTarget.blur();
+};
+
+const FitTable = ({ fit, rows, editing, draft, setDraft, isLast }) => {
   const total = totalOf(rows);
 
   return (
@@ -71,6 +90,10 @@ const FitTable = ({ fit, rows, editing, draft, setDraft }) => {
                     value={draft[r.productId] ?? ""}
                     onChange={(e) => setDraft((d) => ({ ...d, [r.productId]: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
                     inputMode="numeric"
+                    enterKeyHint={isLast && r === rows[rows.length - 1] ? "done" : "next"}
+                    data-stock-input=""
+                    onFocus={centreAfterKeyboard}
+                    onKeyDown={nextOnEnter}
                     aria-label={`Stock of ${fit} ${r.size}`}
                     className="w-full rounded-md border border-neutral-300 px-1 py-1.5 text-center text-base outline-none focus:ring-2 focus:ring-neutral-400"
                   />
@@ -455,9 +478,12 @@ const InventoryPanel = ({ passcode, onClose, onUnauthorized }) => {
                 </p>
               )}
 
-              {fits.map(([fit, fitRows]) => (
-                <FitTable key={fit} fit={fit} rows={fitRows} editing={editing} draft={draft} setDraft={setDraft} />
+              {fits.map(([fit, fitRows], i) => (
+                <FitTable key={fit} fit={fit} rows={fitRows} editing={editing} draft={draft} setDraft={setDraft} isLast={i === fits.length - 1} />
               ))}
+
+              {/* Room to scroll the last boxes up above the phone keyboard */}
+              {editing && <div aria-hidden="true" className="h-[55vh]" />}
 
               {unmatched && (unmatched.claimed > 0 || unmatched.toCollect > 0) && (
                 <p className="text-xs text-neutral-500">
