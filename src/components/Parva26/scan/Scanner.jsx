@@ -785,9 +785,13 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
 
         {/* Result card: stays until Scan Next */}
         {card && !isVerifying && (
-          <div className="absolute inset-x-4 top-4 z-30 mx-auto max-h-[calc(100%-2rem)] max-w-md overflow-y-auto">
-            <ResultCard card={card} onNext={scanNext} onRevert={(pass) => askRevert(pass, { fromCard: true })} />
-          </div>
+          <>
+            {/* Blurs and dims the scanner behind the card so the result stands out */}
+            <div aria-hidden="true" className="absolute inset-0 z-[25] bg-black/45 backdrop-blur-md" />
+            <div className="absolute inset-x-4 top-4 z-30 mx-auto max-h-[calc(100%-2rem)] max-w-md overflow-y-auto">
+              <ResultCard card={card} onNext={scanNext} onRevert={(pass) => askRevert(pass, { fromCard: true })} />
+            </div>
+          </>
         )}
 
         <ConfirmDialog confirm={!searchOpen && !historyOpen ? confirm : null} busy={confirmBusy} onCancel={() => setConfirm(null)} />

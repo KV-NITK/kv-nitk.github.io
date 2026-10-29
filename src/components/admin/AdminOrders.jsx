@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { getAllOrders } from "../../api/admin";
 import { shirtDesign, shirtName } from "@/lib/shirtName";
 import { STATUS_STYLES, discountParts, itemLabel, rupees } from "../merch-test/orderFormat";
+import { PasswordGate, RefreshError, StatCard, usePasscodeData } from "./shared";
 
 const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
 const PASS_KEY = "admin_orders_pass";
@@ -43,23 +44,6 @@ const TYPE_FILTERS = [
   ["FOOD", "Food coupons only"],
 ];
 
-const readPass = () => {
-  try {
-    return sessionStorage.getItem(PASS_KEY) || "";
-  } catch {
-    return "";
-  }
-};
-
-const writePass = (value) => {
-  try {
-    if (value) sessionStorage.setItem(PASS_KEY, value);
-    else sessionStorage.removeItem(PASS_KEY);
-  } catch {
-    // ignore
-  }
-};
-
 const discountOf = (order) => {
   const parts = discountParts(order);
   const coupon = parts.find((p) => p.label !== "Goodie (free)")?.amount ?? 0;
@@ -93,51 +77,11 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const StatCard = ({ label, value }) => (
-  <div className="rounded-xl border border-neutral-200/80 bg-white p-5 shadow-sm">
-    <div className="text-xs font-bold uppercase tracking-wider text-neutral-400">{label}</div>
-    <div className="mt-1.5 text-3xl font-bold text-neutral-900">{value}</div>
-  </div>
-);
-
 const AdminOrders = () => {
-  const [passcode, setPasscode] = useState(readPass);
-  const [passInput, setPassInput] = useState("");
-  const [orders, setOrders] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { passcode, data: orders, loading, error, load, lock } = usePasscodeData(PASS_KEY, getAllOrders);
   const [status, setStatus] = useState("SUCCESS");
   const [type, setType] = useState("ALL");
   const [search, setSearch] = useState("");
-
-  const load = useCallback(async (pass) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      setOrders(await getAllOrders(pass));
-      setPasscode(pass);
-      writePass(pass);
-    } catch (e) {
-      setOrders(null);
-      setError(e.message);
-      if (e.status === 401) writePass("");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (passcode) load(passcode);
-  }, []);
-
-  const lock = () => {
-    writePass("");
-    setPasscode("");
-    setPassInput("");
-    setOrders(null);
-    setError("");
-  };
 
   const paid = useMemo(() => (orders || []).filter((o) => o.status === "SUCCESS"), [orders]);
 
@@ -190,34 +134,14 @@ const AdminOrders = () => {
 
   if (!orders) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] p-4 font-sans">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (passInput.trim()) load(passInput.trim());
-          }}
-          className="w-full max-w-sm rounded-xl border border-neutral-200/80 bg-white p-6 shadow-sm"
-        >
-          <h1 className="text-xl font-bold text-neutral-900">Admin</h1>
-          <p className="mt-1 text-sm text-neutral-600">Enter the password to see the orders.</p>
-          <input
-            type="password"
-            value={passInput}
-            onChange={(e) => setPassInput(e.target.value)}
-            placeholder="Password"
-            autoFocus
-            className="mt-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-neutral-400"
-          />
-          {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-4 w-full rounded-lg bg-black px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 transition-colors"
-          >
-            {loading ? "Checking…" : "View orders"}
-          </button>
-        </form>
-      </div>
+      <PasswordGate
+        title="Admin"
+        prompt="Enter the password to see the orders."
+        submitLabel="View orders"
+        loading={loading}
+        error={error}
+        onSubmit={load}
+      />
     );
   }
 
@@ -249,7 +173,7 @@ const AdminOrders = () => {
             </button>
           </div>
         </div>
-        {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
+        <RefreshError error={error} />
 
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
           <StatCard label="Paid orders" value={paid.length} />

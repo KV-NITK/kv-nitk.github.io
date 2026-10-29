@@ -15,6 +15,7 @@ import MerchTest from './components/merch-test/MerchTest';
 import PaymentStatus from './components/merch-test/PaymentStatus';
 import MyOrders from './components/merch-test/MyOrders';
 import AdminOrders from './components/admin/AdminOrders';
+import AdminStaff from './components/admin/AdminStaff';
 import TeamRegistration from './components/team-registration/TeamRegistration';
 import HH2026 from './components/HH2026/HH2026';
 import HH2026Stats from './components/HH2026/HH2026Stats';
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="/payment/status" element={<PaymentStatus />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/admin" element={<AdminOrders />} />
+        <Route path="/admin/staff" element={<AdminStaff />} />
         <Route path="/analytics" element={<AnalyticsDashboard />} />
         <Route path="/team-registration" element={<TeamRegistration />} />
         <Route path="/feedback" element={<Feedback />} />
