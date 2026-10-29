@@ -10,6 +10,7 @@ const UNIQUE = {
   payments: ["idempotency_key"],
   payment_events: ["provider_event_key"],
   claimable_items: ["token"],
+  event_staff: ["iris_id"],
 };
 
 export const createFakeDb = (seed = {}) => {

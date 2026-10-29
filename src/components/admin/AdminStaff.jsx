@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { addStaff, listStaff, updateStaff } from "../../api/staffAdmin";
+import { PasswordGate, RefreshError, StatCard, usePasscodeData } from "./shared";
 
 const PASS_KEY = "admin_staff_pass";
 
@@ -17,38 +18,10 @@ const formatDateTime = (iso) => {
   });
 };
 
-const readPass = () => {
-  try {
-    return sessionStorage.getItem(PASS_KEY) || "";
-  } catch {
-    return "";
-  }
-};
-
-const writePass = (value) => {
-  try {
-    if (value) sessionStorage.setItem(PASS_KEY, value);
-    else sessionStorage.removeItem(PASS_KEY);
-  } catch {
-    // ignore
-  }
-};
-
-const StatCard = ({ label, value }) => (
-  <div className="rounded-xl border border-neutral-200/80 bg-white p-4 shadow-sm">
-    <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">{label}</p>
-    <p className="mt-1 text-2xl font-bold text-neutral-900">{value}</p>
-  </div>
-);
-
 const EMPTY_FORM = { irisId: "", name: "", role: "VOLUNTEER", active: true };
 
 const AdminStaff = () => {
-  const [passcode, setPasscode] = useState(readPass);
-  const [passInput, setPassInput] = useState("");
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { passcode, data, setData, loading, error, load, lock } = usePasscodeData(PASS_KEY, listStaff);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [showInactive, setShowInactive] = useState(true);
@@ -57,35 +30,6 @@ const AdminStaff = () => {
   const [formMessage, setFormMessage] = useState(null); // { ok, text }
   const [saving, setSaving] = useState({}); // irisId -> true while a change is being saved
   const [rowError, setRowError] = useState({}); // irisId -> message
-
-  const load = useCallback(async (pass) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      setData(await listStaff(pass));
-      setPasscode(pass);
-      writePass(pass);
-    } catch (e) {
-      setData(null);
-      setError(e.message);
-      if (e.status === 401) writePass("");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (passcode) load(passcode);
-  }, []);
-
-  const lock = () => {
-    writePass("");
-    setPasscode("");
-    setPassInput("");
-    setData(null);
-    setError("");
-  };
 
   const submitAdd = async (e) => {
     e.preventDefault();
@@ -156,34 +100,14 @@ const AdminStaff = () => {
 
   if (!data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] p-4 font-sans">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (passInput.trim()) load(passInput.trim());
-          }}
-          className="w-full max-w-sm rounded-xl border border-neutral-200/80 bg-white p-6 shadow-sm"
-        >
-          <h1 className="text-xl font-bold text-neutral-900">Event staff</h1>
-          <p className="mt-1 text-sm text-neutral-600">Enter the staff admin password.</p>
-          <input
-            type="password"
-            value={passInput}
-            onChange={(e) => setPassInput(e.target.value)}
-            placeholder="Password"
-            autoFocus
-            className="mt-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-neutral-400"
-          />
-          {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-700">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-4 w-full rounded-lg bg-black px-4 py-2 font-semibold text-white hover:bg-neutral-800 disabled:opacity-60 transition-colors"
-          >
-            {loading ? "Checking…" : "Open"}
-          </button>
-        </form>
-      </div>
+      <PasswordGate
+        title="Event staff"
+        prompt="Enter the staff admin password."
+        submitLabel="Open"
+        loading={loading}
+        error={error}
+        onSubmit={load}
+      />
     );
   }
 
@@ -213,6 +137,7 @@ const AdminStaff = () => {
             </button>
           </div>
         </div>
+        <RefreshError error={error} />
 
         <div className="grid grid-cols-3 gap-3">
           <StatCard label="Admins" value={summary.admins} />

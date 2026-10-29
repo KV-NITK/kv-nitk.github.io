@@ -1,7 +1,6 @@
 import express from "express";
 
-import { requireAdminPasscode } from "../middleware/adminAuth.middleware.js";
-import { requireStaffAdminPasscode } from "../middleware/staffAdminAuth.middleware.js";
+import { requireAdminPasscode, requireStaffAdminPasscode } from "../middleware/adminAuth.middleware.js";
 import { listOrdersController } from "../controllers/admin.controller.js";
 import {
   listStaffController,

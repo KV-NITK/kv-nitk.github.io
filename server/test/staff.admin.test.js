@@ -6,7 +6,7 @@ import { mockSupabase, importSrc } from "./helpers/mocks.js";
 const db = createFakeDb();
 mockSupabase(db.client);
 
-const { requireStaffAdminPasscode } = await importSrc("middleware/staffAdminAuth.middleware.js");
+const { requireStaffAdminPasscode } = await importSrc("middleware/adminAuth.middleware.js");
 const { requireStaff } = await importSrc("middleware/auth.middleware.js");
 const { listStaffController, addStaffController, updateStaffController } = await importSrc("controllers/staff.controller.js");
 
@@ -146,19 +146,24 @@ describe("staff admin", () => {
     assert.equal((await call(updateStaffController, { params: { irisId: "22" }, body: { active: false } })).statusCode, 400);
   });
 
-  it("will not demote or deactivate the last active admin", async () => {
-    const demote = await call(updateStaffController, { params: { irisId: "1111111" }, body: { role: "VOLUNTEER" } });
-    const off = await call(updateStaffController, { params: { irisId: "1111111" }, body: { active: false } });
-    assert.equal(demote.statusCode, 409);
-    assert.equal(off.statusCode, 409);
-    const row = db.rows("event_staff").find((r) => r.iris_id === "1111111");
-    assert.deepEqual([row.role, row.active], ["ADMIN", true]);
+  it("turns the database's last-active-admin refusal into a 409 with a message", async () => {
+    db.failNext("event_staff", "update", { code: "P0001", message: "LAST_ACTIVE_ADMIN" });
+    const res = await call(updateStaffController, { params: { irisId: "1111111" }, body: { role: "VOLUNTEER" } });
+    assert.equal(res.statusCode, 409);
+    assert.match(res.body.message, /last active admin/);
   });
 
-  it("allows it once another active admin exists", async () => {
-    await call(updateStaffController, { params: { irisId: "2222222" }, body: { role: "ADMIN" } });
-    const res = await call(updateStaffController, { params: { irisId: "1111111" }, body: { active: false } });
-    assert.equal(res.statusCode, 200);
+  it("returns 500 for any other database error on update", async () => {
+    db.failNext("event_staff", "update", { code: "XX000", message: "boom" });
+    const res = await call(updateStaffController, { params: { irisId: "2222222" }, body: { active: false } });
+    assert.equal(res.statusCode, 500);
+  });
+
+  it("shows the validation messages, not zod's defaults", async () => {
+    const missing = await call(addStaffController, { body: { name: "A", role: "VOLUNTEER" } });
+    const badRole = await call(addStaffController, { body: { irisId: "3333333", name: "A", role: "BOSS" } });
+    assert.equal(missing.body.message, "IRIS ID is required");
+    assert.equal(badRole.body.message, "Role must be VOLUNTEER or ADMIN");
   });
 
   it("a change takes effect for the scanner at once, not after the 5 minute cache", async () => {

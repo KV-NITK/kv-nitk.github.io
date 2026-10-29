@@ -29,17 +29,15 @@ const toStaff = (row, stats) => ({
  * and `statsAvailable` is false.
  */
 export const listStaff = async () => {
-  const { data: rows, error } = await supabase
-    .from("event_staff")
-    .select(STAFF_COLUMNS)
-    .order("created_at", { ascending: false });
+  const [{ data: rows, error }, { data: stats, error: statsError }] = await Promise.all([
+    supabase.from("event_staff").select(STAFF_COLUMNS).order("created_at", { ascending: false }),
+    supabase.rpc("staff_claim_stats"),
+  ]);
 
   if (error) {
     console.error("List staff error:", error);
     throw new StaffError(500, "Failed to fetch staff");
   }
-
-  const { data: stats, error: statsError } = await supabase.rpc("staff_claim_stats");
 
   if (statsError) {
     console.error("Staff claim stats error:", statsError);
@@ -54,21 +52,6 @@ export const listStaff = async () => {
 };
 
 export const addStaff = async ({ irisId, name, role, active }) => {
-  const { data: existing, error: lookupError } = await supabase
-    .from("event_staff")
-    .select("iris_id")
-    .eq("iris_id", irisId)
-    .maybeSingle();
-
-  if (lookupError) {
-    console.error("Add staff lookup error:", lookupError);
-    throw new StaffError(500, "Failed to add staff member");
-  }
-
-  if (existing) {
-    throw new StaffError(409, "This IRIS ID is already on the staff list");
-  }
-
   // created_at is left to the database default (now)
   const { data, error } = await supabase
     .from("event_staff")
@@ -90,47 +73,7 @@ export const addStaff = async ({ irisId, name, role, active }) => {
   return toStaff(data);
 };
 
-// True when `irisId` is the only active admin, so removing their power would lock everyone out of reverting
-const isLastActiveAdmin = async (irisId) => {
-  const { data, error } = await supabase
-    .from("event_staff")
-    .select("iris_id")
-    .eq("role", "ADMIN")
-    .eq("active", true);
-
-  if (error) {
-    console.error("Active admin lookup error:", error);
-    throw new StaffError(500, "Failed to update staff member");
-  }
-
-  return (data || []).every((row) => row.iris_id === irisId);
-};
-
 export const updateStaff = async (irisId, changes) => {
-  const { data: current, error: lookupError } = await supabase
-    .from("event_staff")
-    .select(STAFF_COLUMNS)
-    .eq("iris_id", irisId)
-    .maybeSingle();
-
-  if (lookupError) {
-    console.error("Update staff lookup error:", lookupError);
-    throw new StaffError(500, "Failed to update staff member");
-  }
-
-  if (!current) {
-    throw new StaffError(404, "Staff member not found");
-  }
-
-  const losesAdmin =
-    current.role === "ADMIN" &&
-    current.active &&
-    (changes.role === "VOLUNTEER" || changes.active === false);
-
-  if (losesAdmin && (await isLastActiveAdmin(irisId))) {
-    throw new StaffError(409, "This is the last active admin. Make another admin first.");
-  }
-
   const patch = {};
   if (changes.name !== undefined) patch.name = changes.name;
   if (changes.role !== undefined) patch.role = changes.role;
@@ -141,11 +84,20 @@ export const updateStaff = async (irisId, changes) => {
     .update(patch)
     .eq("iris_id", irisId)
     .select(STAFF_COLUMNS)
-    .single();
+    .maybeSingle();
 
   if (error) {
+    // Raised by the keep_an_active_admin trigger (sql/006_pass_events.sql)
+    if (error.message === "LAST_ACTIVE_ADMIN") {
+      throw new StaffError(409, "This is the last active admin. Make another admin first.");
+    }
+
     console.error("Update staff error:", error);
     throw new StaffError(500, "Failed to update staff member");
+  }
+
+  if (!data) {
+    throw new StaffError(404, "Staff member not found");
   }
 
   // The scanner caches staff for a few minutes; drop this one so the change is immediate

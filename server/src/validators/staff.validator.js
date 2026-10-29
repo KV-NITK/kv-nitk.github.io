@@ -1,16 +1,16 @@
 import { z } from "zod";
 
 const irisIdSchema = z
-  .string({ required_error: "IRIS ID is required" })
+  .string({ error: "IRIS ID is required" })
   .trim()
   .regex(/^\d{7}$/, "IRIS ID must be exactly 7 digits");
 
 const roleSchema = z.enum(["VOLUNTEER", "ADMIN"], {
-  errorMap: () => ({ message: "Role must be VOLUNTEER or ADMIN" }),
+  error: "Role must be VOLUNTEER or ADMIN",
 });
 
 const nameSchema = z
-  .string({ required_error: "Name is required" })
+  .string({ error: "Name is required" })
   .trim()
   .min(1, "Name is required")
   .max(80, "Name is too long");
