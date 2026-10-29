@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { addStaff, listStaff, updateStaff } from "../../api/staffAdmin";
 import { PasswordGate, RefreshError, StatCard, usePasscodeData } from "./shared";
 import StaffActivityPanel from "./StaffActivityPanel";
+import InventoryPanel from "./InventoryPanel";
 
 const PASS_KEY = "admin_staff_pass";
 
@@ -32,10 +33,13 @@ const AdminStaff = () => {
   const [saving, setSaving] = useState({}); // irisId -> true while a change is being saved
   const [rowError, setRowError] = useState({}); // irisId -> message
   const [openId, setOpenId] = useState(null); // staff whose activity panel is open
+  const [inventoryOpen, setInventoryOpen] = useState(false);
 
   const closePanel = useCallback(() => setOpenId(null), []);
+  const closeInventory = useCallback(() => setInventoryOpen(false), []);
   const lockFromPanel = useCallback(() => {
     setOpenId(null);
+    setInventoryOpen(false);
     lock();
   }, [lock]);
 
@@ -130,6 +134,12 @@ const AdminStaff = () => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Event staff</h1>
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setInventoryOpen(true)}
+              className="rounded-lg border-2 border-black bg-white px-4 py-2 text-sm font-bold hover:bg-neutral-50 shadow-sm transition-colors"
+            >
+              Inventory
+            </button>
             <button
               onClick={() => load(passcode)}
               disabled={loading}
@@ -327,6 +337,8 @@ const AdminStaff = () => {
           onUnauthorized={lockFromPanel}
         />
       )}
+
+      {inventoryOpen && <InventoryPanel passcode={passcode} onClose={closeInventory} onUnauthorized={lockFromPanel} />}
     </div>
   );
 };

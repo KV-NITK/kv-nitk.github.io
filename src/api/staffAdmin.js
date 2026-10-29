@@ -56,3 +56,16 @@ export const revertClaim = async (passcode, passId, reason) =>
 // kind: NOTE or MISHANDLED
 export const addPassNote = async (passcode, passId, { note, kind }) =>
   (await adminRequest(passcode, `/passes/${passId}/notes`, { method: "POST", body: JSON.stringify({ note, kind }) })).note;
+
+// Merch stock and on-spot sales. Every call returns { rows, unmatched, spotSales }.
+export const getInventory = (passcode) => adminRequest(passcode, "/inventory");
+
+// items: [{ productId, stock }]
+export const saveStock = (passcode, items) =>
+  adminRequest(passcode, "/inventory", { method: "PUT", body: JSON.stringify({ items }) });
+
+export const addSpotSale = (passcode, { productId, quantity, studentName }) =>
+  adminRequest(passcode, "/inventory/spot-sales", { method: "POST", body: JSON.stringify({ productId, quantity, studentName }) });
+
+export const undoSpotSale = (passcode, id) =>
+  adminRequest(passcode, `/inventory/spot-sales/${id}/undo`, { method: "POST" });

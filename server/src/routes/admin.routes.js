@@ -12,6 +12,12 @@ import {
   revertClaimController,
   addNoteController,
 } from "../controllers/staffActivity.controller.js";
+import {
+  getInventoryController,
+  setStockController,
+  addSpotSaleController,
+  undoSpotSaleController,
+} from "../controllers/inventory.controller.js";
 
 const router = express.Router();
 
@@ -24,6 +30,12 @@ router.patch("/staff/:irisId", requireStaffAdminPasscode, updateStaffController)
 router.get("/staff/:irisId/activity", requireStaffAdminPasscode, staffActivityController);
 router.post("/passes/:passId/revert", requireStaffAdminPasscode, revertClaimController);
 router.post("/passes/:passId/notes", requireStaffAdminPasscode, addNoteController);
+
+// Merch stock and on-spot sales. Same staff admin password.
+router.get("/inventory", requireStaffAdminPasscode, getInventoryController);
+router.put("/inventory", requireStaffAdminPasscode, setStockController);
+router.post("/inventory/spot-sales", requireStaffAdminPasscode, addSpotSaleController);
+router.post("/inventory/spot-sales/:id/undo", requireStaffAdminPasscode, undoSpotSaleController);
 
 // Every order, for the admin page. Needs the admin password.
 router.get("/orders", requireAdminPasscode, listOrdersController);

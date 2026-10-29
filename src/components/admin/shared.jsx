@@ -107,3 +107,22 @@ export const StatCard = ({ label, value }) => (
     <div className="mt-1.5 text-3xl font-bold text-neutral-900">{value}</div>
   </div>
 );
+
+// Bottom sheet on a phone, centred dialog on wider screens
+export const Sheet = ({ title, onClose, children }) => {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+      <div role="dialog" aria-modal="true" aria-label={title} className="relative w-full max-w-md rounded-t-2xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl sm:rounded-2xl">
+        <h3 className="text-lg font-bold text-neutral-900">{title}</h3>
+        {children}
+      </div>
+    </div>
+  );
+};
