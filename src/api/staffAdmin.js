@@ -2,11 +2,11 @@ import API_URL from "./api";
 
 // The staff admin password is checked by the server on every call; a wrong one
 // comes back as an Error with status 401 (429 after too many tries).
-const staffRequest = async (passcode, path = "", options = {}) => {
+const adminRequest = async (passcode, path, options = {}) => {
   let response;
 
   try {
-    response = await fetch(`${API_URL}/admin/staff${path}`, {
+    response = await fetch(`${API_URL}/admin${path}`, {
       ...options,
       headers: {
         "x-staff-admin-passcode": passcode,
@@ -28,6 +28,8 @@ const staffRequest = async (passcode, path = "", options = {}) => {
   return data;
 };
 
+const staffRequest = (passcode, path = "", options = {}) => adminRequest(passcode, `/staff${path}`, options);
+
 // { staff, statsAvailable }
 export const listStaff = (passcode) => staffRequest(passcode);
 
@@ -37,3 +39,20 @@ export const addStaff = async (passcode, { irisId, name, role, active }) =>
 // changes: any of { name, role, active }
 export const updateStaff = async (passcode, irisId, changes) =>
   (await staffRequest(passcode, `/${irisId}`, { method: "PATCH", body: JSON.stringify(changes) })).staff;
+
+// One staff member's claims and reverts: { activity, total, page, pageSize }
+export const getStaffActivity = (passcode, irisId, { category, action, q, page = 1 } = {}) => {
+  const query = new URLSearchParams({ page: String(page) });
+  if (category) query.set("category", category);
+  if (action) query.set("action", action);
+  if (q) query.set("q", q);
+  return staffRequest(passcode, `/${irisId}/activity?${query}`);
+};
+
+// reason is optional
+export const revertClaim = async (passcode, passId, reason) =>
+  (await adminRequest(passcode, `/passes/${passId}/revert`, { method: "POST", body: JSON.stringify(reason ? { reason } : {}) })).item;
+
+// kind: NOTE or MISHANDLED
+export const addPassNote = async (passcode, passId, { note, kind }) =>
+  (await adminRequest(passcode, `/passes/${passId}/notes`, { method: "POST", body: JSON.stringify({ note, kind }) })).note;

@@ -7,6 +7,11 @@ import {
   addStaffController,
   updateStaffController,
 } from "../controllers/staff.controller.js";
+import {
+  staffActivityController,
+  revertClaimController,
+  addNoteController,
+} from "../controllers/staffActivity.controller.js";
 
 const router = express.Router();
 
@@ -14,6 +19,11 @@ const router = express.Router();
 router.get("/staff", requireStaffAdminPasscode, listStaffController);
 router.post("/staff", requireStaffAdminPasscode, addStaffController);
 router.patch("/staff/:irisId", requireStaffAdminPasscode, updateStaffController);
+
+// What a staff member handed out, plus revert and notes on a pass. Same staff admin password.
+router.get("/staff/:irisId/activity", requireStaffAdminPasscode, staffActivityController);
+router.post("/passes/:passId/revert", requireStaffAdminPasscode, revertClaimController);
+router.post("/passes/:passId/notes", requireStaffAdminPasscode, addNoteController);
 
 // Every order, for the admin page. Needs the admin password.
 router.get("/orders", requireAdminPasscode, listOrdersController);

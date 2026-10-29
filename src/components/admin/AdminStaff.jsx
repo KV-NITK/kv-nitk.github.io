@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { addStaff, listStaff, updateStaff } from "../../api/staffAdmin";
 import { PasswordGate, RefreshError, StatCard, usePasscodeData } from "./shared";
+import StaffActivityPanel from "./StaffActivityPanel";
 
 const PASS_KEY = "admin_staff_pass";
 
@@ -30,6 +31,13 @@ const AdminStaff = () => {
   const [formMessage, setFormMessage] = useState(null); // { ok, text }
   const [saving, setSaving] = useState({}); // irisId -> true while a change is being saved
   const [rowError, setRowError] = useState({}); // irisId -> message
+  const [openId, setOpenId] = useState(null); // staff whose activity panel is open
+
+  const closePanel = useCallback(() => setOpenId(null), []);
+  const lockFromPanel = useCallback(() => {
+    setOpenId(null);
+    lock();
+  }, [lock]);
 
   const submitAdd = async (e) => {
     e.preventDefault();
@@ -245,13 +253,27 @@ const AdminStaff = () => {
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {shown.map((s) => (
-                <tr key={s.irisId} className={s.active ? "" : "bg-neutral-50 text-neutral-400"}>
+                <tr
+                  key={s.irisId}
+                  onClick={() => setOpenId(s.irisId)}
+                  className={`cursor-pointer hover:bg-neutral-50 ${s.active ? "" : "bg-neutral-50 text-neutral-400"}`}
+                >
                   <td className="px-4 py-3 font-semibold">
-                    {s.name || <span className="font-normal italic text-neutral-400">no name</span>}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenId(s.irisId);
+                      }}
+                      className="text-left underline decoration-neutral-300 underline-offset-4"
+                    >
+                      {s.name || <span className="font-normal italic text-neutral-400">no name</span>}
+                      <span aria-hidden="true" className="ml-1 text-neutral-400">›</span>
+                    </button>
                     {rowError[s.irisId] && <p role="alert" className="mt-0.5 text-xs font-semibold text-red-700">{rowError[s.irisId]}</p>}
                   </td>
                   <td className="px-4 py-3 tabular-nums">{s.irisId}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={s.role}
                       disabled={saving[s.irisId]}
@@ -263,7 +285,7 @@ const AdminStaff = () => {
                       <option value="ADMIN">Admin</option>
                     </select>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       role="switch"
@@ -292,9 +314,19 @@ const AdminStaff = () => {
           </table>
         </div>
         <p className="text-xs text-neutral-400">
+          Tap a staff member to see everything they handed out, revert a claim or add a note.
           Food and Merch count every claim the person made, including ones an admin reverted later. A change to role or active applies to the scanner immediately. Times are IST.
         </p>
       </div>
+
+      {openId && staff.some((s) => s.irisId === openId) && (
+        <StaffActivityPanel
+          passcode={passcode}
+          member={staff.find((s) => s.irisId === openId)}
+          onClose={closePanel}
+          onUnauthorized={lockFromPanel}
+        />
+      )}
     </div>
   );
 };
