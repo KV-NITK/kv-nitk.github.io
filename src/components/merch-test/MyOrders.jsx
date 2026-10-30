@@ -22,9 +22,25 @@ const FILTERS = [
   { id: "all", en: "All", kn: "ಎಲ್ಲಾ" },
   { id: "merch", en: "Merch", kn: "ಅಂಗಡಿ" },
   { id: "food", en: "Food coupons", kn: "ಊಟದ ಕೂಪನ್" },
+  { id: "photo", en: "Photo booth", kn: "ಫೋಟೋ ಬೂತ್" },
 ];
 
-const isFoodOrder = (order) => order.items.some((it) => it.category === "FOOD");
+// Food coupons and photo sessions are always ordered on their own, so one
+// line says what an order is: "food", "photo" or "merch" (the FILTERS ids)
+const orderKind = (order) =>
+  order.items.some((it) => it.category === "FOOD") ? "food" : order.items.some((it) => it.category === "PHOTO") ? "photo" : "merch";
+
+const KIND_HEADINGS = {
+  food: { en: "Food coupons", kn: "ಭೂರಿ ಭೋಜನ" },
+  photo: { en: "Photo booth", kn: "ಫೋಟೋ ಬೂತ್" },
+  merch: { en: "Merch", kn: "ಪರ್ವ ಅಂಗಡಿ" },
+};
+
+const PASS_HINTS = {
+  food: "One QR code per coupon. Tap one at the food counter to show it.",
+  photo: "One QR code per session. Tap one at the photo booth to show it.",
+  merch: "Tap a pass to show its QR code when you collect your merch.",
+};
 
 const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
@@ -43,7 +59,9 @@ const merchLabel = (pass) => [pass.fit, pass.variant].filter(Boolean).join(", ")
 const passName = (pass) =>
   pass.category === "FOOD"
     ? `Food coupon${pass.variant ? ` (${pass.variant})` : ""} #${pass.item_index}`
-    : `${merchLabel(pass)} #${pass.item_index}`;
+    : pass.category === "PHOTO"
+      ? `Photo session${pass.variant ? ` (${pass.variant})` : ""} #${pass.item_index}`
+      : `${merchLabel(pass)} #${pass.item_index}`;
 
 // Placeholder for a locked coupon, seen when the leaf is stirred: a QR picture of
 // fixed text, never the coupon's token (the server does not send it while locked)
@@ -572,7 +590,7 @@ const PassQr = ({ pass, onClose }) => {
             )}
             <div role="note" className="mt-4 rounded border-2 border-red-300 bg-red-50 p-3 text-left text-sm text-red-900">
               <p className="font-bold">Do not share this QR code with anyone.</p>
-              <p className="mt-1">It can be scanned only once. Whoever shows it first gets the {pass.category === "FOOD" ? "meal" : "item"}, so show it only at the counter.</p>
+              <p className="mt-1">It can be scanned only once. Whoever shows it first gets the {pass.category === "FOOD" ? "meal" : pass.category === "PHOTO" ? "photo session" : "item"}, so show it only at the {pass.category === "PHOTO" ? "booth" : "counter"}.</p>
               <p lang="kn" className="mt-2 font-semibold">
                 ಈ QR ಕೋಡ್ ಅನ್ನು ಯಾರೊಂದಿಗೂ ಹಂಚಿಕೊಳ್ಳಬೇಡಿ. ಇದನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತದೆ.
               </p>
@@ -669,12 +687,9 @@ const MyOrders = () => {
     window.location.href = `${API_URL}/auth/iris?redirect=/my-orders`;
   };
 
-  const counts = {
-    all: orders?.length ?? 0,
-    merch: orders?.filter((o) => !isFoodOrder(o)).length ?? 0,
-    food: orders?.filter(isFoodOrder).length ?? 0,
-  };
-  const shown = orders?.filter((o) => filter === "all" || (filter === "food") === isFoodOrder(o));
+  const counts = { all: orders?.length ?? 0 };
+  for (const o of orders ?? []) counts[orderKind(o)] = (counts[orderKind(o)] ?? 0) + 1;
+  const shown = orders?.filter((o) => filter === "all" || filter === orderKind(o));
 
   return (
     <PageShell title="ನನ್ನ ಆರ್ಡರ್‌ಗಳು · My Orders" topBar={{ home: "/parva-26#parva-sante", ticket: false }}>
@@ -686,6 +701,9 @@ const MyOrders = () => {
             </Link>
             <Link to="/parva-26/coupon" className={pill}>
               Food coupons
+            </Link>
+            <Link to="/parva-26/photobooth" className={pill}>
+              Photo booth
             </Link>
           </div>
 
@@ -734,7 +752,7 @@ const MyOrders = () => {
                       {f.kn}
                     </span>
                   </span>
-                  <span className={cn("rounded-full px-2 text-xs tabular-nums", filter === f.id ? "bg-theatre/15" : "bg-[#f3ead5]/15")}>{counts[f.id]}</span>
+                  <span className={cn("rounded-full px-2 text-xs tabular-nums", filter === f.id ? "bg-theatre/15" : "bg-[#f3ead5]/15")}>{counts[f.id] ?? 0}</span>
                 </button>
               ))}
             </div>
@@ -742,23 +760,23 @@ const MyOrders = () => {
 
           {shown && shown.length === 0 && (
             <p className="mt-8 text-center font-poster text-xl text-[#f3ead5]">
-              {filter === "food" ? "No food coupon orders yet." : filter === "merch" ? "No merch orders yet." : "You have no orders yet."}
+              {filter === "all" ? "You have no orders yet." : `No ${KIND_HEADINGS[filter].en.toLowerCase()} orders yet.`}
             </p>
           )}
 
           <div className="mt-6 space-y-5">
             {shown?.map((order) => {
               const isRefreshing = refreshing.has(order.paymentId);
-              const food = isFoodOrder(order);
+              const kind = orderKind(order);
               const orderPasses = passes.filter((p) => p.payment_id === order.paymentId).sort((a, b) => a.item_index - b.item_index);
 
               return (
                 <article key={order.paymentId} className="rounded-[8px] bg-[#f3ead5] p-5 font-kn-body text-[#4a2a12] shadow-2xl">
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="font-poster text-2xl leading-none">{food ? "Food coupons" : "Merch"}</h2>
+                      <h2 className="font-poster text-2xl leading-none">{KIND_HEADINGS[kind].en}</h2>
                       <span lang="kn" className="text-sm font-bold">
-                        {food ? "ಭೂರಿ ಭೋಜನ" : "ಪರ್ವ ಅಂಗಡಿ"}
+                        {KIND_HEADINGS[kind].kn}
                       </span>
                       <span className="block text-xs opacity-70">{formatDate(order.createdAt)}</span>
                     </div>
@@ -801,7 +819,7 @@ const MyOrders = () => {
                     <div className="mt-4">
                       <p className="mb-2 text-sm font-bold">
                         <En>
-                          {food ? "One QR code per coupon. Tap one at the food counter to show it." : "Tap a pass to show its QR code when you collect your merch."} Each works once; do not share them. ·{" "}
+                          {PASS_HINTS[kind]} Each works once; do not share them. ·{" "}
                         </En>
                         <span lang="kn" className="font-semibold">
                           ಪ್ರತಿ QR ಒಮ್ಮೆ ಮಾತ್ರ; ಹಂಚಿಕೊಳ್ಳಬೇಡಿ

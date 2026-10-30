@@ -7,7 +7,7 @@ export const passIdParamSchema = z.object({
 });
 
 export const activityQuerySchema = z.object({
-  category: z.enum(["FOOD", "MERCH"], { error: "Category must be FOOD or MERCH" }).optional(),
+  category: z.enum(["FOOD", "MERCH", "PHOTO"], { error: "Category must be FOOD, MERCH or PHOTO" }).optional(),
   action: z.enum(["CLAIM", "REVERT"], { error: "Action must be CLAIM or REVERT" }).optional(),
   page: z.coerce.number({ error: "Page must be a number" }).int().min(1, "Page starts at 1").max(1000).default(1),
   // Holder's name or IRIS id; empty means no search

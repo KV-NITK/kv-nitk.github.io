@@ -52,6 +52,37 @@ describe("quoteOrder: goodie", () => {
     );
   });
 
+  it("refuses a cart that mixes photo booth sessions with anything else", async () => {
+    db.rows("payment_products").push(product("photo-session-2", 101, { category: "PHOTO" }));
+    for (const other of ["tee", "lunch"]) {
+      await rejects(
+        quoteOrder({
+          items: [
+            { productId: "photo-session-2", quantity: 1 },
+            { productId: other, quantity: 1 },
+          ],
+          userIrisId: "u1",
+        }),
+        "booked on their own"
+      );
+    }
+  });
+
+  it("prices a photo booth order on its own, with no goodie and no coupon", async () => {
+    db.rows("payment_products").push(
+      product("photo-session-1", 71, { category: "PHOTO" }),
+      product("photo-session-3", 131, { category: "PHOTO" })
+    );
+    const items = [
+      { productId: "photo-session-1", quantity: 2 },
+      { productId: "photo-session-3", quantity: 1 },
+    ];
+    const q = await quoteOrder({ items, userIrisId: "u1" });
+    assert.equal(q.items.some((i) => i.productId === "goodie"), false);
+    assert.equal(q.total, 71 * 2 + 131);
+    await rejects(quoteOrder({ items, couponCode: "ANY", userIrisId: "u1" }), "merch only");
+  });
+
   it("leaves the goodie out of every coupon, so it is always full price", async () => {
     seed({
       products: [product("tee", 329), goodie()],

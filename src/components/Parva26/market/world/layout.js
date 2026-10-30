@@ -29,6 +29,21 @@ function shop(id, kind, x, base, w, h, wallY) {
   }
 }
 
+// A booth standing out on the cobbles: it can be walked round, so only its
+// footprint is solid. You stand in front of its curtain to use it.
+function booth(id, kind, x, base, w, h) {
+  return {
+    id,
+    kind,
+    x,
+    base,
+    w,
+    h,
+    blocker: { x0: x - w / 2 + 24, x1: x + w / 2 - 24, y0: base - 40, y1: base },
+    stand: { x, y: base + 38 },
+  }
+}
+
 export function layoutFor(portrait) {
   const width = portrait ? 1080 : 1920
   const height = portrait ? 1440 : 1080
@@ -40,10 +55,12 @@ export function layoutFor(portrait) {
     ? [
         shop('food', 'food', 270, 1020, 420, 330, wallY),
         shop('merch', 'merch', 810, 1020, 420, 330, wallY),
+        booth('photo', 'photo', 540, 1366, 290, 340),
       ]
     : [
         shop('food', 'food', 330, 650, 420, 330, wallY),
         shop('merch', 'merch', 1590, 650, 420, 330, wallY),
+        booth('photo', 'photo', 1230, 966, 320, 390),
       ]
 
   const lampBase = (x, y) => ({ x, base: y, blocker: { x0: x - 14, x1: x + 14, y0: y - 10, y1: y } })
@@ -64,7 +81,8 @@ export function layoutFor(portrait) {
     // The walkable area, for the feet.
     bounds: { x0: 60, x1: width - 60, y0: wallY + 10, y1: height - 30 },
     blockers: [...shops.map((s) => s.blocker), ...lamps.map((l) => l.blocker)],
-    spawn: portrait ? { x: 540, y: 1230 } : { x: 960, y: 850 },
+    // Clear of the photo booth, which stands in the middle of a phone's forecourt
+    spawn: portrait ? { x: 270, y: 1250 } : { x: 960, y: 850 },
   }
 }
 

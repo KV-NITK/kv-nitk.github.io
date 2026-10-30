@@ -34,15 +34,22 @@ const isShirt = (it) => it.category === "MERCH" || /^tshirt/.test(it.productId);
 const variantOf = (it) => it.variant || (isShirt(it) && it.productId.includes("-") ? it.productId.split("-").pop().toUpperCase() : "");
 
 const isFood = (it) => it.category === "FOOD";
+const isPhoto = (it) => it.category === "PHOTO";
 
-// Food coupons are sold on their own, so an order is one or the other
-const isFoodOrder = (order) => order.items.some(isFood);
+// Food coupons and photo sessions are each sold on their own, so an order is
+// all of one kind: FOOD, PHOTO or MERCH
+const orderType = (order) => (order.items.some(isFood) ? "FOOD" : order.items.some(isPhoto) ? "PHOTO" : "MERCH");
+const TYPE_LABELS = { FOOD: "Food coupons", PHOTO: "Photo booth", MERCH: "Merch" };
 
 const TYPE_FILTERS = [
-  ["ALL", "Merch and food"],
+  ["ALL", "All orders"],
   ["MERCH", "Merch only"],
   ["FOOD", "Food coupons only"],
+  ["PHOTO", "Photo booth only"],
 ];
+
+// A photo session's variant is its number of prints ("3 prints")
+const printsOf = (it) => parseInt(it.variant, 10) || 1;
 
 const discountOf = (order) => {
   const parts = discountParts(order);
@@ -56,7 +63,7 @@ const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 const downloadCsv = (orders) => {
   const header = ["Date", "Order ID", "Type", "Name", "Phone", "Email", "IRIS ID", "Items", "Coupon", "Subtotal", "Coupon discount", "Goodie discount", "Amount", "Status"];
   const rows = orders.map((o) => [
-    formatDate(o.createdAt), o.orderId, isFoodOrder(o) ? "Food coupons" : "Merch", o.name, o.phone, o.email, o.irisId,
+    formatDate(o.createdAt), o.orderId, TYPE_LABELS[orderType(o)], o.name, o.phone, o.email, o.irisId,
     o.items.map(itemLabel).join("; "), o.couponCode, o.subtotal, discountOf(o).coupon, discountOf(o).goodie, o.amount, o.status,
   ]);
   const text = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
@@ -86,13 +93,17 @@ const AdminOrders = () => {
   const paid = useMemo(() => (orders || []).filter((o) => o.status === "SUCCESS"), [orders]);
 
   const summary = useMemo(() => {
-    const counted = { shirts: 0, goodies: 0, regular: 0, oversized: 0, food: 0 };
+    const counted = { shirts: 0, goodies: 0, regular: 0, oversized: 0, food: 0, photo: 0, prints: 0 };
     const perItem = new Map();
 
     for (const order of paid) {
       for (const it of order.items) {
         if (it.productId === "goodie") counted.goodies += it.quantity;
         else if (isFood(it)) counted.food += it.quantity;
+        else if (isPhoto(it)) {
+          counted.photo += it.quantity;
+          counted.prints += it.quantity * printsOf(it);
+        }
         else if (isShirt(it)) counted.shirts += it.quantity;
 
         const design = shirtDesign(it.productId);
@@ -116,7 +127,8 @@ const AdminOrders = () => {
       ...counted,
       rows,
       revenue: paid.reduce((n, o) => n + o.amount, 0),
-      foodRevenue: paid.filter(isFoodOrder).reduce((n, o) => n + o.amount, 0),
+      foodRevenue: paid.filter((o) => orderType(o) === "FOOD").reduce((n, o) => n + o.amount, 0),
+      photoRevenue: paid.filter((o) => orderType(o) === "PHOTO").reduce((n, o) => n + o.amount, 0),
       withCoupon: paid.filter((o) => o.couponCode).length,
     };
   }, [paid]);
@@ -126,7 +138,7 @@ const AdminOrders = () => {
 
     return (orders || []).filter((o) => {
       if (status !== "ALL" && o.status !== status) return false;
-      if (type !== "ALL" && isFoodOrder(o) !== (type === "FOOD")) return false;
+      if (type !== "ALL" && orderType(o) !== type) return false;
       if (!q) return true;
       return [o.name, o.phone, o.email, o.irisId, o.orderId, o.couponCode].some((v) => (v || "").toLowerCase().includes(q));
     });
@@ -178,9 +190,12 @@ const AdminOrders = () => {
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
           <StatCard label="Paid orders" value={paid.length} />
           <StatCard label="Revenue" value={rupees(summary.revenue)} />
-          <StatCard label="Merch revenue" value={rupees(summary.revenue - summary.foodRevenue)} />
+          <StatCard label="Merch revenue" value={rupees(summary.revenue - summary.foodRevenue - summary.photoRevenue)} />
           <StatCard label="Food revenue" value={rupees(summary.foodRevenue)} />
           <StatCard label="Food coupons" value={summary.food} />
+          <StatCard label="Photo revenue" value={rupees(summary.photoRevenue)} />
+          <StatCard label="Photo sessions" value={summary.photo} />
+          <StatCard label="Photo prints" value={summary.prints} />
           <StatCard label="Shirts" value={summary.shirts} />
           <StatCard label="Regular" value={summary.regular} />
           <StatCard label="Oversized" value={summary.oversized} />
@@ -261,7 +276,8 @@ const AdminOrders = () => {
                   <td className="whitespace-nowrap px-4 py-3.5 font-medium text-neutral-800">{o.phone || "—"}</td>
                   <td className="px-4 py-3.5 font-medium text-neutral-800">{o.email || "—"}</td>
                   <td className="px-4 py-3.5 font-medium text-neutral-800 space-y-0.5">
-                    {isFoodOrder(o) && <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">Food</span>}
+                    {orderType(o) === "FOOD" && <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">Food</span>}
+                    {orderType(o) === "PHOTO" && <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800">Photo</span>}
                     {o.items.length ? o.items.map((it) => <div key={it.productId}>{itemLabel(it)}</div>) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">

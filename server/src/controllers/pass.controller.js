@@ -104,7 +104,7 @@ export const scanPassController = async (req, res) => {
 };
 
 /**
- * GET /api/passes/search?q=<reg / roll no>&category=FOOD|MERCH
+ * GET /api/passes/search?q=<reg / roll no>&category=FOOD|MERCH|PHOTO
  */
 export const searchPassesController = async (req, res) => {
   const parsed = searchPassesSchema.safeParse(req.query);

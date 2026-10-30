@@ -15,6 +15,12 @@ const MESSAGES = {
 };
 
 // Cashfree redirects here with ?order_id=...; the order id is "pay_<paymentId>"
+const PAGES = {
+  FOOD: { to: "/parva-26/coupon", back: "Back to food coupons", passes: "food coupon" },
+  PHOTO: { to: "/parva-26/photobooth", back: "Back to the photo booth", passes: "photo session" },
+  MERCH: { to: "/parva-26/merch", back: "Back to merch", passes: "pickup" },
+};
+
 const PaymentStatus = () => {
   const [params] = useSearchParams();
   const orderId = params.get("order_id") || "";
@@ -77,8 +83,8 @@ const PaymentStatus = () => {
 
   const final = payment && FINAL.has(payment.status);
   const message = final ? MESSAGES[payment.status] : null;
-  // Food coupons and merch are sold on separate pages; go back to the one this order came from
-  const isFood = payment?.items.some((it) => it.category === "FOOD");
+  // Food coupons, photo sessions and merch are sold on separate pages; go back to the one this order came from
+  const page = PAGES[payment?.items.find((it) => it.category === "FOOD" || it.category === "PHOTO")?.category] ?? PAGES.MERCH;
 
   return (
     <div className="min-h-screen bg-neutral-100 px-4 py-10">
@@ -131,7 +137,7 @@ const PaymentStatus = () => {
 
         {payment?.status === "SUCCESS" && (
           <p className="mt-3 text-sm text-neutral-700">
-            Your {isFood ? "food coupon" : "pickup"} QR codes are in My orders, one per item. Each works once.
+            Your {page.passes} QR codes are in My orders, one per item. Each works once.
           </p>
         )}
 
@@ -139,8 +145,8 @@ const PaymentStatus = () => {
           <Link to="/my-orders" className="underline">
             My orders
           </Link>
-          <Link to={isFood ? "/parva-26/coupon" : "/parva-26/merch"} className="underline">
-            {isFood ? "Back to food coupons" : "Back to merch"}
+          <Link to={page.to} className="underline">
+            {page.back}
           </Link>
         </div>
       </div>

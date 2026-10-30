@@ -225,6 +225,12 @@ describe("createPayment", () => {
       assert.equal(db.rows("payments")[0].purpose, "FOOD_COUPON");
     });
 
+    it("saves a photo booth order with purpose PHOTO_BOOTH", async () => {
+      db.rows("payment_products").push(product("photo-session-2", 101, { category: "PHOTO" }));
+      await createPayment({ ...base, items: [{ productId: "photo-session-2", quantity: 1 }] });
+      assert.equal(db.rows("payments")[0].purpose, "PHOTO_BOOTH");
+    });
+
     it("returns an already paid order as SUCCESS so the client can go to the receipt", async () => {
       await createPayment(base);
       db.rows("payments")[0].status = "SUCCESS";

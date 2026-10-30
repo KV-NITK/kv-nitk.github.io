@@ -77,7 +77,7 @@ const AdminStaff = () => {
       // Keep the claim totals, which the update does not return
       setData((d) => ({
         ...d,
-        staff: d.staff.map((s) => (s.irisId === updated.irisId ? { ...s, ...updated, foodClaims: s.foodClaims, merchClaims: s.merchClaims, reverts: s.reverts, lastActionAt: s.lastActionAt } : s)),
+        staff: d.staff.map((s) => (s.irisId === updated.irisId ? { ...s, ...updated, foodClaims: s.foodClaims, merchClaims: s.merchClaims, photoClaims: s.photoClaims, reverts: s.reverts, lastActionAt: s.lastActionAt } : s)),
       }));
     } catch (err) {
       setRowError((r) => ({ ...r, [member.irisId]: err.message }));
@@ -256,7 +256,7 @@ const AdminStaff = () => {
           <table className="w-full min-w-[52rem] text-left text-sm">
             <thead className="border-b border-neutral-200 bg-neutral-50/70 text-xs font-bold uppercase tracking-wider text-neutral-400">
               <tr>
-                {["Name", "IRIS ID", "Role", "Active", "Food", "Merch", "Reverts", "Last scan", "Added"].map((h) => (
+                {["Name", "IRIS ID", "Role", "Active", "Food", "Merch", "Photo", "Reverts", "Last scan", "Added"].map((h) => (
                   <th key={h} className="px-4 py-3 font-bold">{h}</th>
                 ))}
               </tr>
@@ -310,6 +310,7 @@ const AdminStaff = () => {
                   </td>
                   <td className="px-4 py-3 tabular-nums">{s.foodClaims}</td>
                   <td className="px-4 py-3 tabular-nums">{s.merchClaims}</td>
+                  <td className="px-4 py-3 tabular-nums">{s.photoClaims ?? 0}</td>
                   <td className="px-4 py-3 tabular-nums">{s.reverts}</td>
                   <td className="whitespace-nowrap px-4 py-3">{formatDateTime(s.lastActionAt)}</td>
                   <td className="whitespace-nowrap px-4 py-3">{formatDateTime(s.createdAt)}</td>
@@ -317,7 +318,7 @@ const AdminStaff = () => {
               ))}
               {shown.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-neutral-400">No staff match.</td>
+                  <td colSpan={10} className="px-4 py-8 text-center text-neutral-400">No staff match.</td>
                 </tr>
               )}
             </tbody>

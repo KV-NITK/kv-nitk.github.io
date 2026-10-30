@@ -42,7 +42,7 @@ export const PROGRAMME = [
       { href: '#past-guests', icon: 'lit', kn: 'ಇದುವರೆಗಿನ ಅತಿಥಿಗಳು', en: 'Guests till now', line: { kn: 'ಹಿಂದಿನ ಪರ್ವಗಳ ಅತಿಥಿಗಳು', en: 'Guests of past Parvas' } },
     ],
   },
-  { id: 'interval', icon: 'meal', kn: 'ಊಟ · ಅಂಗಿ', en: 'Food & Merch' },
+  { id: 'interval', icon: 'meal', kn: 'ಊಟ · ಅಂಗಿ · ಫೋಟೋ', en: 'Food · Merch · Photos' },
   {
     id: 'games',
     icon: 'clapper',

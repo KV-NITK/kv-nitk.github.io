@@ -291,12 +291,14 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
         });
     }
 
-    // Food coupons have a page of their own and are paid for on their own:
-    // one order is either all food coupons or none.
-    const foodLines = lineItems.filter((line) => line.category === "FOOD").length;
+    // Food coupons and photo booth sessions each have a page of their own and
+    // are paid for on their own: one order is either all of one of them or none.
+    for (const [category, what] of [["FOOD", "Food coupons"], ["PHOTO", "Photo booth sessions"]]) {
+        const lines = lineItems.filter((line) => line.category === category).length;
 
-    if (foodLines > 0 && foodLines < lineItems.length) {
-        throw new PaymentError("Food coupons are booked on their own, not with merch");
+        if (lines > 0 && lines < lineItems.length) {
+            throw new PaymentError(`${what} are booked on their own, not with anything else`);
+        }
     }
 
     // The goodie comes with merchandise items. If its row is missing or switched
@@ -350,7 +352,7 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     if (code) {
         // Spec §5.2: server rejects any coupon applied to a food-only cart
         if (merchSubtotalPaise === 0) {
-            throw new PaymentError("Coupons cannot be applied to food pass orders.", 400);
+            throw new PaymentError("Coupons apply to merch only, not to food or photo booth orders.", 400);
         }
         ({ discountPaise, shares } = await applyCoupon({
             code,

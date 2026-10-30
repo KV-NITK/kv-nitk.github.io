@@ -125,6 +125,14 @@ code {
   --animate-rise: p26-rise 2.6s ease-out infinite;
   /* A marquee bulb with a bad contact: on, with sudden drop-outs */
   --animate-bulb-flicker: p26-bulb-flicker 3.7s step-end infinite;
+  /* The photo booth's flash going off over a frame of the strip, once */
+  --animate-flash: p26-flash 0.7s ease-out both;
+
+  @keyframes p26-flash {
+    0% { opacity: 0; }
+    12% { opacity: 1; }
+    100% { opacity: 0; }
+  }
 
   @keyframes p26-ring {
     0% { transform: scale(0.55); opacity: 0.9; }

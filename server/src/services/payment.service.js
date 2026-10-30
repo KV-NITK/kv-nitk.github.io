@@ -8,6 +8,10 @@ import { issuePassesForPayment } from "./pass.service.js";
 // A CREATED order younger than this may still be getting its Cashfree session
 const IN_FLIGHT_SECONDS = 60;
 
+// Food coupon and photo booth orders are always one category (pricing.service
+// refuses a mix), so the first line says which page the order came from
+const PURPOSE_BY_CATEGORY = { FOOD: "FOOD_COUPON", PHOTO: "PHOTO_BOOTH" };
+
 const paymentResult = (payment) => ({
     paymentId: payment.id,
     orderId: payment.provider_order_id,
@@ -183,7 +187,7 @@ export const createPayment = async ({
             id: paymentId,
             user_iris_id: userIrisId,
 
-            purpose: quote.items.some((item) => item.category === "FOOD") ? "FOOD_COUPON" : purpose,
+            purpose: PURPOSE_BY_CATEGORY[quote.items[0]?.category] ?? purpose,
             reference_id: referenceId,
 
             amount,

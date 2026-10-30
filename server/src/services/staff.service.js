@@ -19,6 +19,7 @@ const toStaff = (row, stats) => ({
   createdAt: row.created_at,
   foodClaims: stats?.food_claims ?? 0,
   merchClaims: stats?.merch_claims ?? 0,
+  photoClaims: stats?.photo_claims ?? 0,
   reverts: stats?.reverts ?? 0,
   lastActionAt: stats?.last_action_at ?? null,
 });

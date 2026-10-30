@@ -26,7 +26,11 @@ const HISTORY_LIMIT = 15;
 const MODES = [
   { key: "FOOD", label: "Food" },
   { key: "MERCH", label: "Merch" },
+  { key: "PHOTO", label: "Photo" },
 ];
+
+// What the scanner is looking for in each mode, for "Scanning …" and the search
+const MODE_NOUN = { FOOD: "Food Passes", MERCH: "Merch", PHOTO: "Photo Sessions" };
 
 const TIMEOUT_MESSAGE =
   "No response from the server. The pass may already be claimed: scan it again to check (it will show Already Used if so).";
@@ -52,12 +56,14 @@ const vibrate = (pattern) => {
   }
 };
 
-const passTitle = (category) => (category === "MERCH" ? "Merch" : "Food Pass");
+const PASS_TITLES = { FOOD: "Food Pass", MERCH: "Merch", PHOTO: "Photo Session" };
+const passTitle = (category) => PASS_TITLES[category] ?? "Food Pass";
 
-// Size and fit only mean something for merch
+// Size and fit only mean something for merch; a photo session's variant is
+// its number of prints ("3 prints"), kept in `size` too
 const passDetail = (pass) => ({
   category: pass.category,
-  size: pass.category === "MERCH" ? pass.variant || "" : "",
+  size: pass.category === "MERCH" || pass.category === "PHOTO" ? pass.variant || "" : "",
   fit: pass.category === "MERCH" ? pass.fit || "" : "",
 });
 
@@ -169,6 +175,16 @@ function MerchSpec({ size, fit, tone }) {
         <div className="text-[11px] font-bold uppercase tracking-widest opacity-70">Fit</div>
         <div className="text-2xl font-black leading-[2.4rem] text-white">{fit || "—"}</div>
       </div>
+    </div>
+  );
+}
+
+// How many copies the booth hands over, from the pass's variant ("3 prints")
+function PrintsSpec({ prints, tone }) {
+  return (
+    <div className={cn("mt-3 rounded-lg px-3 py-2 text-center", tone)}>
+      <div className="text-[11px] font-bold uppercase tracking-widest opacity-70">Prints to hand over</div>
+      <div className="text-4xl font-black leading-tight text-white">{parseInt(prints, 10) || "—"}</div>
     </div>
   );
 }
@@ -705,7 +721,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
         </div>
 
         {/* Mode */}
-        <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-lg bg-[#21120b] p-1" role="tablist" aria-label="Scan mode">
+        <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-[#21120b] p-1" role="tablist" aria-label="Scan mode">
           {MODES.map((m) => (
             <button
               key={m.key}
@@ -741,7 +757,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
               <span className="absolute bottom-0 right-0 size-7 rounded-br-sm border-b-4 border-r-4 border-[#f7b928]" />
             </div>
             <p className="absolute bottom-6 text-center text-sm font-medium tracking-wide text-[#f5ebd9]/80 drop-shadow-md">
-              Scanning {mode === "FOOD" ? "Food Passes" : "Merch"}
+              Scanning {MODE_NOUN[mode]}
             </p>
           </div>
         )}
@@ -839,7 +855,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-white">
                         {passTitle(h.category)}
-                        {h.category === "MERCH" && (h.size || h.fit) ? ` · ${[h.size, h.fit].filter(Boolean).join(" / ")}` : ""}
+                        {h.category !== "FOOD" && (h.size || h.fit) ? ` · ${[h.size, h.fit].filter(Boolean).join(" / ")}` : ""}
                       </p>
                       <p className="truncate text-xs text-[#c7aa88]">
                         {h.studentName || "Name not recorded"}
@@ -879,7 +895,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
 
       {/* Search by reg / roll number */}
       {searchOpen && (
-        <Sheet title={`Search ${mode === "FOOD" ? "Food Passes" : "Merch"}`} tally={tally} onClose={closeSearch}>
+        <Sheet title={`Search ${MODE_NOUN[mode]}`} tally={tally} onClose={closeSearch}>
           <form onSubmit={runSearch} className="flex gap-2">
             <input
               type="text"
@@ -903,7 +919,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
 
           {searchResults && searchResults.length === 0 && (
             <p className="py-8 text-center text-sm text-[#a3876e]">
-              No {mode === "FOOD" ? "food passes" : "merch"} found for that name or number. Check the spelling, and that the scanner is in the right mode.
+              No {MODE_NOUN[mode].toLowerCase()} found for that name or number. Check the spelling, and that the scanner is in the right mode.
             </p>
           )}
 
@@ -964,8 +980,9 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
   );
 }
 
-// "Food Pass", or "Merch · M / Oversized"
+// "Food Pass", "Photo Session · 3 prints", or "Merch · M / Oversized"
 function passSummary(pass) {
+  if (pass.category === "PHOTO") return pass.variant ? `Photo Session · ${pass.variant}` : "Photo Session";
   if (pass.category !== "MERCH") return passTitle(pass.category);
   const parts = [pass.variant, pass.fit].filter(Boolean);
   return parts.length ? `Merch · ${parts.join(" / ")}` : "Merch";
@@ -1020,6 +1037,7 @@ function ResultCard({ card, onNext, onRevert }) {
           </div>
         </div>
         {isMerch && <MerchSpec size={pass.variant} fit={pass.fit} tone="bg-emerald-900/60" />}
+        {pass.category === "PHOTO" && <PrintsSpec prints={pass.variant} tone="bg-emerald-900/60" />}
         <StudentLine name={pass.user_name} regNo={pass.user_iris_id} />
         <button type="button" onClick={onNext} className="mt-5 w-full rounded-md bg-emerald-500 py-3.5 text-base font-extrabold text-black active:scale-[0.98]">
           Scan Next Pass
@@ -1052,6 +1070,7 @@ function ResultCard({ card, onNext, onRevert }) {
           </div>
         </div>
         {isMerch && <MerchSpec size={pass.variant} fit={pass.fit} tone="bg-amber-900/50" />}
+        {pass.category === "PHOTO" && <PrintsSpec prints={pass.variant} tone="bg-amber-900/50" />}
         <StudentLine name={pass.user_name} regNo={pass.user_iris_id} />
         <p className="mt-3 text-sm font-semibold text-amber-200">
           Claimed {formatTime(pass.claimed_at) || "earlier"}

@@ -74,7 +74,8 @@ describe("pass validators", () => {
     const missingResult = scanPassSchema.safeParse({});
     assert.equal(missingResult.success, false);
 
-    // The scanner's mode is required and limited to FOOD / MERCH
+    // The scanner's mode is required and limited to FOOD / MERCH / PHOTO
+    assert.equal(scanPassSchema.safeParse({ token: validUuid, category: "PHOTO" }).success, true);
     assert.equal(scanPassSchema.safeParse({ token: validUuid }).success, false);
     assert.equal(scanPassSchema.safeParse({ token: validUuid, category: "ALL" }).success, false);
   });
@@ -126,6 +127,27 @@ describe("pass service", () => {
 
     // Passes stored in DB
     assert.equal(db.rows("claimable_items").length, 3);
+  });
+
+  it("issues one PHOTO pass per session, with its number of prints", async () => {
+    const paymentId = crypto.randomUUID();
+    db.rows("payments").push({
+      id: paymentId,
+      user_iris_id: "user-789",
+      status: "SUCCESS",
+      items: [
+        { productId: "photo-session-1", name: "Photo Booth Session", category: "PHOTO", variant: "1 print", quantity: 2 },
+        { productId: "photo-session-4", name: "Photo Booth Session", category: "PHOTO", variant: "4 prints", quantity: 1 },
+      ],
+    });
+
+    const passes = await issuePassesForPayment(paymentId);
+    assert.deepEqual(passes.map((p) => [p.category, p.variant, p.item_index]), [
+      ["PHOTO", "1 print", 1],
+      ["PHOTO", "1 print", 2],
+      ["PHOTO", "4 prints", 3],
+    ]);
+    assert.equal(passes[0].fit, null);
   });
 
   it("is idempotent: repeated calls return existing passes without duplication", async () => {

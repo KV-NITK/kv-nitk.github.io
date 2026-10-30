@@ -15,8 +15,8 @@ export const merchSizeSchema = z
 
 export const merchColorSchema = z.enum(["Black", "White"]);
 
-export const passCategorySchema = z.enum(["FOOD", "MERCH"], {
-  errorMap: () => ({ message: "Category must be FOOD or MERCH" }),
+export const passCategorySchema = z.enum(["FOOD", "MERCH", "PHOTO"], {
+  errorMap: () => ({ message: "Category must be FOOD, MERCH or PHOTO" }),
 });
 
 export const scanPassSchema = z.object({

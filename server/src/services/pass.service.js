@@ -1,9 +1,13 @@
 import crypto from "crypto";
 import { supabase } from "../config/supabase.js";
 
+// The categories that are handed over by scanning a QR pass
+const PASS_CATEGORIES = ["FOOD", "MERCH", "PHOTO"];
+const DEFAULT_ITEM_NAME = { FOOD: "Bhoori Bhojana", MERCH: "Merchandise", PHOTO: "Photo Booth Session" };
+
 /**
- * Idempotently issues claimable items (food coupons, merch) for a SUCCESS payment.
- * Inspects payment.items; for every item in FOOD or MERCH category,
+ * Idempotently issues claimable items (food coupons, merch, photo sessions) for a SUCCESS payment.
+ * Inspects payment.items; for every item in a pass category (PASS_CATEGORIES),
  * loops `quantity` times and inserts into claimable_items with unique tokens.
  */
 export const issuePassesForPayment = async (paymentId) => {
@@ -90,12 +94,12 @@ export const issuePassesForPayment = async (paymentId) => {
 
   for (const item of rawItems) {
     const category = String(item.category || "").trim().toUpperCase();
-    if (category !== "FOOD" && category !== "MERCH") {
+    if (!PASS_CATEGORIES.includes(category)) {
       continue;
     }
 
     const quantity = Math.max(0, parseInt(item.quantity, 10) || 0);
-    const itemName = item.name || (category === "FOOD" ? "Bhoori Bhojana" : "Merchandise");
+    const itemName = item.name || DEFAULT_ITEM_NAME[category];
     const variant = item.variant ? String(item.variant).trim() : null;
 
     // One row, and so one QR code, per unit bought
@@ -177,7 +181,7 @@ const issueMissingPasses = async (userIrisId) => {
     const needsPasses = (payment) =>
       !hasPasses.has(payment.id) &&
       Array.isArray(payment.items) &&
-      payment.items.some((item) => ["FOOD", "MERCH"].includes(String(item.category || "").toUpperCase()));
+      payment.items.some((item) => PASS_CATEGORIES.includes(String(item.category || "").toUpperCase()));
 
     for (const payment of paid.filter(needsPasses)) {
       await issuePassesForPayment(payment.id);

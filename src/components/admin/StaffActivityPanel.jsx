@@ -9,7 +9,10 @@ const CATEGORY_FILTERS = [
   ["", "All"],
   ["FOOD", "Food"],
   ["MERCH", "Merch"],
+  ["PHOTO", "Photo"],
 ];
+
+const CATEGORY_LABELS = Object.fromEntries(CATEGORY_FILTERS.slice(1));
 
 const ACTION_FILTERS = [
   ["", "All"],
@@ -36,11 +39,14 @@ const formatTime = (iso) =>
       })
     : "";
 
-// Merch is shown by fit and size only (not the design name); food by its item name
+// Merch is shown by fit and size only (not the design name); a photo session
+// by its prints; food by its item name
 const itemTitle = (a) =>
   a.category === "MERCH"
     ? [a.fit, a.size && `Size ${a.size}`].filter(Boolean).join(" · ") || "T-shirt"
-    : a.itemName || "Food coupon";
+    : a.category === "PHOTO"
+      ? ["Photo session", a.size].filter(Boolean).join(" · ")
+      : a.itemName || "Food coupon";
 
 const Segmented = ({ options, value, onChange, label }) => (
   <div role="group" aria-label={label} className="flex rounded-lg border border-neutral-300 bg-white p-0.5 text-sm font-semibold">
@@ -175,7 +181,7 @@ const ActivityCard = ({ a, onRevert, onNote }) => (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-          {a.category === "FOOD" ? "Food" : "Merch"}{a.action === "REVERT" ? " · reverted a claim" : ""}
+          {CATEGORY_LABELS[a.category] ?? "Merch"}{a.action === "REVERT" ? " · reverted a claim" : ""}
         </p>
         <p className="mt-0.5 font-semibold text-neutral-900">{itemTitle(a)}</p>
       </div>
@@ -338,8 +344,8 @@ const StaffActivityPanel = ({ passcode, member, onClose, onUnauthorized }) => {
               ×
             </button>
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-            {[["Food", member.foodClaims], ["Merch", member.merchClaims], ["Reverts", member.reverts]].map(([label, value]) => (
+          <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+            {[["Food", member.foodClaims], ["Merch", member.merchClaims], ["Photo", member.photoClaims ?? 0], ["Reverts", member.reverts]].map(([label, value]) => (
               <div key={label} className="rounded-lg bg-neutral-100 py-1.5">
                 <div className="text-lg font-bold tabular-nums text-neutral-900">{value}</div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">{label}</div>

@@ -1,7 +1,8 @@
 import { INK, FONT, makeCanvas, rrect, vgrad, hgrad, fitText, bulbs, rng, grain } from './paint'
 
 // Stand-in stalls for the forecourt, painted once, against the back wall
-// (awning, counter, goods). Each stands on its bottom edge. A stall with
+// (awning, counter, goods), and the photo booth standing out on the cobbles.
+// Each stands on its bottom edge. A stall with
 // nowhere to go yet (no `go`) has a plank across it: coming soon.
 // TODO(art): replace with the final stall art.
 export function drawShop(place, w, h) {
@@ -11,7 +12,8 @@ export function drawShop(place, w, h) {
   g.lineWidth = 3
   g.lineJoin = 'round'
   g.lineCap = 'round'
-  stall(g, place, w, h)
+  if (place.kind === 'photo') booth(g, place, w, h)
+  else stall(g, place, w, h)
   if (!place.go) soonPlank(g, w, h)
   grain(g, w, h, 40 + place.id.length, 4000, 0.08)
   return c
@@ -208,4 +210,150 @@ function stall(g, place, w, h) {
   scallopedAwning(g, 0, 62, w, 62, awnA, awnB)
   bulbs(g, 14, 134, w - 14, 134, 34, 4.2, food ? 11 : 12)
   signBoard(g, place, w * 0.08, 6, w * 0.84, 92, '#d6a65a', '#f2c12e')
+}
+
+// The Kannada flag: yellow over red.
+const ARISHINA = '#f2c12e'
+const KUMKUMA = '#c8102e'
+
+// The photo booth for the 71st Rajyotsava: a red cabinet under a canopy in
+// the flag's colours, its curtain half drawn on a doorway lit by the flash,
+// and on its side a strip of photos and a "೭೧" rosette under it.
+function booth(g, place, w, h) {
+  const top = 138 // the cabinet, under the canopy
+  const foot = h - 16
+  const doorR = w * 0.6
+
+  // The cabinet, with a gold trim round it
+  g.fillStyle = vgrad(g, top, foot, '#b30d28', '#7e0a1e')
+  g.fillRect(16, top, w - 32, foot - top)
+  g.strokeRect(16, top, w - 32, foot - top)
+  g.strokeStyle = '#d6a65a'
+  g.lineWidth = 4
+  g.strokeRect(24, top + 8, w - 48, foot - top - 16)
+  g.strokeStyle = INK
+  g.lineWidth = 3
+
+  // The doorway, bright with the flash, and the stool inside
+  const dx0 = 34
+  const dy0 = top + 18
+  const dy1 = foot - 10
+  g.fillStyle = vgrad(g, dy0, dy1, '#fff6d0', '#f5cf6e', '#d98a2a')
+  g.fillRect(dx0, dy0, doorR - dx0, dy1 - dy0)
+  g.strokeRect(dx0, dy0, doorR - dx0, dy1 - dy0)
+  const sx = dx0 + (doorR - dx0) * 0.68
+  g.fillStyle = '#5a3620'
+  g.fillRect(sx - 22, dy1 - 52, 44, 9)
+  g.strokeRect(sx - 22, dy1 - 52, 44, 9)
+  g.fillRect(sx - 18, dy1 - 43, 5, 43)
+  g.fillRect(sx + 13, dy1 - 43, 5, 43)
+
+  // The curtain, drawn halfway on a brass rod, pleated, tied back at the bottom
+  g.fillStyle = '#b8864f'
+  g.fillRect(dx0 - 4, dy0 - 6, doorR - dx0 + 8, 8)
+  g.strokeRect(dx0 - 4, dy0 - 6, doorR - dx0 + 8, 8)
+  const cw = (doorR - dx0) * 0.5
+  g.fillStyle = hgrad(g, dx0, dx0 + cw, '#e01a3a', KUMKUMA, '#8e0b20', KUMKUMA, '#8e0b20')
+  g.beginPath()
+  g.moveTo(dx0, dy0 + 2)
+  g.lineTo(dx0 + cw, dy0 + 2)
+  g.quadraticCurveTo(dx0 + cw * 0.55, (dy0 + dy1) * 0.55, dx0 + cw * 0.7, dy1)
+  g.lineTo(dx0, dy1)
+  g.closePath()
+  g.fill()
+  g.stroke()
+  g.strokeStyle = 'rgba(60,4,14,.45)'
+  g.lineWidth = 2
+  for (const f of [0.25, 0.5, 0.75]) {
+    g.beginPath()
+    g.moveTo(dx0 + cw * f, dy0 + 6)
+    g.quadraticCurveTo(dx0 + cw * f * 0.6, (dy0 + dy1) * 0.55, dx0 + cw * f * 0.7, dy1 - 4)
+    g.stroke()
+  }
+  g.strokeStyle = INK
+  g.lineWidth = 3
+  // Gold fringe along its foot
+  g.fillStyle = ARISHINA
+  g.fillRect(dx0, dy1 - 9, cw * 0.7, 9)
+  g.strokeRect(dx0, dy1 - 9, cw * 0.7, 9)
+
+  // A strip of four photos pinned to the side, each with the flag behind a face
+  const px = (doorR + w - 24) / 2
+  const panel = foot - top - 24 // the side panel's height, inside the trim
+  const frame = Math.min(44, (w - 24 - doorR) * 0.5, (panel * 0.52 - 10) / 4 - 6)
+  const sw = frame + 10
+  const stripH = 4 * (frame + 6) + 10
+  g.save()
+  g.translate(px, top + 16 + stripH / 2)
+  g.rotate(0.06)
+  g.fillStyle = '#fbf6ea'
+  g.fillRect(-sw / 2, -stripH / 2, sw, stripH)
+  g.strokeRect(-sw / 2, -stripH / 2, sw, stripH)
+  for (let i = 0; i < 4; i++) {
+    const fy = -stripH / 2 + 6 + i * (frame + 6)
+    g.fillStyle = ARISHINA
+    g.fillRect(-frame / 2, fy, frame, frame / 2)
+    g.fillStyle = KUMKUMA
+    g.fillRect(-frame / 2, fy + frame / 2, frame, frame / 2)
+    g.fillStyle = '#3a2214'
+    g.beginPath()
+    g.arc(0, fy + frame * 0.42, frame * 0.17, 0, Math.PI * 2)
+    g.fill()
+    g.beginPath()
+    g.ellipse(0, fy + frame, frame * 0.3, frame * 0.26, 0, Math.PI, 0)
+    g.fill()
+    g.lineWidth = 1.5
+    g.strokeRect(-frame / 2, fy, frame, frame)
+    g.lineWidth = 3
+  }
+  g.fillStyle = '#9aa0a4'
+  g.beginPath()
+  g.arc(0, -stripH / 2 + 2, 4, 0, Math.PI * 2)
+  g.fill()
+  g.restore()
+
+  // The rosette: "೭೧" for the 71st Rajyotsava, with yellow and red ribbons
+  const rr = Math.min(28, (w - 24 - doorR) * 0.36, (panel - stripH - 40) / 2.4)
+  const ry = top + 16 + stripH + 10 + rr
+  for (const [ox, col] of [[-8, ARISHINA], [8, KUMKUMA]]) {
+    g.fillStyle = col
+    g.beginPath()
+    g.moveTo(px + ox - 7, ry + rr * 0.6)
+    g.lineTo(px + ox + 7, ry + rr * 0.6)
+    g.lineTo(px + ox + 7, ry + rr + 26)
+    g.lineTo(px + ox, ry + rr + 19)
+    g.lineTo(px + ox - 7, ry + rr + 26)
+    g.closePath()
+    g.fill()
+    g.stroke()
+  }
+  g.fillStyle = ARISHINA
+  g.beginPath()
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2
+    const r = i % 2 ? rr : rr * 0.86
+    g.lineTo(px + Math.cos(a) * r, ry + Math.sin(a) * r)
+  }
+  g.closePath()
+  g.fill()
+  g.stroke()
+  g.fillStyle = KUMKUMA
+  g.beginPath()
+  g.arc(px, ry, rr * 0.7, 0, Math.PI * 2)
+  g.fill()
+  g.stroke()
+  g.textAlign = 'center'
+  g.fillStyle = '#fff4dc'
+  g.font = `700 ${Math.round(rr * 0.82)}px ${FONT.display}`
+  g.fillText('೭೧', px, ry + rr * 0.3)
+
+  // Plinth
+  g.fillStyle = vgrad(g, foot, h, '#6b3f22', '#3e2412')
+  g.fillRect(8, foot, w - 16, h - foot)
+  g.strokeRect(8, foot, w - 16, h - foot)
+
+  // Canopy in the flag's colours, bulbs along its lip, and the sign above
+  scallopedAwning(g, 4, 98, w - 8, 36, ARISHINA, KUMKUMA, 36)
+  bulbs(g, 16, 144, w - 16, 144, 30, 4, 13)
+  signBoard(g, place, w * 0.06, 6, w * 0.88, 84, '#d6a65a', ARISHINA)
 }
