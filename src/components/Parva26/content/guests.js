@@ -11,26 +11,62 @@ import nithinPhoto from '@p26/assets/guests/nithin-kamath.webp'
 import vinayakPhoto from '@p26/assets/guests/vinayak-kulkarni.webp'
 import harshaPhoto from '@p26/assets/guests/shree-harsha.webp'
 import bhavanaPhoto from '@p26/assets/guests/bhavvana-rao.webp'
+import someswaraPhoto from '@p26/assets/guests/na-someswara.webp'
+import pruthviPhoto from '@p26/assets/guests/pruthvi-ambaar.webp'
+import dilipPhoto from '@p26/assets/guests/dilip-shankar.webp'
+import gahanaPhoto from '@p26/assets/guests/gahana-band.webp'
 
 // Scene 7: ವಿಶೇಷ ಪಾತ್ರದಲ್ಲಿ · Special Appearance, the lobby's wall of honour.
-// This year's three guests stay under a veil until the flashmob on 29
-// October, where all three are unveiled together. A guest's name, photo and
-// session go into the page only after the flashmob (spec §3 Scene 7);
-// before it, only the date and the role if it's no secret. So nothing here
-// names anyone, and there are no teasers: tapping a veil only says where
-// the unveiling happens.
-// TODO(backend): fetch these (step 16). TODO(content): Kannada to be
+// This year's guests were unveiled together at the flashmob on 29 October;
+// a visitor still sees each one unveiled once, the first time the frame
+// comes into view. Photos are cropped to 3:4 from the guest posters.
+// TODO(backend): fetch these (step 16). TODO(content): Kannada roles to be
 // proofread. `place` is the frame's spot on the wall, left to right, with
-// the Chief Guest in the middle.
+// the Chief Guest next to the middle.
 export const UNVEILING = {
   date: '2026-10-29',
   hint: { kn: 'ಫ್ಲ್ಯಾಶ್‌ಮಾಬ್‌ನಲ್ಲಿ ಅನಾವರಣ', en: 'Unveiled at the flashmob' },
 }
 
 export const GUESTS = [
-  { id: 'g1', place: 0, revealDate: UNVEILING.date, role: null },
-  { id: 'chief', place: 1, chief: true, revealDate: UNVEILING.date, role: { kn: 'ಮುಖ್ಯ ಅತಿಥಿ', en: 'Chief Guest' } },
-  { id: 'g2', place: 2, revealDate: UNVEILING.date, role: null },
+  {
+    id: 'pruthvi',
+    place: 0,
+    revealDate: UNVEILING.date,
+    photo: pruthviPhoto,
+    name: { kn: 'ಪೃಥ್ವಿ ಅಂಬಾರ್', en: 'Pruthvi Ambaar' },
+    role: { kn: 'ಗೌರವ ಅತಿಥಿ', en: 'Guest of Honour' },
+    card: { when: { kn: 'ಅಕ್ಟೋಬರ್ 31 · ಸಂಜೆ 4:30', en: '31 Oct, 4:30 PM, SJA' } },
+  },
+  {
+    id: 'chief',
+    place: 1,
+    chief: true,
+    revealDate: UNVEILING.date,
+    photo: someswaraPhoto,
+    name: { kn: 'ಡಾ. ನಾ. ಸೋಮೇಶ್ವರ', en: 'Dr. Na. Someswara' },
+    role: { kn: 'ಮುಖ್ಯ ಅತಿಥಿ', en: 'Chief Guest' },
+    card: { when: { kn: 'ಅಕ್ಟೋಬರ್ 31 · ಸಂಜೆ 4:30', en: '31 Oct, 4:30 PM, SJA' } },
+  },
+  {
+    id: 'dilip',
+    place: 2,
+    revealDate: UNVEILING.date,
+    photo: dilipPhoto,
+    name: { kn: 'ದಿಲೀಪ್ ಶಂಕರ್', en: 'Dilip Shankar' },
+    role: { kn: 'ಹಾಸ್ಯ ಕಲಾವಿದ', en: 'Comedian' },
+    // TODO(content): one poster says 9:00 PM, the other 4:30 PM
+    card: { when: { kn: 'ಅಕ್ಟೋಬರ್ 31 · ರಾತ್ರಿ 9:00', en: '31 Oct, 9:00 PM, SJA' }, line: 'An evening of stand-up comedy.', link: '#now-showing' },
+  },
+  {
+    id: 'gahana',
+    place: 3,
+    revealDate: UNVEILING.date,
+    photo: gahanaPhoto,
+    name: { kn: 'ಗಹನ ಬ್ಯಾಂಡ್', en: 'Gahana Band' },
+    role: { kn: 'ಸಂಗೀತ ತಂಡ', en: 'Band' },
+    card: { when: { kn: 'ನವೆಂಬರ್ 1 · ರಾತ್ರಿ 8:00', en: '1 Nov, 8:00 PM, SAC' }, line: 'A live music concert to close Parva.', link: '#now-showing' },
+  },
 ]
 
 // Guests of past Parvas, framed on the same wall with their lamps lit, in

@@ -75,8 +75,7 @@ export function GuestsScene() {
   const reduced = usePrefersReducedMotion()
   const { subtitles } = usePrefs()
 
-  // The covered guests due next (all three, at the flashmob) get the
-  // countdown and the trembling cord.
+  // The covered guests due next get the countdown and the trembling cord.
   const nextAt = useMemo(
     () => Math.min(...GUESTS.filter((g) => !g.name).map((g) => revealTime(g.revealDate)).filter((t) => t > now)),
     [now]
@@ -179,6 +178,11 @@ export function GuestsScene() {
 
   const toggle = (id) => () => setOpen((current) => (current === id ? null : id))
 
+  // On a phone the Chief Guest has the top row to themselves and the rest go
+  // two to a row; a last frame left on its own row is centred.
+  const others = guests.filter((g) => !g.chief)
+  const lone = others.length % 2 ? others.at(-1) : null
+
   return (
     <section ref={sectionRef} id="guests" aria-labelledby="guests-title" className="scroll-mt-14">
       <FilmFrame>
@@ -195,7 +199,7 @@ export function GuestsScene() {
               <TitleSign subtitles={subtitles} />
               <ul className="grid w-full max-w-md grid-cols-2 justify-items-center gap-x-3 gap-y-8 lg:flex lg:w-auto lg:max-w-none lg:items-center lg:gap-[4.2cqh]">
                 {guests.map((guest) => (
-                  <li key={guest.id} data-guest={guest.id} className={cn(guest.chief && 'col-span-2 max-lg:order-first')}>
+                  <li key={guest.id} data-guest={guest.id} className={cn(guest.chief && 'col-span-2 max-lg:order-first', guest === lone && 'col-span-2')}>
                     <GuestFrame
                       guest={guest}
                       next={revealTime(guest.revealDate) === nextAt}

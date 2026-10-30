@@ -32,7 +32,8 @@ lib/            gsap, prefs (Sub, En), useOnScreen, storage, willChange, text
 styles/         materials, textures, carving (style objects)
 content/        everything the team will change, one file per topic;
                 import from @p26/content
-assets/         textures/, guests/, emoji/, making-of/
+assets/         textures/, guests/, posters/ (event poster photos), emoji/,
+                making-of/
 ```
 
 ## House rules

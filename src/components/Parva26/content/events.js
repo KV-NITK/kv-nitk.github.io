@@ -1,3 +1,6 @@
+import gahanaPoster from '@p26/assets/posters/gahana-band.webp'
+import dilipPoster from '@p26/assets/posters/dilip-shankar.webp'
+
 // One Google Form registers for all three literary events (30 Oct)
 const LITERARY_FORM = 'https://forms.gle/5zEjfXj5fFVKBoRp8'
 
@@ -10,8 +13,9 @@ const LITERARY_FORM = 'https://forms.gle/5zEjfXj5fFVKBoRp8'
 // `lineKn`, where there is one, is the line in Kannada, shown while the
 // subtitles are off (`line` is the English subtitle).
 export const EVENTS = [
-  { id: 'rasasanje', type: 'music', headline: true, kn: 'ಸಂಗೀತ ರಸಸಂಜೆ', en: 'Sangeetha Rasasanje', day: '2026-11-01', time: '6:00 PM', venue: 'SAC', line: 'An evening of Kannada songs, sung live.', registerLink: '#', photo: null },
-  { id: 'dj', type: 'dj', headline: true, kn: 'ಡಿಜೆ ರಾತ್ರಿ', en: 'DJ Night', day: '2026-11-01', time: '8:30 PM', venue: 'SAC', line: 'Kannada hits, remixed, to close Parva.', registerLink: '#', photo: null },
+  { id: 'gahana', type: 'music', headline: true, kn: 'ಗಹನ ಬ್ಯಾಂಡ್', en: 'Gahana Band', day: '2026-11-01', time: '8:00 PM', venue: 'SAC', line: 'A live music concert to close Parva.', registerLink: '#', photo: gahanaPoster },
+  // TODO(content): one poster says 9:00 PM, the other 4:30 PM
+  { id: 'comedy', type: 'comedy', headline: true, kn: 'ದಿಲೀಪ್ ಶಂಕರ್', en: 'Dilip Shankar', day: '2026-10-31', time: '9:00 PM', venue: 'SJA', line: 'An evening of stand-up comedy.', registerLink: '#', photo: dilipPoster },
   { id: 'jnaana-yaana', type: 'quiz', headline: true, kn: 'ಜ್ಞಾನ ಯಾನ', en: 'Jnaana Yaana', day: '2026-10-30', time: '7–9 PM', venue: 'LHC A Seminar Hall', lineKn: 'ಸಾಮಾನ್ಯ ಜ್ಞಾನ, ಕನ್ನಡ ಭಾಷೆ, ಸಾಹಿತ್ಯ, ಸಂಸ್ಕೃತಿಯ ತಂಡ ರಸಪ್ರಶ್ನೆ. ತಂಡಕ್ಕೆ 3–4 ಜನ.', line: 'A team quiz on general knowledge, Kannada, literature and culture. Teams of 3–4.', registerLink: LITERARY_FORM, photo: null },
   { id: 'nudi-chatura', type: 'literature', headline: true, kn: 'ನುಡಿ ಚತುರ', en: 'Nudi Chatura', day: '2026-10-30', time: '6–7 PM', venue: 'LHC A Seminar Hall', lineKn: 'ಅರ್ಧ ಕೊಟ್ಟ ಗಾದೆ ಮಾತು, ಒಗಟುಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ. ತಂಡಕ್ಕೆ 2 ಜನ.', line: 'Write the missing half of Kannada proverbs and riddles. Teams of 2.', registerLink: LITERARY_FORM, photo: null },
   // { id: 'natak', type: 'drama', headline: true, kn: 'ಪ್ರಾಧ್ಯಾಪಕರ ನಾಟಕ', en: 'Professors’ play', day: '2026-11-01', time: '3:00 PM', venue: 'SJA', line: 'Our professors take the stage.', registerLink: '#', photo: null },
