@@ -76,3 +76,12 @@ export const requireStaffAdminPasscode = makePasscodeGuard({
   header: "x-staff-admin-passcode",
   label: "Staff admin",
 });
+
+// The photo booth's scanner (/parva-26/photobooth/scan). The booth is run by
+// someone with no IRIS login, so this password stands in for one; what it
+// opens can only claim photo booth passes.
+export const requireBoothPasscode = makePasscodeGuard({
+  envVar: "PHOTO_BOOTH_PASSCODE",
+  header: "x-booth-passcode",
+  label: "Photo booth",
+});

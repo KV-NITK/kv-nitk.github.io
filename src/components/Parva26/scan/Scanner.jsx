@@ -69,7 +69,7 @@ const passDetail = (pass) => ({
 
 // One request to the staff API. Rejects with { timeout: true } when the server
 // does not answer in time; otherwise resolves { status, data }.
-const staffRequest = async (path, { method = "GET", body } = {}) => {
+export const staffRequest = async (path, { method = "GET", body, headers } = {}) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -77,7 +77,7 @@ const staffRequest = async (path, { method = "GET", body } = {}) => {
     const response = await fetch(`${API_URL}${path}`, {
       method,
       credentials: "include",
-      headers: body ? { "Content-Type": "application/json" } : undefined,
+      headers: { ...(body && { "Content-Type": "application/json" }), ...headers },
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
@@ -92,6 +92,14 @@ const staffRequest = async (path, { method = "GET", body } = {}) => {
   } finally {
     clearTimeout(timer);
   }
+};
+
+// What the console calls to scan, search and revert. The festival staff use
+// these (IRIS login); the photo booth's scanner passes its own (booth-scanner.jsx).
+const STAFF_API = {
+  scan: (token, category) => staffRequest("/passes/scan", { method: "POST", body: { token, category } }),
+  search: (q, category) => staffRequest(`/passes/search?q=${encodeURIComponent(q)}&category=${category}`),
+  revert: (id) => staffRequest("/passes/revert", { method: "POST", body: { id } }),
 };
 
 // Turns a scan response into the card to show
@@ -288,8 +296,9 @@ let cameraQueue = Promise.resolve();
 
 // ---------- the scanner itself ----------
 
-function ScannerConsole({ staff, onLoggedOut, onLogout }) {
-  const [mode, setMode] = useState("FOOD");
+// `modes` are the tabs the scanner can switch between; with one, there are no tabs.
+export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, modes = MODES }) {
+  const [mode, setMode] = useState(modes[0].key);
   const [card, setCard] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -493,10 +502,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
       setIsVerifying(true);
 
       try {
-        const { status, data } = await staffRequest("/passes/scan", {
-          method: "POST",
-          body: { token, category: modeRef.current },
-        });
+        const { status, data } = await api.scan(token, modeRef.current);
 
         const next = toCard(status, data);
         if (next.type === "OK") {
@@ -514,7 +520,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
         setIsVerifying(false);
       }
     },
-    [pauseCamera, recordClaim, showCard]
+    [api, pauseCamera, recordClaim, showCard]
   );
 
   // Not an auto-dismiss: the volunteer already tapped. The short wait only stops
@@ -569,7 +575,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
     setSearchNotice(null);
 
     try {
-      const { status, data } = await staffRequest(`/passes/search?q=${encodeURIComponent(q)}&category=${mode}`);
+      const { status, data } = await api.search(q, mode);
 
       if (status === 401) {
         onLoggedOut();
@@ -596,10 +602,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
       onConfirm: async () => {
         setConfirmBusy(true);
         try {
-          const { status, data } = await staffRequest("/passes/scan", {
-            method: "POST",
-            body: { token: pass.token, category: mode },
-          });
+          const { status, data } = await api.scan(pass.token, mode);
           const result = toCard(status, data);
 
           if (result.loggedOut) {
@@ -652,7 +655,7 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
         let notice = null;
 
         try {
-          const { status, data } = await staffRequest("/passes/revert", { method: "POST", body: { id: pass.id } });
+          const { status, data } = await api.revert(pass.id);
 
           if (status === 401) {
             onLoggedOut();
@@ -721,24 +724,26 @@ function ScannerConsole({ staff, onLoggedOut, onLogout }) {
         </div>
 
         {/* Mode */}
-        <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-[#21120b] p-1" role="tablist" aria-label="Scan mode">
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              type="button"
-              role="tab"
-              aria-selected={mode === m.key}
-              onClick={() => changeMode(m.key)}
-              disabled={Boolean(card) || isVerifying}
-              className={cn(
-                "rounded-md py-2 text-sm font-bold transition-colors disabled:opacity-60",
-                mode === m.key ? "bg-[#f7b928] text-black" : "text-[#c7aa88]"
-              )}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
+        {modes.length > 1 && (
+          <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-lg bg-[#21120b] p-1" role="tablist" aria-label="Scan mode">
+            {modes.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                role="tab"
+                aria-selected={mode === m.key}
+                onClick={() => changeMode(m.key)}
+                disabled={Boolean(card) || isVerifying}
+                className={cn(
+                  "rounded-md py-2 text-sm font-bold transition-colors disabled:opacity-60",
+                  mode === m.key ? "bg-[#f7b928] text-black" : "text-[#c7aa88]"
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Camera */}
