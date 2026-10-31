@@ -32,8 +32,9 @@ const toItems = (sessions) => {
 // Photo booth sessions (/parva-26/photobooth), the only place they are sold.
 // Each session is one QR code in My Orders, scanned once at the booth, and
 // carries its number of prints so the booth knows how many copies to hand
-// over. An order here is photo sessions only: no merch, no coupon code. Coming
-// back from the IRIS login (?buy=1) goes on to payment.
+// over. An order here is photo sessions only, with no merch; a coupon code has
+// to be a photo booth one (payment_coupons.category = 'PHOTO'). Coming back
+// from the IRIS login (?buy=1) goes on to payment.
 export default function PhotoBooth() {
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
@@ -47,7 +48,12 @@ export default function PhotoBooth() {
   // number of prints for each session
   const [stored, setSessions] = useStoredState('parva_photo_sessions', [1])
   const [phone, setPhone] = useStoredState('merch_phone', '')
+  const [couponInput, setCouponInput] = useStoredState('photo_coupon_input', '')
+  const [appliedCoupon, setAppliedCoupon] = useStoredState('photo_applied_coupon', '')
   const [quote, setQuote] = useState(null)
+  const [quoteError, setQuoteError] = useState('')
+  // True from the moment the order or coupon changes until the server's new quote is in
+  const [checking, setChecking] = useState(false)
   const [error, setError] = useState('')
   const [paying, setPaying] = useState(false)
 
@@ -85,7 +91,7 @@ export default function PhotoBooth() {
     .filter((n) => Number.isInteger(n) && n >= 1 && (!catalog || catalog.has(n)))
     .slice(0, MAX_SESSIONS)
   const items = toItems(sessions)
-  const signature = JSON.stringify(items)
+  const signature = JSON.stringify([items, appliedCoupon])
 
   const setPrints = (i, prints) => setSessions(sessions.map((n, j) => (j === i ? prints : n)))
   const removeSession = (i) => setSessions(sessions.filter((_, j) => j !== i))
@@ -94,17 +100,25 @@ export default function PhotoBooth() {
   // The price to pay comes from the server, never from the page
   useEffect(() => {
     setError('')
+    setQuoteError('')
     if (!user || !catalog || items.length === 0) {
       setQuote(null)
+      setChecking(false)
       return
     }
     let cancelled = false
-    quoteOrder({ items })
-      .then((q) => !cancelled && setQuote(q))
+    setChecking(true)
+    quoteOrder({ items, couponCode: appliedCoupon })
+      .then((q) => {
+        if (cancelled) return
+        setQuote(q)
+        setChecking(false)
+      })
       .catch((e) => {
         if (cancelled) return
         setQuote(null)
-        setError(e.message)
+        setQuoteError(e.message)
+        setChecking(false)
       })
     return () => {
       cancelled = true
@@ -114,7 +128,15 @@ export default function PhotoBooth() {
   const base = catalog?.get(1)?.unitPrice
   const extra = catalog?.has(2) ? catalog.get(2).unitPrice - base : null
   const priceOf = (prints) => catalog?.get(prints)?.unitPrice ?? 0
-  const total = quote ? quote.total : sessions.reduce((sum, n) => sum + priceOf(n), 0)
+  const subtotal = quote ? quote.subtotal : sessions.reduce((sum, n) => sum + priceOf(n), 0)
+  const couponOff = quote ? quote.couponDiscount : 0
+  const total = quote ? quote.total : subtotal
+
+  // What the coupon box says; a coupon's refusal is shown here, not again below the button
+  const couponNote = !appliedCoupon || items.length === 0
+    ? ''
+    : quoteError || (!user ? 'Log in to see your discount' : checking || !quote ? 'Checking the coupon…' : quote.couponDiscount > 0 ? `Coupon ${quote.couponCode} applied: ${rupees(quote.couponDiscount)} off` : `Coupon ${appliedCoupon} gives no discount on this order`)
+  const shownError = error || (appliedCoupon ? '' : quoteError)
 
   const buy = async () => {
     if (items.length === 0) {
@@ -134,12 +156,12 @@ export default function PhotoBooth() {
     setError('')
     try {
       // One key per distinct checkout, kept only across network errors
-      const sig = JSON.stringify([items, phone])
+      const sig = JSON.stringify([items, appliedCoupon, phone])
       if (keyRef.current.signature !== sig) keyRef.current = { signature: sig, key: newIdempotencyKey() }
 
       const payment = await createPayment({
         items,
-        couponCode: null,
+        couponCode: appliedCoupon,
         customerPhone: phone,
         idempotencyKey: keyRef.current.key,
       })
@@ -277,9 +299,67 @@ export default function PhotoBooth() {
                   </button>
 
                   <p className="mt-3 text-sm">Each session gets its own QR code in My Orders. Show it at the booth; it is scanned once and tells the booth how many prints to give you.</p>
-                  <div className="mt-3 flex justify-between text-xl font-bold">
-                    <span>Total</span>
-                    <span>{rupees(total)}</span>
+
+                  <div className="mt-4 border-y border-[#c2aa84] py-4">
+                    <label htmlFor="photo-coupon" className="mb-1 block text-xs font-bold uppercase tracking-wider text-[#6b4020]">
+                      Coupon Code / ಕೂಪನ್ ಕೋಡ್
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="photo-coupon"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        placeholder="Enter coupon code"
+                        maxLength={32}
+                        disabled={paying}
+                        className="min-w-0 flex-1 rounded border border-[#c2aa84] bg-white px-3 py-2 text-sm font-bold uppercase outline-none focus:ring-2 focus:ring-[#8a5530]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setAppliedCoupon(couponInput.trim().toUpperCase())}
+                        disabled={paying}
+                        className="rounded bg-[#8a5530] px-4 py-2 text-sm font-bold text-[#f3ead5] transition-colors hover:bg-[#6b4020] disabled:opacity-50"
+                      >
+                        Apply
+                      </button>
+                      {appliedCoupon && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAppliedCoupon('')
+                            setCouponInput('')
+                          }}
+                          disabled={paying}
+                          className="rounded border border-[#c2aa84] px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {couponNote && (
+                      <p role="status" className={cn('mt-2.5 rounded border p-2.5 text-xs font-bold', quoteError ? 'border-red-300 bg-red-100 text-red-800' : !checking && couponOff > 0 ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-amber-300 bg-amber-100 text-amber-800')}>
+                        {couponNote}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1 pt-3 text-lg font-bold">
+                    {couponOff > 0 && (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>{rupees(subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-green-700">
+                          <span>Coupon {quote.couponCode}</span>
+                          <span>- {rupees(couponOff)}</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-between text-xl">
+                      <span>Total</span>
+                      <span>{rupees(total)}</span>
+                    </div>
                   </div>
                   <input
                     value={phone}
@@ -313,8 +393,8 @@ export default function PhotoBooth() {
                   </span>
                 </button>
 
-                <p role="alert" className={cn('text-center font-kn-display text-lg font-semibold text-arishina', !error && 'sr-only')}>
-                  {error}
+                <p role="alert" className={cn('text-center font-kn-display text-lg font-semibold text-arishina', !shownError && 'sr-only')}>
+                  {shownError}
                 </p>
               </div>
             </div>

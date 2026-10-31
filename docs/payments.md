@@ -107,7 +107,14 @@ VALUES ('WELCOME10', 'PERCENT', 10, 50.00, 200, 1);
 
 Codes are upper-case. A use is held by a paid order or an unpaid one younger than 30
 minutes. A coupon that would take the total below ₹1 is rejected (Cashfree minimum).
-**Coupons apply to the whole cart, not to one category** (see gaps).
+Each coupon has a `category` (`server/sql/012_photo_coupons.sql`): `MERCH` (the default)
+works only on merch orders and only on the shirts, never the goodie; `PHOTO` works only on
+photo booth orders. Food is never discounted.
+
+```sql
+INSERT INTO payment_coupons (code, category, discount_type, discount_value, max_uses, per_user_limit)
+VALUES ('CLICK10', 'PHOTO', 'FLAT_PER_ITEM', 10, 100, 1);   -- ₹10 off every photo session
+```
 
 ## 4. When a database row is not enough
 

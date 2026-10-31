@@ -13,6 +13,9 @@ const MAX_LINE_ITEMS = 20;
 // by the client. It is paid for at its own price and no coupon touches it.
 export const GOODIE_PRODUCT_ID = "goodie";
 
+// What each coupon category (payment_coupons.category) is for, in messages
+const CATEGORY_NAMES = { MERCH: "merch orders", PHOTO: "photo booth sessions" };
+
 const toPaise = (rupees) => Math.round(Number(rupees) * 100);
 const toRupees = (paise) => paise / 100;
 
@@ -126,13 +129,20 @@ const splitDiscount = (totalPaise, weights) => {
 };
 
 // Returns the discount for the whole order and how much of it each line got,
-// both in paise (shares is parallel to lineItems; the goodie always gets 0).
-const applyCoupon = async ({ code, subtotalPaise, discountablePaise, lineItems, userIrisId }) => {
+// both in paise (shares is parallel to lineItems; only lines of the coupon's
+// category get any, so the goodie always gets 0).
+const applyCoupon = async ({ code, category, subtotalPaise, discountablePaise, lineItems, userIrisId }) => {
     const coupon = await fetchCoupon(code);
 
     // Same message for unknown / inactive so codes cannot be enumerated
     if (!coupon || !coupon.active) {
         throw new PaymentError("Invalid coupon code");
+    }
+
+    // A coupon is made for one page: merch codes do not work at the photo booth.
+    // Before 012_photo_coupons.sql there is no category and every coupon is merch.
+    if ((coupon.category ?? "MERCH") !== category) {
+        throw new PaymentError(`This coupon is not for ${CATEGORY_NAMES[category]}`);
     }
 
     const now = Date.now();
@@ -171,14 +181,14 @@ const applyCoupon = async ({ code, subtotalPaise, discountablePaise, lineItems, 
     }
 
     const linePaise = lineItems.map((line) =>
-        line.productId === GOODIE_PRODUCT_ID ? 0 : toPaise(line.lineTotal)
+        line.category === category ? toPaise(line.lineTotal) : 0
     );
 
     if (coupon.discount_type === "FLAT_PER_ITEM") {
-        // Rupees off each shirt, so a bigger order saves more. Only MERCH lines
-        // count, and a line never goes below zero.
+        // Rupees off each shirt or photo session, so a bigger order saves more.
+        // A line never goes below zero.
         const shares = lineItems.map((line, i) =>
-            line.category === "MERCH"
+            line.category === category
                 ? Math.min(toPaise(coupon.discount_value) * line.quantity, linePaise[i])
                 : 0
         );
@@ -198,6 +208,11 @@ const applyCoupon = async ({ code, subtotalPaise, discountablePaise, lineItems, 
 
         if (coupon.max_discount !== null && coupon.max_discount !== undefined) {
             discountPaise = Math.min(discountPaise, toPaise(coupon.max_discount));
+        }
+
+        // Cashfree cannot take a free order, so a 100% coupon leaves ₹1 to pay
+        if (Number(coupon.discount_value) === 100) {
+            discountPaise = Math.min(discountPaise, Math.max(0, discountablePaise - MIN_TOTAL_PAISE));
         }
     } else {
         discountPaise = toPaise(coupon.discount_value);
@@ -335,30 +350,29 @@ export const quoteOrder = async ({ items, couponCode, userIrisId }) => {
     }
 
     // ── Spec §5.2 Category Bounding Logic ─────────────────────────────────
-    // Coupons are strictly restricted to the merchandise (MERCH) subtotal.
-    // Food pass prices are always fixed and are never discounted.
-    const merchSubtotalPaise = lineItems
-        .filter((item) => item.category === "MERCH")
-        .reduce((sum, item) => sum + toPaise(item.lineTotal), 0);
-
-    const foodSubtotalPaise = lineItems
-        .filter((item) => item.category === "FOOD")
-        .reduce((sum, item) => sum + toPaise(item.lineTotal), 0);
-
+    // A coupon only touches the lines of its own category: the shirts of a
+    // merch order or the sessions of a photo booth order. Food pass prices
+    // are always fixed and are never discounted.
     const code = normalizeCouponCode(couponCode);
     let discountPaise = 0;
     let shares = lineItems.map(() => 0);
 
     if (code) {
+        const category = lineItems.some((item) => item.category === "PHOTO") ? "PHOTO" : "MERCH";
+        const couponSubtotalPaise = lineItems
+            .filter((item) => item.category === category)
+            .reduce((sum, item) => sum + toPaise(item.lineTotal), 0);
+
         // Spec §5.2: server rejects any coupon applied to a food-only cart
-        if (merchSubtotalPaise === 0) {
-            throw new PaymentError("Coupons apply to merch only, not to food or photo booth orders.", 400);
+        if (couponSubtotalPaise === 0) {
+            throw new PaymentError("Coupons apply to merch and photo booth orders, not to food.", 400);
         }
         ({ discountPaise, shares } = await applyCoupon({
             code,
-            // Validation checks (min_order) run against merch subtotal only
-            subtotalPaise: merchSubtotalPaise,
-            discountablePaise: merchSubtotalPaise,
+            category,
+            // Validation checks (min_order) run against that category's subtotal only
+            subtotalPaise: couponSubtotalPaise,
+            discountablePaise: couponSubtotalPaise,
             lineItems,
             userIrisId,
         }));

@@ -68,7 +68,7 @@ describe("quoteOrder: goodie", () => {
     }
   });
 
-  it("prices a photo booth order on its own, with no goodie and no coupon", async () => {
+  it("prices a photo booth order on its own, with no goodie", async () => {
     db.rows("payment_products").push(
       product("photo-session-1", 71, { category: "PHOTO" }),
       product("photo-session-3", 131, { category: "PHOTO" })
@@ -80,7 +80,28 @@ describe("quoteOrder: goodie", () => {
     const q = await quoteOrder({ items, userIrisId: "u1" });
     assert.equal(q.items.some((i) => i.productId === "goodie"), false);
     assert.equal(q.total, 71 * 2 + 131);
-    await rejects(quoteOrder({ items, couponCode: "ANY", userIrisId: "u1" }), "merch only");
+  });
+
+  it("takes a photo coupon off every session, and refuses merch coupons at the booth", async () => {
+    seed({
+      products: [product("tee", 300), product("lunch", 60, { category: "FOOD" }), product("photo-session-1", 71, { category: "PHOTO" }), product("photo-session-3", 131, { category: "PHOTO" })],
+      coupons: [
+        coupon("CLICK", { category: "PHOTO", discount_type: "FLAT_PER_ITEM", discount_value: 10 }),
+        coupon("SNAP", { category: "PHOTO", discount_type: "PERCENT", discount_value: 10 }),
+        coupon("EARLY", { discount_type: "FLAT_PER_ITEM", discount_value: 30 }),
+      ],
+    });
+    const items = [
+      { productId: "photo-session-1", quantity: 2 },
+      { productId: "photo-session-3", quantity: 1 },
+    ];
+    const q = await quoteOrder({ items, couponCode: "click", userIrisId: "u1" });
+    assert.deepEqual([q.couponDiscount, q.total, q.couponCode], [30, 273 - 30, "CLICK"]);
+    assert.equal(q.items.find((i) => i.productId === "photo-session-1").netLineTotal, 122);
+    assert.equal((await quoteOrder({ items, couponCode: "SNAP", userIrisId: "u1" })).couponDiscount, 27.3);
+    await rejects(quoteOrder({ items, couponCode: "EARLY", userIrisId: "u1" }), "not for photo booth sessions");
+    await rejects(quoteOrder({ items: [{ productId: "tee", quantity: 1 }], couponCode: "CLICK", userIrisId: "u1" }), "not for merch orders");
+    await rejects(quoteOrder({ items: [{ productId: "lunch", quantity: 1 }], couponCode: "CLICK", userIrisId: "u1" }), "not to food");
   });
 
   it("leaves the goodie out of every coupon, so it is always full price", async () => {
@@ -282,9 +303,15 @@ describe("quoteOrder: coupons", () => {
     await rejects(quoteOrder({ items, couponCode: "BIG", userIrisId: "u1" }), "at least");
   });
 
-  it("rejects a 100% coupon (Cashfree cannot take a free order)", async () => {
-    seed({ products: [product("tee", 300)], coupons: [coupon("FREE", { discount_type: "PERCENT", discount_value: 100 })] });
-    await rejects(quoteOrder({ items, couponCode: "FREE", userIrisId: "u1" }), "at least");
+  it("leaves ₹1 to pay on a 100% coupon (Cashfree cannot take a free order)", async () => {
+    seed({
+      products: [product("tee", 300), product("photo-session-1", 71, { category: "PHOTO" })],
+      coupons: [coupon("FREE", { discount_type: "PERCENT", discount_value: 100 }), coupon("FREEPIC", { category: "PHOTO", discount_type: "PERCENT", discount_value: 100 })],
+    });
+    const q = await quoteOrder({ items, couponCode: "FREE", userIrisId: "u1" });
+    assert.deepEqual([q.couponDiscount, q.total], [599, 1]);
+    const photo = await quoteOrder({ items: [{ productId: "photo-session-1", quantity: 3 }], couponCode: "FREEPIC", userIrisId: "u1" });
+    assert.deepEqual([photo.couponDiscount, photo.total], [212, 1]);
   });
 
   it("gives the same error for unknown and inactive codes", async () => {

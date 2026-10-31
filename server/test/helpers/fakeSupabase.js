@@ -183,6 +183,7 @@ export const product = (id, price, extra = {}) => ({
 
 export const coupon = (code, extra = {}) => ({
   code,
+  category: "MERCH",
   discount_type: "FLAT",
   discount_value: 10,
   max_discount: null,
