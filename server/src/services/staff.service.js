@@ -11,7 +11,8 @@ export class StaffError extends Error {
 
 const STAFF_COLUMNS = "iris_id, name, role, active, created_at";
 
-const toStaff = (row, stats) => ({
+// byCategory: { FOOD: { claims, reverts, lastActionAt }, ... } for the categories they scanned
+const toStaff = (row, stats, categoryRows = []) => ({
   irisId: row.iris_id,
   name: row.name || "",
   role: row.role,
@@ -22,17 +23,32 @@ const toStaff = (row, stats) => ({
   photoClaims: stats?.photo_claims ?? 0,
   reverts: stats?.reverts ?? 0,
   lastActionAt: stats?.last_action_at ?? null,
+  byCategory: Object.fromEntries(
+    categoryRows.map((c) => [c.category, { claims: c.claims ?? 0, reverts: c.reverts ?? 0, lastActionAt: c.last_action_at ?? null }])
+  ),
 });
+
+// { FOOD: { claimed, issued, voided }, ... }
+const toTotals = (rows) =>
+  Object.fromEntries(rows.map((t) => [t.category, { claimed: t.claimed ?? 0, issued: t.issued ?? 0, voided: t.voided ?? 0 }]));
 
 /**
  * Everyone in event_staff, with their claim totals from pass_events. The totals
  * are a bonus: if the pass_events migration has not run, the list still loads
- * and `statsAvailable` is false.
+ * and `statsAvailable` is false. The per-category stats and pass totals come from
+ * sql/010_category_stats.sql; until that runs `categoryStatsAvailable` is false.
  */
 export const listStaff = async () => {
-  const [{ data: rows, error }, { data: stats, error: statsError }] = await Promise.all([
+  const [
+    { data: rows, error },
+    { data: stats, error: statsError },
+    { data: categoryStats, error: categoryError },
+    { data: totals, error: totalsError },
+  ] = await Promise.all([
     supabase.from("event_staff").select(STAFF_COLUMNS).order("created_at", { ascending: false }),
     supabase.rpc("staff_claim_stats"),
+    supabase.rpc("staff_category_stats"),
+    supabase.rpc("pass_category_totals"),
   ]);
 
   if (error) {
@@ -44,11 +60,23 @@ export const listStaff = async () => {
     console.error("Staff claim stats error:", statsError);
   }
 
+  if (categoryError || totalsError) {
+    console.error("Category stats error:", categoryError || totalsError);
+  }
+
+  const categoryStatsAvailable = !categoryError && !totalsError;
+
   const byStaff = new Map((statsError ? [] : stats || []).map((s) => [s.staff_iris_id, s]));
+  const categoriesByStaff = new Map();
+  for (const c of categoryStatsAvailable ? categoryStats || [] : []) {
+    categoriesByStaff.set(c.staff_iris_id, [...(categoriesByStaff.get(c.staff_iris_id) || []), c]);
+  }
 
   return {
-    staff: (rows || []).map((row) => toStaff(row, byStaff.get(row.iris_id))),
+    staff: (rows || []).map((row) => toStaff(row, byStaff.get(row.iris_id), categoriesByStaff.get(row.iris_id))),
     statsAvailable: !statsError,
+    categoryStatsAvailable,
+    totals: categoryStatsAvailable ? toTotals(totals || []) : {},
   };
 };
 

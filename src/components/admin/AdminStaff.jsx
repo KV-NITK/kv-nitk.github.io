@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { addStaff, listStaff, updateStaff } from "../../api/staffAdmin";
 import { PasswordGate, RefreshError, StatCard, usePasscodeData } from "./shared";
 import StaffActivityPanel from "./StaffActivityPanel";
@@ -22,6 +22,17 @@ const formatDateTime = (iso) => {
 
 const EMPTY_FORM = { irisId: "", name: "", role: "VOLUNTEER", active: true };
 
+const CATEGORIES = [
+  ["FOOD", "Food", "food coupons"],
+  ["MERCH", "Merch", "T-shirts"],
+  ["PHOTO", "Photo", "photo sessions"],
+];
+
+// The older combined fields, used until sql/010_category_stats.sql has run
+const OLD_CLAIMS_FIELD = { FOOD: "foodClaims", MERCH: "merchClaims", PHOTO: "photoClaims" };
+
+const REFRESH_MS = 30000;
+
 const AdminStaff = () => {
   const { passcode, data, setData, loading, error, load, lock } = usePasscodeData(PASS_KEY, listStaff);
   const [search, setSearch] = useState("");
@@ -34,6 +45,16 @@ const AdminStaff = () => {
   const [rowError, setRowError] = useState({}); // irisId -> message
   const [openId, setOpenId] = useState(null); // staff whose activity panel is open
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [category, setCategory] = useState("FOOD");
+
+  // Keep the counts fresh (e.g. during the meal) while no panel is open
+  useEffect(() => {
+    if (!passcode || openId || inventoryOpen) return undefined;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") load(passcode);
+    }, REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [passcode, openId, inventoryOpen, load]);
 
   const closePanel = useCallback(() => setOpenId(null), []);
   const closeInventory = useCallback(() => setInventoryOpen(false), []);
@@ -77,7 +98,7 @@ const AdminStaff = () => {
       // Keep the claim totals, which the update does not return
       setData((d) => ({
         ...d,
-        staff: d.staff.map((s) => (s.irisId === updated.irisId ? { ...s, ...updated, foodClaims: s.foodClaims, merchClaims: s.merchClaims, photoClaims: s.photoClaims, reverts: s.reverts, lastActionAt: s.lastActionAt } : s)),
+        staff: d.staff.map((s) => (s.irisId === updated.irisId ? { ...s, ...updated, foodClaims: s.foodClaims, merchClaims: s.merchClaims, photoClaims: s.photoClaims, reverts: s.reverts, lastActionAt: s.lastActionAt, byCategory: s.byCategory } : s)),
       }));
     } catch (err) {
       setRowError((r) => ({ ...r, [member.irisId]: err.message }));
@@ -88,6 +109,23 @@ const AdminStaff = () => {
   };
 
   const staff = data?.staff || [];
+  const split = !!data?.categoryStatsAvailable;
+  const [, categoryLabel, categoryNoun] = CATEGORIES.find(([key]) => key === category);
+
+  const statsOf = (s) =>
+    split
+      ? s.byCategory?.[category] ?? { claims: 0, reverts: 0, lastActionAt: null }
+      : { claims: s[OLD_CLAIMS_FIELD[category]] ?? 0, reverts: null, lastActionAt: null };
+
+  const staffTotal = staff.reduce(
+    (t, s) => {
+      const c = statsOf(s);
+      return { claims: t.claims + c.claims, reverts: t.reverts + (c.reverts ?? 0) };
+    },
+    { claims: 0, reverts: 0 }
+  );
+
+  const passTotal = data?.totals?.[category];
 
   const summary = useMemo(() => {
     const active = staff.filter((s) => s.active);
@@ -251,12 +289,27 @@ const AdminStaff = () => {
           </p>
         )}
 
+        {/* Which category the claim columns show */}
+        <div role="group" aria-label="Category" className="flex rounded-lg border border-neutral-300 bg-white p-0.5 text-sm font-semibold sm:max-w-md">
+          {CATEGORIES.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={category === key}
+              onClick={() => setCategory(key)}
+              className={`min-h-10 flex-1 rounded-md px-3 transition-colors ${category === key ? "bg-black text-white" : "text-neutral-600"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Table */}
         <div className="overflow-x-auto rounded-xl border border-neutral-200/80 bg-white shadow-sm">
-          <table className="w-full min-w-[52rem] text-left text-sm">
+          <table className="w-full min-w-[44rem] text-left text-sm">
             <thead className="border-b border-neutral-200 bg-neutral-50/70 text-xs font-bold uppercase tracking-wider text-neutral-400">
               <tr>
-                {["Name", "IRIS ID", "Role", "Active", "Food", "Merch", "Photo", "Reverts", "Last scan", "Added"].map((h) => (
+                {["Name", `${categoryLabel} claims`, "Reverts", "Last scan", "IRIS ID", "Role", "Active", "Added"].map((h) => (
                   <th key={h} className="px-4 py-3 font-bold">{h}</th>
                 ))}
               </tr>
@@ -282,6 +335,9 @@ const AdminStaff = () => {
                     </button>
                     {rowError[s.irisId] && <p role="alert" className="mt-0.5 text-xs font-semibold text-red-700">{rowError[s.irisId]}</p>}
                   </td>
+                  <td className="px-4 py-3 font-semibold tabular-nums">{statsOf(s).claims}</td>
+                  <td className="px-4 py-3 tabular-nums">{statsOf(s).reverts ?? "—"}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{formatDateTime(statsOf(s).lastActionAt)}</td>
                   <td className="px-4 py-3 tabular-nums">{s.irisId}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <select
@@ -308,25 +364,62 @@ const AdminStaff = () => {
                       <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform ${s.active ? "translate-x-5" : ""}`} />
                     </button>
                   </td>
-                  <td className="px-4 py-3 tabular-nums">{s.foodClaims}</td>
-                  <td className="px-4 py-3 tabular-nums">{s.merchClaims}</td>
-                  <td className="px-4 py-3 tabular-nums">{s.photoClaims ?? 0}</td>
-                  <td className="px-4 py-3 tabular-nums">{s.reverts}</td>
-                  <td className="whitespace-nowrap px-4 py-3">{formatDateTime(s.lastActionAt)}</td>
                   <td className="whitespace-nowrap px-4 py-3">{formatDateTime(s.createdAt)}</td>
                 </tr>
               ))}
               {shown.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-neutral-400">No staff match.</td>
+                  <td colSpan={8} className="px-4 py-8 text-center text-neutral-400">No staff match.</td>
                 </tr>
               )}
             </tbody>
+            <tfoot className="border-t border-neutral-200 bg-neutral-50 font-bold">
+              <tr>
+                <td className="px-4 py-3">All staff</td>
+                <td className="px-4 py-3 tabular-nums">{staffTotal.claims}</td>
+                <td className="px-4 py-3 tabular-nums">{split ? staffTotal.reverts : "—"}</td>
+                <td colSpan={5} />
+              </tr>
+            </tfoot>
           </table>
         </div>
+        {/* Every pass of this category, claimed or not */}
+        {passTotal && (
+          <div className="rounded-xl border border-neutral-200/80 bg-white p-4 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-wider text-neutral-500">All {categoryNoun}</p>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+              {[
+                ["Total", passTotal.claimed + passTotal.issued],
+                ["Claimed", passTotal.claimed],
+                ["Remaining", passTotal.issued],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg bg-neutral-100 py-2">
+                  <div className="text-2xl font-bold tabular-nums text-neutral-900">{value}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">{label}</div>
+                </div>
+              ))}
+            </div>
+            {passTotal.claimed + passTotal.issued > 0 && (
+              <>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200" aria-hidden="true">
+                  <div
+                    className="h-full rounded-full bg-green-600 transition-all"
+                    style={{ width: `${Math.round((passTotal.claimed / (passTotal.claimed + passTotal.issued)) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-sm text-neutral-600">
+                  {Math.round((passTotal.claimed / (passTotal.claimed + passTotal.issued)) * 100)}% claimed
+                  {passTotal.voided > 0 ? ` · ${passTotal.voided} cancelled, not counted` : ""}
+                  {" · updates every 30 s"}
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
         <p className="text-xs text-neutral-400">
           Tap a staff member to see everything they handed out, revert a claim or add a note.
-          Food and Merch count every claim the person made, including ones an admin reverted later. A change to role or active applies to the scanner immediately. Times are IST.
+          Claims count every claim the person made, including ones reverted later, so they can be more than Claimed above. A change to role or active applies to the scanner immediately. Times are IST.
         </p>
       </div>
 

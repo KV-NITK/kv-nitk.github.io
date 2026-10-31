@@ -93,6 +93,50 @@ describe("staff admin", () => {
     assert.deepEqual([res.body.staff[1].foodClaims, res.body.staff[1].reverts], [0, 0]);
   });
 
+  it("splits claims, reverts and last scan by category, and totals every pass by category", async () => {
+    db.registerRpc("staff_category_stats", () => ({
+      data: [
+        { staff_iris_id: "2222222", category: "FOOD", claims: 5, reverts: 0, last_action_at: "2026-10-31T07:00:00Z" },
+        { staff_iris_id: "2222222", category: "MERCH", claims: 2, reverts: 1, last_action_at: "2026-10-31T08:00:00Z" },
+      ],
+      error: null,
+    }));
+    db.registerRpc("pass_category_totals", () => ({
+      data: [{ category: "FOOD", claimed: 340, issued: 472, voided: 3 }],
+      error: null,
+    }));
+    try {
+      const res = await call(listStaffController);
+      assert.equal(res.body.categoryStatsAvailable, true);
+      assert.deepEqual(res.body.totals, { FOOD: { claimed: 340, issued: 472, voided: 3 } });
+      const vol = res.body.staff.find((s) => s.irisId === "2222222");
+      assert.deepEqual(vol.byCategory, {
+        FOOD: { claims: 5, reverts: 0, lastActionAt: "2026-10-31T07:00:00Z" },
+        MERCH: { claims: 2, reverts: 1, lastActionAt: "2026-10-31T08:00:00Z" },
+      });
+      assert.deepEqual(res.body.staff.find((s) => s.irisId === "1111111").byCategory, {});
+      // the old combined fields are still there
+      assert.deepEqual([vol.foodClaims, vol.merchClaims, vol.reverts], [5, 2, 1]);
+    } finally {
+      db.registerRpc("staff_category_stats", () => ({ data: null, error: null }));
+      db.registerRpc("pass_category_totals", () => ({ data: null, error: null }));
+    }
+  });
+
+  it("works as before when 010_category_stats.sql has not run", async () => {
+    db.registerRpc("pass_category_totals", () => ({ data: null, error: { code: "PGRST202", message: "Could not find the function" } }));
+    try {
+      const res = await call(listStaffController);
+      assert.equal(res.statusCode, 200);
+      assert.equal(res.body.statsAvailable, true);
+      assert.equal(res.body.categoryStatsAvailable, false);
+      assert.deepEqual(res.body.totals, {});
+      assert.deepEqual(res.body.staff.find((s) => s.irisId === "2222222").foodClaims, 5);
+    } finally {
+      db.registerRpc("pass_category_totals", () => ({ data: null, error: null }));
+    }
+  });
+
   it("still lists staff when the stats function is missing", async () => {
     db.registerRpc("staff_claim_stats", () => ({ data: null, error: { message: "function does not exist" } }));
     const res = await call(listStaffController);
