@@ -309,7 +309,8 @@ let cameraQueue = Promise.resolve();
 
 // `modes` are the tabs the scanner can switch between; with one, there are no tabs.
 export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, modes = MODES }) {
-  const [mode, setMode] = useState(modes[0].key);
+  // Opens on Merch when the console has that tab (the photo booth scanner has only Photo)
+  const [mode, setMode] = useState(() => (modes.find((m) => m.key === "MERCH") ?? modes[0]).key);
   const [card, setCard] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
