@@ -15,6 +15,8 @@ import {
   LogOut,
   Undo2,
   X,
+  Copy,
+  Check,
 } from "lucide-react";
 import API_URL from "../../../api/api";
 import { cn } from "@/lib/utils";
@@ -99,6 +101,13 @@ export const staffRequest = async (path, { method = "GET", body, headers } = {})
 const STAFF_API = {
   scan: (token, category) => staffRequest("/passes/scan", { method: "POST", body: { token, category } }),
   search: (q, category) => staffRequest(`/passes/search?q=${encodeURIComponent(q)}&category=${category}`),
+  list: ({ category, status, fit, size, q, page }) => {
+    const query = new URLSearchParams({ category, status, page: String(page || 1) });
+    if (fit) query.set("fit", fit);
+    if (size) query.set("size", size);
+    if (q) query.set("q", q);
+    return staffRequest(`/passes/list?${query}`);
+  },
   revert: (id) => staffRequest("/passes/revert", { method: "POST", body: { id } }),
 };
 
@@ -142,7 +151,9 @@ function ConfirmDialog({ confirm, busy, onCancel }) {
   if (!confirm) return null;
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    // fixed, not absolute: inside a scrolling list an absolute box sits at the top of the
+    // list, so after scrolling down the volunteer had to scroll back up to find it
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4">
       <div className="w-full max-w-sm rounded-xl border border-[#4d2d1b] bg-[#1a0f0a] p-5 text-[#f5ebd9] shadow-2xl">
         <p className="text-base font-semibold leading-snug">{confirm.message}</p>
         <div className="mt-5 flex gap-3">
@@ -316,6 +327,7 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
   const [searchBusy, setSearchBusy] = useState(false);
   const [searchResults, setSearchResults] = useState(null);
   const [searchNotice, setSearchNotice] = useState(null);
+  const [listVersion, setListVersion] = useState(0);
 
   const [confirm, setConfirm] = useState(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
@@ -595,6 +607,16 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
     }
   };
 
+  // After a claim or revert: reload the pass list in place (same page and filters), or
+  // repeat the search when the console has no list (the photo booth scanner)
+  const refreshAfterAction = async () => {
+    if (api.list) {
+      setListVersion((v) => v + 1);
+    } else {
+      await runSearch();
+    }
+  };
+
   const claimFromSearch = (pass) => {
     setConfirm({
       message: `Confirm claiming ${passSummary(pass)} for ${pass.user_name || pass.user_iris_id}?`,
@@ -625,7 +647,7 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
         } finally {
           setConfirmBusy(false);
           setConfirm(null);
-          await runSearch();
+          await refreshAfterAction();
         }
       },
     });
@@ -685,7 +707,7 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
           }
         }
 
-        if (searchOpen) await runSearch();
+        if (searchOpen) await refreshAfterAction();
       },
     });
   };
@@ -901,6 +923,19 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
       {/* Search by reg / roll number */}
       {searchOpen && (
         <Sheet title={`Search ${MODE_NOUN[mode]}`} tally={tally} onClose={closeSearch}>
+          {api.list ? (
+            <PassBrowser
+              key={mode}
+              api={api}
+              mode={mode}
+              notice={searchNotice}
+              version={listVersion}
+              onClaim={claimFromSearch}
+              onRevert={(pass) => askRevert({ ...pass, user_iris_id: pass.user_iris_id })}
+              onLoggedOut={onLoggedOut}
+            />
+          ) : (
+          <>
           <form onSubmit={runSearch} className="flex gap-2">
             <input
               type="text"
@@ -978,6 +1013,8 @@ export function ScannerConsole({ staff, onLoggedOut, onLogout, api = STAFF_API, 
               ))}
             </ul>
           )}
+          </>
+          )}
           <ConfirmDialog confirm={confirm} busy={confirmBusy} onCancel={() => setConfirm(null)} />
         </Sheet>
       )}
@@ -1021,6 +1058,431 @@ function Sheet({ title, tally, onClose, children }) {
         </button>
       </div>
       <div className="relative flex-1 overflow-y-auto px-4 py-3">{children}</div>
+    </div>
+  );
+}
+
+// ---------- pass list: who has collected, who is still to collect ----------
+
+const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
+const FIT_ORDER = ["Oversized", "Regular fit"];
+const LIST_SEARCH_DELAY_MS = 350;
+
+const orderedBy = (order) => (a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99) || a.localeCompare(b);
+
+// "98765 43210" for a 10 digit number
+const groupPhone = (phone) => (phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone);
+
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // No clipboard API (older browser, or a page that is not https): the old way
+    try {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      const copied = document.execCommand("copy");
+      document.body.removeChild(area);
+      return copied;
+    } catch {
+      return false;
+    }
+  }
+};
+
+function PhoneLine({ phone }) {
+  const [state, setState] = useState("idle"); // idle | copied | failed
+  const timerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  if (!phone) return <p className="text-[11px] text-[#806653]">No phone number</p>;
+
+  const copy = async () => {
+    setState((await copyToClipboard(phone)) ? "copied" : "failed");
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setState("idle"), 1800);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-semibold tabular-nums text-[#f5ebd9]">{groupPhone(phone)}</span>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={`Copy phone number ${phone}`}
+        className="flex min-h-8 items-center gap-1 rounded border border-[#4d2d1b] px-2 text-[11px] font-bold text-[#f7b928] active:scale-95"
+      >
+        {state === "copied" ? (
+          <>
+            <Check className="size-3.5" />
+            Copied
+          </>
+        ) : state === "failed" ? (
+          "Copy failed"
+        ) : (
+          <>
+            <Copy className="size-3.5" />
+            Copy
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function PassCard({ p, onClaim, onRevert }) {
+  return (
+    <li className="rounded-lg border border-[#362217] bg-[#1a0f0a] p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-bold text-white">{passSummary(p)}</p>
+          <p className="text-xs text-[#c7aa88]">
+            {p.user_name || "Name not recorded"} · {p.user_iris_id}
+          </p>
+          {p.status === "CLAIMED" && (
+            <p className="mt-0.5 text-[11px] text-amber-300/90">
+              Claimed {formatTime(p.claimed_at)}
+              {p.claimed_by_name ? ` by ${p.claimed_by_name}` : ""}
+            </p>
+          )}
+        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+            p.status === "ISSUED" ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"
+          )}
+        >
+          {p.status}
+        </span>
+      </div>
+
+      {p.status === "ISSUED" && (
+        <button
+          type="button"
+          onClick={() => onClaim(p)}
+          className="mt-2 w-full rounded-md bg-[#f7b928] py-2.5 text-sm font-bold text-black active:scale-[0.98]"
+        >
+          Claim Pass
+        </button>
+      )}
+      {p.status === "CLAIMED" && (
+        <button
+          type="button"
+          onClick={() => onRevert(p)}
+          className="mt-2 flex items-center gap-1.5 rounded border border-amber-500/40 px-2.5 py-1.5 text-xs font-bold text-amber-300"
+        >
+          <Undo2 className="size-3.5" />
+          Revert Claim
+        </button>
+      )}
+
+      <div className="mt-2 flex justify-end">
+        <PhoneLine phone={p.phone} />
+      </div>
+    </li>
+  );
+}
+
+function Chip({ selected, onClick, children, count, dim }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={cn(
+        "min-h-9 rounded-full border px-3 text-xs font-bold transition-colors",
+        selected ? "border-[#f7b928] bg-[#f7b928] text-black" : "border-[#4d2d1b] bg-[#1a0f0a] text-[#e6d3b8]",
+        dim && !selected && "opacity-50"
+      )}
+    >
+      {children}
+      {count != null && <span className={cn("ml-1.5 tabular-nums", selected ? "text-black/70" : "text-[#a3876e]")}>{count}</span>}
+    </button>
+  );
+}
+
+// Opens on Pending with no fit or size picked. Claimed = newest first, Pending = by name,
+// 25 at a time. The search is optional (one character will do) and narrows the same list.
+function PassBrowser({ api, mode, notice, version, onClaim, onRevert, onLoggedOut }) {
+  const [status, setStatus] = useState("ISSUED");
+  const [fit, setFit] = useState("");
+  const [size, setSize] = useState("");
+  const [text, setText] = useState("");
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [tick, setTick] = useState(0);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const requestRef = useRef(0);
+  const appliedQRef = useRef("");
+  const topRef = useRef(null);
+  const firstPageRef = useRef(true);
+  const apiRef = useRef(api);
+  const loggedOutRef = useRef(onLoggedOut);
+  apiRef.current = api;
+  loggedOutRef.current = onLoggedOut;
+
+  const isMerch = mode === "MERCH";
+
+  const applySearch = useCallback((value) => {
+    const next = value.trim();
+    if (next === appliedQRef.current) return false;
+    appliedQRef.current = next;
+    setQ(next);
+    setPage(1);
+    return true;
+  }, []);
+
+  // Search as the volunteer types, once they pause
+  useEffect(() => {
+    const timer = setTimeout(() => applySearch(text), LIST_SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [text, applySearch]);
+
+  const load = useCallback(async () => {
+    const id = ++requestRef.current;
+    setLoading(true);
+    setError("");
+
+    try {
+      const { status: http, data: body } = await apiRef.current.list({
+        category: mode,
+        status,
+        fit: isMerch ? fit : "",
+        size: isMerch ? size : "",
+        q,
+        page,
+      });
+
+      if (id !== requestRef.current) return; // a newer request won
+
+      if (http === 401) {
+        loggedOutRef.current();
+        return;
+      }
+      if (http !== 200 || !body.success) {
+        setError(body.message || "Could not load the list. Try again.");
+        return;
+      }
+      // The last page emptied (everything on it was just claimed): go back one
+      if (body.passes.length === 0 && page > 1 && body.total > 0) {
+        setPage(Math.ceil(body.total / body.pageSize));
+        return;
+      }
+      setData(body);
+    } catch (e) {
+      if (id !== requestRef.current) return;
+      setError(e?.timeout ? "The list timed out. Try again." : "Could not reach the server.");
+    } finally {
+      if (id === requestRef.current) setLoading(false);
+    }
+  }, [mode, isMerch, status, fit, size, q, page]);
+
+  // Reloads on a new filter or page, after a claim or revert (version), or on Search
+  useEffect(() => {
+    load();
+  }, [load, version, tick]);
+
+  // A new page starts at the top of the list
+  useEffect(() => {
+    if (firstPageRef.current) {
+      firstPageRef.current = false;
+      return;
+    }
+    topRef.current?.scrollIntoView({ block: "start" });
+  }, [page]);
+
+  const pickStatus = (next) => {
+    if (next === status) return;
+    setStatus(next);
+    setPage(1);
+  };
+  const pickFit = (next) => {
+    setFit((current) => (current === next ? "" : next));
+    setPage(1);
+  };
+  const pickSize = (next) => {
+    setSize((current) => (current === next ? "" : next));
+    setPage(1);
+  };
+  const reset = () => {
+    setStatus("ISSUED");
+    setFit("");
+    setSize("");
+    setText("");
+    appliedQRef.current = "";
+    setQ("");
+    setPage(1);
+  };
+  const submitSearch = (event) => {
+    event.preventDefault();
+    if (!applySearch(text)) setTick((t) => t + 1);
+  };
+
+  const isDefault = status === "ISSUED" && !fit && !size && !text.trim();
+
+  const facets = data?.facets ?? [];
+  const fits = [...new Set([...FIT_ORDER, ...facets.map((f) => f.fit).filter(Boolean)])].sort(orderedBy(FIT_ORDER));
+  const sizes = [...new Set([...SIZE_ORDER, ...facets.map((f) => f.size).filter(Boolean)])].sort(orderedBy(SIZE_ORDER));
+  const sum = (rows) => rows.reduce((n, f) => n + f.count, 0);
+  const fitCount = (f) => (data ? sum(facets.filter((x) => x.fit === f)) : null);
+  const sizeCount = (s) => (data ? sum(facets.filter((x) => x.size === s && (!fit || x.fit === fit))) : null);
+
+  const total = data?.total ?? 0;
+  const pageSize = data?.pageSize ?? 25;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const passes = data?.passes ?? [];
+  const word = status === "ISSUED" ? "pending" : "claimed";
+  const narrowed = [fit, size && `Size ${size}`].filter(Boolean).join(" · ");
+
+  return (
+    <div>
+      <div ref={topRef} />
+
+      {/* Stays in view while the list scrolls, so a claim or revert result is not missed */}
+      {notice && (
+        <div className="sticky top-0 z-10 -mx-4 -mt-3 bg-[#0b0705] px-4 pb-1 pt-2 [&>p]:mt-0">
+          <Notice notice={notice} />
+        </div>
+      )}
+
+      <div role="group" aria-label="Pass status" className="grid grid-cols-2 gap-1 rounded-lg bg-[#21120b] p-1">
+        {[
+          ["ISSUED", "Pending"],
+          ["CLAIMED", "Claimed"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={status === key}
+            onClick={() => pickStatus(key)}
+            className={cn(
+              "min-h-10 rounded-md text-sm font-bold transition-colors",
+              status === key ? "bg-[#f7b928] text-black" : "text-[#c7aa88]"
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {isMerch && (
+        <div className="mt-3 space-y-2">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Fit">
+            {fits.map((f) => (
+              <Chip key={f} selected={fit === f} onClick={() => pickFit(f)} count={fitCount(f)} dim={fitCount(f) === 0}>
+                {f}
+              </Chip>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Size">
+            {sizes.map((sz) => (
+              <Chip key={sz} selected={size === sz} onClick={() => pickSize(sz)} count={sizeCount(sz)} dim={sizeCount(sz) === 0}>
+                {sz}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={submitSearch} className="mt-3 flex gap-2">
+        <div className="relative min-w-0 flex-1">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Name, Reg / Roll number or phone"
+            autoCapitalize="none"
+            autoComplete="off"
+            enterKeyHint="search"
+            aria-label="Search by name, reg or roll number, or phone"
+            className="w-full rounded-md border border-[#4d2d1b] bg-[#21120b] py-2.5 pl-3 pr-10 text-base text-[#f5ebd9] placeholder-[#806653] outline-none focus:border-[#f7b928]"
+          />
+          {text && (
+            <button
+              type="button"
+              onClick={() => setText("")}
+              aria-label="Clear search"
+              className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[#c7aa88] active:bg-[#24130d]"
+            >
+              <X className="size-4" />
+            </button>
+          )}
+        </div>
+        <button type="submit" className="rounded-md bg-[#f7b928] px-4 py-2.5 text-sm font-bold text-black active:scale-[0.98]">
+          Search
+        </button>
+      </form>
+
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-[#c7aa88]" aria-live="polite">
+          {data ? `${total} ${word}${narrowed ? ` · ${narrowed}` : ""}${q ? ` · “${q}”` : ""}` : "Loading…"}
+          {data && total > pageSize ? ` · page ${page} of ${pages}` : ""}
+          {loading && data ? " · updating…" : ""}
+        </p>
+        <button
+          type="button"
+          onClick={reset}
+          disabled={isDefault}
+          className="shrink-0 rounded border border-[#4d2d1b] px-2.5 py-1.5 text-xs font-bold text-[#f7b928] disabled:opacity-40"
+        >
+          Reset filters
+        </button>
+      </div>
+
+      {error && (
+        <p role="alert" className="mt-3 rounded-md border border-red-600/50 bg-red-900/30 px-3 py-2 text-xs font-semibold text-red-200">
+          {error}
+        </p>
+      )}
+
+      {data && passes.length === 0 && !error && (
+        <p className="py-8 text-center text-sm text-[#a3876e]">
+          No {word} {MODE_NOUN[mode].toLowerCase()}
+          {narrowed || q ? " match these filters. Try Reset filters." : status === "ISSUED" ? ": everyone has collected." : " yet."}
+        </p>
+      )}
+
+      {passes.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {passes.map((p) => (
+            <PassCard key={p.id} p={p} onClaim={onClaim} onRevert={onRevert} />
+          ))}
+        </ul>
+      )}
+
+      {total > pageSize && (
+        <div className="mt-4 flex items-center gap-2 pb-2">
+          <button
+            type="button"
+            onClick={() => setPage((n) => Math.max(1, n - 1))}
+            disabled={page <= 1 || loading}
+            className="min-h-11 flex-1 rounded-md border border-[#4d2d1b] text-sm font-bold text-[#f7b928] disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <span className="text-xs font-semibold tabular-nums text-[#c7aa88]">
+            {page} / {pages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((n) => Math.min(pages, n + 1))}
+            disabled={page >= pages || loading}
+            className="min-h-11 flex-1 rounded-md border border-[#4d2d1b] text-sm font-bold text-[#f7b928] disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
